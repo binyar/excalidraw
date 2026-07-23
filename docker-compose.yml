@@ -2,22 +2,16 @@ services:
   excalidraw:
     build:
       context: .
-      args:
-        - NODE_ENV=development
-    container_name: excalidraw
+      dockerfile: Dockerfile
+    image: excalidraw-file-manager:latest
+    container_name: excalidraw-file-manager
+    restart: unless-stopped
     ports:
-      - "3000:80"
-    restart: on-failure
-    stdin_open: true
-    healthcheck:
-      disable: true
+      - "8088:8088"
     environment:
-      - NODE_ENV=development
+      PORT: "8088"
+      EXCALIDRAW_WORKSPACE_DIR: /opt/excalidraw/workspace
+      EXCALIDRAW_USERNAME: fanmd
+      EXCALIDRAW_PASSWORD: "123123"
     volumes:
-      - ./:/opt/node_app/app:delegated
-      - ./package.json:/opt/node_app/package.json
-      - ./yarn.lock:/opt/node_app/yarn.lock
-      - notused:/opt/node_app/app/node_modules
-
-volumes:
-  notused:
+      - /opt/excalidraw/workspace:/opt/excalidraw/workspace

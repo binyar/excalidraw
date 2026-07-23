@@ -86,6 +86,12 @@
   }
 }
 
+// The workspace shell owns navigation and help. Keep only the core editor
+// controls (zoom and undo/redo) in the canvas footer.
+.excalidraw-app .layer-ui__wrapper__footer-right {
+  display: none;
+}
+
 .plus-banner {
   display: flex;
   justify-content: center;
