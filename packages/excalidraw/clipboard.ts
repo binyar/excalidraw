@@ -103,7 +103,9 @@ export const createPasteEvent = ({
   });
 
   if (types) {
-    for (const [type, value] of Object.entries(types)) {
+    for (const [type, value] of Object.entries(types) as Array<
+      [AllowedPasteMimeTypes, string | File]
+    >) {
       if (typeof value !== "string") {
         files = files || [];
         files.push(value);

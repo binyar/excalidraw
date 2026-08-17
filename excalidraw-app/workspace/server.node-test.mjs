@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -93,6 +93,24 @@ test("workspace API persists a drawing and supports the complete CRUD lifecycle"
     headers: { "content-type": "application/vnd.excalidraw+json" },
     body: JSON.stringify(drawing),
   });
+  const concurrentDrawings = Array.from({ length: 12 }, (_, index) => ({
+    ...drawing,
+    elements: [
+      {
+        ...drawing.elements[0],
+        id: `shape-${index}`,
+      },
+    ],
+  }));
+  await Promise.all(
+    concurrentDrawings.map((candidate) =>
+      request(`/files/${file.id}/content`, {
+        method: "PUT",
+        headers: { "content-type": "application/vnd.excalidraw+json" },
+        body: JSON.stringify(candidate),
+      }),
+    ),
+  );
   const updated = await request(`/files/${file.id}`, {
     method: "PATCH",
     headers,
@@ -108,6 +126,17 @@ test("workspace API persists a drawing and supports the complete CRUD lifecycle"
     ),
   );
   assert.equal(storedDrawing.elements.length, 1);
+  assert.ok(
+    concurrentDrawings.some(
+      (candidate) => candidate.elements[0].id === storedDrawing.elements[0].id,
+    ),
+  );
+  assert.deepEqual(
+    (await readdir(path.join(workspaceRoot, "files"))).filter((name) =>
+      name.endsWith(".tmp"),
+    ),
+    [],
+  );
 
   await request(`/files/${file.id}`, { method: "DELETE" });
   const trash = await request("/items?scope=trash");

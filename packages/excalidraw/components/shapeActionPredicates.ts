@@ -15,6 +15,7 @@ import {
 import type {
   ExcalidrawElement,
   ExcalidrawElementType,
+  NonDeletedExcalidrawElement,
   NonDeletedElementsMap,
   NonDeletedSceneElementsMap,
 } from "@excalidraw/element/types";
@@ -28,6 +29,7 @@ import {
   hasStrokeStyle,
   hasStrokeWidth,
 } from "../scene";
+import { projectRuntimeElementForRender } from "../renderer/runtimeElementRenderHook";
 
 import type { ElementOrToolType } from "../types";
 
@@ -117,7 +119,11 @@ export const getShapeActionPredicates = (
       targetElements.some(
         (element) =>
           hasBackground(element.type) &&
-          !isTransparent(element.backgroundColor),
+          !isTransparent(
+            projectRuntimeElementForRender(
+              element as NonDeletedExcalidrawElement,
+            ).backgroundColor,
+          ),
       ),
 
     // stroke / shape properties

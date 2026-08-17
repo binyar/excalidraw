@@ -997,9 +997,15 @@ export type CanvasActions = Partial<{
 
 export type UIOptions = Partial<{
   dockedSidebarBreakpoint: number;
+  /** Whether to render Excalidraw's built-in search/library sidebar. */
+  defaultSidebar: boolean;
+  /** Whether selecting canvas elements should open the native style panel. */
+  selectedShapeActions: boolean;
   canvasActions: CanvasActions;
   tools: {
     image: boolean;
+    /** Whether to render the toolbar's extra-tools menu. */
+    extraTools?: boolean;
   };
   /**
    * Optionally control the editor form factor and desktop UI mode from the host app.
@@ -1189,6 +1195,8 @@ export interface ExcalidrawImperativeAPI {
   /** Whether the editor has been unmounted and the API is no longer usable. */
   isDestroyed: boolean;
   updateScene: InstanceType<typeof App>["updateScene"];
+  /** Deletes the supplied elements through the editor's native delete action. */
+  deleteElements: InstanceType<typeof App>["deleteElements"];
   applyDeltas: InstanceType<typeof App>["applyDeltas"];
   mutateElement: InstanceType<typeof App>["mutateElement"];
   updateLibrary: InstanceType<typeof Library>["updateLibrary"];

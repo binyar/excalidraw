@@ -9,9 +9,10 @@ import {
 } from "@excalidraw/common";
 
 import { Excalidraw } from "../index";
+import { registerRuntimeElementRenderAdapter } from "../renderer/runtimeElementRenderHook";
 import { API } from "../tests/helpers/api";
 import { UI } from "../tests/helpers/ui";
-import { render } from "../tests/test-utils";
+import { act, render } from "../tests/test-utils";
 
 describe("element locking", () => {
   beforeEach(async () => {
@@ -108,6 +109,32 @@ describe("element locking", () => {
 
       const crossHatchButton = queryByTestId(document.body, `fill-cross-hatch`);
       expect(crossHatchButton).toBe(null);
+    });
+
+    it("should show fill style when the runtime background is non-transparent", () => {
+      const rect = API.createElement({
+        type: "rectangle",
+        backgroundColor: COLOR_PALETTE.transparent,
+        fillStyle: "cross-hatch",
+      });
+      let disconnect: () => void = () => undefined;
+      act(() => {
+        disconnect = registerRuntimeElementRenderAdapter({
+          projectElement: (element) =>
+            element.id === rect.id
+              ? ({ ...element, backgroundColor: "#a5d8ff" } as typeof element)
+              : element,
+          subscribe: () => () => undefined,
+        });
+      });
+
+      API.setElements([rect]);
+      API.setSelectedElements([rect]);
+
+      expect(queryByTestId(document.body, `fill-cross-hatch`)).toHaveClass(
+        "active",
+      );
+      act(() => disconnect());
     });
 
     it("should highlight common stroke width of selected elements", () => {

@@ -10,22 +10,24 @@ import { t } from "../i18n";
 import { IconButton } from "./IconButton";
 import { ToolPopover } from "./ToolPopover";
 import {
-  SelectionIcon,
-  RectangleIcon,
-  DiamondIcon,
-  EllipseIcon,
-  ArrowIcon,
-  LineIcon,
-  FreedrawIcon,
-  TextIcon,
-  ImageIcon,
-  EraserIcon,
   laserPointerToolIcon,
   LassoIcon,
-  handIcon,
   frameToolIcon,
   EmbedIcon,
 } from "./icons";
+import {
+  editorArrowIcon,
+  editorDiamondIcon,
+  editorEllipseIcon,
+  editorEraserIcon,
+  editorFreedrawIcon,
+  editorHandIcon,
+  editorImageIcon,
+  editorLineIcon,
+  editorRectangleIcon,
+  editorSelectionIcon,
+  editorTextIcon,
+} from "./editorControlIcons";
 
 import type {
   AppClassProperties,
@@ -61,62 +63,62 @@ const defineTools = <T extends Record<string, ToolConfig>>(tools: T) =>
  */
 export const TOOLS = defineTools({
   hand: {
-    icon: handIcon,
+    icon: editorHandIcon,
     letterKey: KEYS.H,
     toggle: true,
   },
   selection: {
-    icon: SelectionIcon,
+    icon: editorSelectionIcon,
     letterKey: KEYS.V,
     numericKey: KEYS["1"],
     fillable: true,
   },
   rectangle: {
-    icon: RectangleIcon,
+    icon: editorRectangleIcon,
     letterKey: KEYS.R,
     numericKey: KEYS["2"],
     fillable: true,
   },
   diamond: {
-    icon: DiamondIcon,
+    icon: editorDiamondIcon,
     letterKey: KEYS.D,
     numericKey: KEYS["3"],
     fillable: true,
   },
   ellipse: {
-    icon: EllipseIcon,
+    icon: editorEllipseIcon,
     letterKey: KEYS.O,
     numericKey: KEYS["4"],
     fillable: true,
   },
   arrow: {
-    icon: ArrowIcon,
+    icon: editorArrowIcon,
     letterKey: KEYS.A,
     numericKey: KEYS["5"],
     fillable: true,
   },
   line: {
-    icon: LineIcon,
+    icon: editorLineIcon,
     letterKey: KEYS.L,
     numericKey: KEYS["6"],
     fillable: true,
   },
   freedraw: {
-    icon: FreedrawIcon,
+    icon: editorFreedrawIcon,
     letterKey: [KEYS.P, KEYS.X],
     numericKey: KEYS["7"],
   },
   text: {
-    icon: TextIcon,
+    icon: editorTextIcon,
     letterKey: KEYS.T,
     numericKey: KEYS["8"],
   },
   image: {
-    icon: ImageIcon,
+    icon: editorImageIcon,
     numericKey: KEYS["9"],
   },
   eraser: {
-    icon: EraserIcon,
+    icon: editorEraserIcon,
     letterKey: KEYS.E,
     numericKey: KEYS["0"],
     toggle: true,

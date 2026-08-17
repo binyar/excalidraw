@@ -55,7 +55,7 @@ export const ElementCanvasButtons = ({
 
   return (
     <div
-      className="excalidraw-canvas-buttons"
+      className="powdoo-canvas-buttons"
       style={{
         top: `${y}px`,
         left: `${x}px`,

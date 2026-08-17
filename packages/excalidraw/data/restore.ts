@@ -264,7 +264,7 @@ const restoreFreedrawStrokeOptions = (
 };
 
 const getFontFamilyByName = (fontFamilyName: string): FontFamilyValues => {
-  if (Object.keys(FONT_FAMILY).includes(fontFamilyName)) {
+  if ((Object.keys(FONT_FAMILY) as string[]).includes(fontFamilyName)) {
     return FONT_FAMILY[
       fontFamilyName as keyof typeof FONT_FAMILY
     ] as FontFamilyValues;

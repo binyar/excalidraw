@@ -9,6 +9,7 @@ import type {
 
 import { isRenderThrottlingEnabled } from "../../reactUtils";
 import { renderStaticScene } from "../../renderer/staticScene";
+import { subscribeToRuntimeElementRenderChanges } from "../../renderer/runtimeElementRenderHook";
 
 import type {
   RenderableElementsMap,
@@ -33,6 +34,30 @@ type StaticCanvasProps = {
 const StaticCanvas = (props: StaticCanvasProps) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const isComponentMounted = useRef(false);
+  const latestPropsRef = useRef(props);
+  latestPropsRef.current = props;
+
+  useEffect(() => {
+    return subscribeToRuntimeElementRenderChanges(() => {
+      const current = latestPropsRef.current;
+      // Runtime animation state is deliberately outside React/AppState. Paint
+      // it directly so runtime ticks and synchronous timeline seeks cannot be
+      // swallowed by React batching or the memoized canvas component.
+      renderStaticScene(
+        {
+          canvas: current.canvas,
+          rc: current.rc,
+          scale: current.scale,
+          elementsMap: current.elementsMap,
+          allElementsMap: current.allElementsMap,
+          visibleElements: current.visibleElements,
+          appState: current.appState,
+          renderConfig: current.renderConfig,
+        },
+        isRenderThrottlingEnabled(),
+      );
+    });
+  }, []);
 
   useEffect(() => {
     props.canvas.style.width = `${props.appState.width}px`;
@@ -53,7 +78,7 @@ const StaticCanvas = (props: StaticCanvasProps) => {
       isComponentMounted.current = true;
 
       wrapper.replaceChildren(canvas);
-      canvas.classList.add("excalidraw__canvas", "static");
+      canvas.classList.add("powdoo__canvas", "static");
     }
 
     renderStaticScene(
@@ -71,7 +96,7 @@ const StaticCanvas = (props: StaticCanvasProps) => {
     );
   });
 
-  return <div className="excalidraw__canvas-wrapper" ref={wrapperRef} />;
+  return <div className="powdoo__canvas-wrapper" ref={wrapperRef} />;
 };
 
 const getRelevantAppStateProps = (appState: AppState): StaticCanvasAppState => {

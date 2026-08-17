@@ -13,10 +13,11 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 20.x
+      - run: corepack enable
 
       - name: Install and lint
         run: |
-          yarn install
-          yarn test:other
-          yarn test:code
-          yarn test:typecheck
+          pnpm install --frozen-lockfile
+          pnpm test:other
+          pnpm test:code
+          pnpm test:typecheck

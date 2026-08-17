@@ -3,8 +3,6 @@ import React from "react";
 
 import { composeEventHandlers } from "@excalidraw/common";
 
-import "./Button.scss";
-
 interface ButtonProps
   extends React.DetailedHTMLProps<
     React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -37,7 +35,11 @@ export const Button = ({
         onSelect();
       })}
       type={type}
-      className={clsx("excalidraw-button", className, { selected })}
+      className={clsx(
+        "powdoo-button inline-flex h-9 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background px-4 text-sm font-medium shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+        className,
+        { "border-primary bg-primary text-primary-foreground": selected },
+      )}
       {...rest}
     >
       {children}

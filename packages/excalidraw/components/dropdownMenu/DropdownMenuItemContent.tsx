@@ -20,13 +20,20 @@ const MenuItemContent = ({
   const editorInterface = useEditorInterface();
   return (
     <>
-      {icon && <div className="dropdown-menu-item__icon">{icon}</div>}
-      <div style={textStyle} className="dropdown-menu-item__text">
+      {icon && (
+        <div className="dropdown-menu-item__icon [&_svg]:size-4">{icon}</div>
+      )}
+      <div
+        style={textStyle}
+        className="dropdown-menu-item__text flex min-w-0 flex-1 items-center gap-3 overflow-hidden whitespace-nowrap"
+      >
         <Ellipsify>{children}</Ellipsify>
       </div>
       {badge && <div className="dropdown-menu-item__badge">{badge}</div>}
       {shortcut && editorInterface.formFactor !== "phone" && (
-        <div className="dropdown-menu-item__shortcut">{shortcut}</div>
+        <div className="dropdown-menu-item__shortcut ml-auto text-xs tracking-widest text-muted-foreground">
+          {shortcut}
+        </div>
       )}
     </>
   );

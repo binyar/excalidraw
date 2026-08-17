@@ -1,0 +1,91 @@
+.powdoo {
+  .PowdooLogo {
+    --logo-icon--mobile: 1rem;
+    --logo-text--mobile: 0.75rem;
+
+    --logo-icon--xs: 2rem;
+    --logo-text--xs: 1.5rem;
+
+    --logo-icon--small: 2.5rem;
+    --logo-text--small: 1.75rem;
+
+    --logo-icon--normal: 3rem;
+    --logo-text--normal: 2.2rem;
+
+    --logo-icon--large: 90px;
+    --logo-text--large: 65px;
+
+    display: flex;
+    align-items: center;
+
+    svg {
+      flex: 0 0 auto;
+    }
+
+    .PowdooLogo-icon {
+      width: auto;
+      color: var(--color-logo-icon);
+    }
+
+    .PowdooLogo-text {
+      margin-left: 0.75rem;
+      width: auto;
+      color: var(--color-logo-text);
+      font-family: "Assistant", sans-serif;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    &.is-mobile {
+      .PowdooLogo-icon {
+        height: var(--logo-icon--mobile);
+      }
+
+      .PowdooLogo-text {
+        font-size: var(--logo-text--mobile);
+        margin-left: 0.5rem;
+      }
+    }
+
+    &.is-xs {
+      .PowdooLogo-icon {
+        height: var(--logo-icon--xs);
+      }
+
+      .PowdooLogo-text {
+        font-size: var(--logo-text--xs);
+      }
+    }
+
+    &.is-small {
+      .PowdooLogo-icon {
+        height: var(--logo-icon--small);
+      }
+
+      .PowdooLogo-text {
+        font-size: var(--logo-text--small);
+      }
+    }
+
+    &.is-normal {
+      .PowdooLogo-icon {
+        height: var(--logo-icon--normal);
+      }
+
+      .PowdooLogo-text {
+        font-size: var(--logo-text--normal);
+      }
+    }
+
+    &.is-large {
+      .PowdooLogo-icon {
+        height: var(--logo-icon--large);
+      }
+
+      .PowdooLogo-text {
+        font-size: var(--logo-text--large);
+      }
+    }
+  }
+}

@@ -115,11 +115,9 @@ const DefaultMainMenu: React.FC<{
       <MainMenu.DefaultItems.Help />
       <MainMenu.DefaultItems.ClearCanvas />
       <MainMenu.Separator />
-      <MainMenu.Group title="Excalidraw links">
+      <MainMenu.Group title="Powdoo links">
         <MainMenu.DefaultItems.Socials />
       </MainMenu.Group>
-      <MainMenu.Separator />
-      <MainMenu.DefaultItems.ToggleTheme allowSystemTheme={false} />
       <MainMenu.DefaultItems.ChangeCanvasBackground />
     </MainMenu>
   );
@@ -226,7 +224,7 @@ const LayerUI = ({
 
   const renderCanvasActions = () => (
     <div style={{ position: "relative" }}>
-      <div className="excalidraw-ui-top-left">
+      <div className="powdoo-ui-top-left">
         {renderTopLeftUI?.(false, appState)}
         <tunnels.MainMenuTunnel.Out />
       </div>
@@ -287,8 +285,13 @@ const LayerUI = ({
   };
 
   const renderFixedSideContainer = () => {
+    const hasCanvasSelection = elements.some(
+      (element) => appState.selectedElementIds[element.id],
+    );
     const shouldRenderSelectedShapeActions =
-      defaultUIEnabled && showSelectedShapeActions(appState, elements);
+      defaultUIEnabled &&
+      !(UIOptions.selectedShapeActions === false && hasCanvasSelection) &&
+      showSelectedShapeActions(appState, elements);
 
     const shouldShowStats =
       defaultUIEnabled &&
@@ -427,7 +430,7 @@ const LayerUI = ({
   };
 
   const renderSidebars = () => {
-    if (!defaultUIEnabled) {
+    if (!defaultUIEnabled || UIOptions.defaultSidebar === false) {
       return null;
     }
 
@@ -460,25 +463,27 @@ const LayerUI = ({
       {defaultUIEnabled && (
         <>
           <DefaultMainMenu UIOptions={UIOptions} />
-          <DefaultSidebar.Trigger
-            __fallback
-            icon={sidebarRightIcon}
-            title={capitalizeString(t("toolBar.library"))}
-            onToggle={(open) => {
-              if (open) {
-                trackEvent(
-                  "sidebar",
-                  `${DEFAULT_SIDEBAR.name} (open)`,
-                  `button (${
-                    editorInterface.formFactor === "phone"
-                      ? "mobile"
-                      : "desktop"
-                  })`,
-                );
-              }
-            }}
-            tab={DEFAULT_SIDEBAR.defaultTab}
-          />
+          {UIOptions.defaultSidebar !== false && (
+            <DefaultSidebar.Trigger
+              __fallback
+              icon={sidebarRightIcon}
+              title={capitalizeString(t("toolBar.library"))}
+              onToggle={(open) => {
+                if (open) {
+                  trackEvent(
+                    "sidebar",
+                    `${DEFAULT_SIDEBAR.name} (open)`,
+                    `button (${
+                      editorInterface.formFactor === "phone"
+                        ? "mobile"
+                        : "desktop"
+                    })`,
+                  );
+                }
+              }}
+              tab={DEFAULT_SIDEBAR.defaultTab}
+            />
+          )}
         </>
       )}
       {/* Keep supporting surfaces available to host-supplied UI, including

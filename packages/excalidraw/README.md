@@ -7,9 +7,9 @@
 Install the package together with its React peer dependencies.
 
 ```bash
-npm install react react-dom @excalidraw/excalidraw
+pnpm add react react-dom @excalidraw/excalidraw
 # or
-yarn add react react-dom @excalidraw/excalidraw
+pnpm add react react-dom @excalidraw/excalidraw
 ```
 
 > **Note**: If you want to try unreleased changes, use `@excalidraw/excalidraw@next`.
@@ -77,9 +77,6 @@ export default function Page() {
 
 See the local examples for complete setups:
 
-- [examples/with-nextjs](https://github.com/excalidraw/excalidraw/tree/master/examples/with-nextjs)
-- [examples/with-script-in-browser](https://github.com/excalidraw/excalidraw/tree/master/examples/with-script-in-browser)
-
 ## LLM / agent tips
 
 If an LLM or coding agent is setting up Excalidraw, these shortcuts usually save more time than re-prompting:
@@ -89,7 +86,6 @@ If an LLM or coding agent is setting up Excalidraw, these shortcuts usually save
 - In Next.js or other SSR frameworks, assume client-only rendering first. Use `"use client"` and `dynamic(..., { ssr: false })` before debugging hydration or `window is not defined` errors.
 - If imports or entrypoints are unclear, inspect `node_modules/@excalidraw/excalidraw/package.json`. The installed package exports are the source of truth.
 - Do not set `window.EXCALIDRAW_ASSET_PATH` unless you are intentionally self-hosting fonts/assets.
-- When docs and generated code drift, copy the nearest working example from this repo, especially `examples/with-nextjs` or `examples/with-script-in-browser`.
 
 ## Migrating to `@excalidraw/excalidraw@0.18.x`
 
@@ -126,8 +122,6 @@ For self-hosting, copy the contents of `node_modules/@excalidraw/excalidraw/dist
 ```
 
 ## Demo
-
-Try the [CodeSandbox example](https://codesandbox.io/p/sandbox/github/excalidraw/excalidraw/tree/master/examples/with-script-in-browser).
 
 ## Integration
 

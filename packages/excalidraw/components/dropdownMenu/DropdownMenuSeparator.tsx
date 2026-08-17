@@ -1,14 +1,7 @@
 import React from "react";
 
 const MenuSeparator = () => (
-  <div
-    style={{
-      height: "1px",
-      backgroundColor: "var(--default-border-color)",
-      margin: "6px 0",
-      flex: "0 0 auto",
-    }}
-  />
+  <div className="-mx-1 my-1 h-px shrink-0 bg-border" />
 );
 
 export default MenuSeparator;

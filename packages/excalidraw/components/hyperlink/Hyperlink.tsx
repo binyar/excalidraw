@@ -250,7 +250,7 @@ export const Hyperlink = ({
 
   return (
     <div
-      className="excalidraw-hyperlinkContainer"
+      className="powdoo-hyperlinkContainer"
       style={{
         top: `${y}px`,
         left: `${x}px`,
@@ -260,7 +260,7 @@ export const Hyperlink = ({
     >
       {isEditing ? (
         <input
-          className={clsx("excalidraw-hyperlinkContainer-input")}
+          className={clsx("powdoo-hyperlinkContainer-input")}
           placeholder={t("labels.link.hint")}
           ref={inputRef}
           value={inputVal}
@@ -281,7 +281,7 @@ export const Hyperlink = ({
       ) : element.link ? (
         <a
           href={normalizeLink(element.link || "")}
-          className="excalidraw-hyperlinkContainer-link"
+          className="powdoo-hyperlinkContainer-link"
           target={isLocalLink(element.link) ? "_self" : "_blank"}
           onClick={(event) => {
             if (element.link && onLinkOpen) {
@@ -306,11 +306,11 @@ export const Hyperlink = ({
           {element.link}
         </a>
       ) : (
-        <div className="excalidraw-hyperlinkContainer-link">
+        <div className="powdoo-hyperlinkContainer-link">
           {t("labels.link.empty")}
         </div>
       )}
-      <div className="excalidraw-hyperlinkContainer__buttons">
+      <div className="powdoo-hyperlinkContainer__buttons">
         {!isEditing && (
           <IconButton
             type="button"
@@ -318,7 +318,7 @@ export const Hyperlink = ({
             aria-label={t("buttons.edit")}
             label={t("buttons.edit")}
             onClick={onEdit}
-            className="excalidraw-hyperlinkContainer--edit"
+            className="powdoo-hyperlinkContainer--edit"
             icon={FreedrawIcon}
           />
         )}
@@ -344,7 +344,7 @@ export const Hyperlink = ({
             aria-label={t("buttons.remove")}
             label={t("buttons.remove")}
             onClick={handleRemove}
-            className="excalidraw-hyperlinkContainer--remove"
+            className="powdoo-hyperlinkContainer--remove"
             icon={TrashIcon}
           />
         )}
@@ -407,7 +407,7 @@ const renderTooltip = (
 
   const tooltipDiv = getTooltipDiv();
 
-  tooltipDiv.classList.add("excalidraw-tooltip--visible");
+  tooltipDiv.classList.add("powdoo-tooltip--visible");
   tooltipDiv.style.maxWidth = "20rem";
   tooltipDiv.textContent = isElementLink(element.link)
     ? t("labels.link.goToElement")
@@ -446,7 +446,7 @@ export const hideHyperlinkToolip = () => {
   }
   if (IS_HYPERLINK_TOOLTIP_VISIBLE) {
     IS_HYPERLINK_TOOLTIP_VISIBLE = false;
-    getTooltipDiv().classList.remove("excalidraw-tooltip--visible");
+    getTooltipDiv().classList.remove("powdoo-tooltip--visible");
   }
 };
 

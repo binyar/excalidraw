@@ -431,7 +431,7 @@ export const textWysiwyg = ({
   editable.dataset.type = "wysiwyg";
   // prevent line wrapping on Safari
   editable.wrap = "off";
-  editable.classList.add("excalidraw-wysiwyg");
+  editable.classList.add("powdoo-wysiwyg");
 
   let whiteSpace = "pre";
   let wordBreak = "normal";
@@ -1016,7 +1016,7 @@ export const textWysiwyg = ({
   });
   window.addEventListener("beforeunload", handleSubmit);
   excalidrawContainer
-    ?.querySelector(".excalidraw-textEditorContainer")!
+    ?.querySelector(".powdoo-textEditorContainer")!
     .appendChild(editable);
 
   return handleSubmit;

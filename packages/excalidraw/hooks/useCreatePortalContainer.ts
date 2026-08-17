@@ -19,9 +19,9 @@ export const useCreatePortalContainer = (opts?: {
   useLayoutEffect(() => {
     if (div) {
       div.className = "";
-      div.classList.add("excalidraw", ...(opts?.className?.split(/\s+/) || []));
+      div.classList.add("powdoo", ...(opts?.className?.split(/\s+/) || []));
       div.classList.toggle(
-        "excalidraw--mobile",
+        "powdoo--mobile",
         editorInterface.formFactor === "phone",
       );
       div.classList.toggle("theme--dark", theme === THEME.DARK);

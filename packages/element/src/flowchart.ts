@@ -248,7 +248,7 @@ const cloneFlowchartNode = (
 
   invariant(
     isFlowchartNodeElement(node),
-    "not an ExcalidrawFlowchartNodeElement",
+    "not a Powdoo flowchart node element",
   );
 
   return node;

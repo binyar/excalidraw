@@ -8,7 +8,6 @@ import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import { useStable } from "../../hooks/useStable";
 import { useEditorInterface } from "../App";
-import { Island } from "../Island";
 import Stack from "../Stack";
 
 import { DropdownMenuContentPropsContext } from "./common";
@@ -78,9 +77,13 @@ const MenuContent = ({
     };
   }, [callbacksRef, open]);
 
-  const classNames = clsx(`dropdown-menu ${className}`, {
-    "dropdown-menu--mobile": editorInterface.formFactor === "phone",
-  }).trim();
+  const classNames = clsx(
+    "dropdown-menu z-50 max-w-80 overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
+    className,
+    {
+      "dropdown-menu--mobile": editorInterface.formFactor === "phone",
+    },
+  ).trim();
 
   return (
     <DropdownMenuContentPropsContext.Provider value={{ onSelect }}>
@@ -98,9 +101,9 @@ const MenuContent = ({
         {editorInterface.formFactor === "phone" ? (
           <Stack.Col className="dropdown-menu-container">{children}</Stack.Col>
         ) : (
-          <Island className="dropdown-menu-container" padding={2}>
+          <div className="dropdown-menu-container flex max-h-[calc(100svh-4rem)] flex-col gap-px overflow-y-auto bg-popover p-1">
             {children}
-          </Island>
+          </div>
         )}
       </DropdownMenuPrimitive.Content>
     </DropdownMenuContentPropsContext.Provider>

@@ -1,0 +1,15 @@
+.powdoo {
+  .editor-control-icon {
+    display: block;
+    flex: 0 0 auto;
+    width: 1em;
+    height: 1em;
+    overflow: visible;
+    color: currentColor;
+  }
+
+  button:disabled .editor-control-icon,
+  [aria-disabled="true"] .editor-control-icon {
+    opacity: 0.48;
+  }
+}

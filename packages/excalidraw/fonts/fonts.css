@@ -1,6 +1,6 @@
 /* Only UI fonts here, which are needed before the editor initializes. */
-/* These cannot be dynamically prepended with `EXCALIDRAW_ASSET_PATH`. */
-/* WARN: The following content is replaced during excalidraw-app build  */
+/* Font URLs must remain relative because the asset-path runtime cannot prefix them. */
+/* WARN: The following content is replaced during the app build. */
 
 @font-face {
   font-family: "Assistant";

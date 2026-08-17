@@ -131,8 +131,8 @@ describe("baseline (interactive & ui enabled by default)", () => {
   it("renders UI chrome", () => {
     expect(queryContainer(".layer-ui__wrapper")).not.toBe(null);
     expect(queryContainer(".App-toolbar")).not.toBe(null);
-    expect(queryContainer(".excalidraw--non-interactive")).toBe(null);
-    expect(queryContainer(".excalidraw--ui-hidden")).toBe(null);
+    expect(queryContainer(".powdoo--non-interactive")).toBe(null);
+    expect(queryContainer(".powdoo--ui-hidden")).toBe(null);
   });
 });
 
@@ -170,10 +170,10 @@ describe("interaction={false}", () => {
     expect(h.state.viewModeEnabled).toBe(true);
   });
 
-  it("container gets the excalidraw--non-interactive class", () => {
-    const container = queryContainer(".excalidraw-container")!;
+  it("container gets the powdoo--non-interactive class", () => {
+    const container = queryContainer(".powdoo-container")!;
     expect(container).not.toBe(null);
-    expect(container.classList.contains("excalidraw--non-interactive")).toBe(
+    expect(container.classList.contains("powdoo--non-interactive")).toBe(
       true,
     );
   });
@@ -342,8 +342,8 @@ describe("browser zoom prevention (non-interactive)", () => {
     );
 
     expect(
-      queryContainer(".excalidraw-container")!.classList.contains(
-        "excalidraw--allow-browser-zoom",
+      queryContainer(".powdoo-container")!.classList.contains(
+        "powdoo--allow-browser-zoom",
       ),
     ).toBe(true);
 
@@ -491,7 +491,7 @@ describe("toggling `interaction` at runtime", () => {
 
     await waitFor(() => {
       expect(h.state.editingTextElement).toBe(null);
-      expect(queryContainer(".excalidraw-wysiwyg")).toBe(null);
+      expect(queryContainer(".powdoo-wysiwyg")).toBe(null);
     });
     expect(h.elements.find((element) => element.id === text.id)).toMatchObject({
       originalText: "committed before disable",
@@ -582,7 +582,7 @@ describe("toggling `interaction` at runtime", () => {
 
     Keyboard.keyPress("i");
     await waitFor(() => {
-      expect(queryContainer(".excalidraw-eye-dropper-preview")).not.toBe(null);
+      expect(queryContainer(".powdoo-eye-dropper-preview")).not.toBe(null);
     });
 
     GlobalTestState.renderResult.rerender(
@@ -593,7 +593,7 @@ describe("toggling `interaction` at runtime", () => {
       />,
     );
     await waitFor(() => {
-      expect(queryContainer(".excalidraw-eye-dropper-preview")).toBe(null);
+      expect(queryContainer(".powdoo-eye-dropper-preview")).toBe(null);
     });
   });
 });
@@ -629,7 +629,7 @@ describe("ui={false}", () => {
     expect(queryContainer("canvas.static")).not.toBe(null);
     expect(queryContainer("canvas.interactive")).not.toBe(null);
     expect(queryContainer(".SVGLayer")).not.toBe(null);
-    expect(queryContainer(".excalidraw-textEditorContainer")).not.toBe(null);
+    expect(queryContainer(".powdoo-textEditorContainer")).not.toBe(null);
 
     // The placement scaffold remains for host UI, but default controls don't.
     expect(queryContainer(".App-toolbar")).toBe(null);
@@ -644,12 +644,12 @@ describe("ui={false}", () => {
     expect(queryContainer("[data-testid='host-child']")).not.toBe(null);
   });
 
-  it("container gets the excalidraw--ui-hidden class", () => {
-    const container = queryContainer(".excalidraw-container")!;
+  it("container gets the powdoo--ui-hidden class", () => {
+    const container = queryContainer(".powdoo-container")!;
     expect(container).not.toBe(null);
-    expect(container.classList.contains("excalidraw--ui-hidden")).toBe(true);
+    expect(container.classList.contains("powdoo--ui-hidden")).toBe(true);
     // ui-only mode must not force view mode / non-interactivity
-    expect(container.classList.contains("excalidraw--non-interactive")).toBe(
+    expect(container.classList.contains("powdoo--non-interactive")).toBe(
       false,
     );
     expect(h.state.viewModeEnabled).toBe(false);
@@ -711,8 +711,8 @@ describe("ui={{ enabled: ... }}", () => {
     expect(queryContainer(".default-sidebar-trigger")).toBe(null);
     expect(queryContainer(".help-icon")).toBe(null);
     expect(
-      queryContainer(".excalidraw-container")!.classList.contains(
-        "excalidraw--ui-hidden",
+      queryContainer(".powdoo-container")!.classList.contains(
+        "powdoo--ui-hidden",
       ),
     ).toBe(true);
   });
@@ -845,11 +845,11 @@ describe("interaction={false} ui={false}", () => {
     expect(queryContainer(".App-toolbar")).toBe(null);
     expect(queryContainer(".dropdown-menu-button")).toBe(null);
 
-    const container = queryContainer(".excalidraw-container")!;
-    expect(container.classList.contains("excalidraw--non-interactive")).toBe(
+    const container = queryContainer(".powdoo-container")!;
+    expect(container.classList.contains("powdoo--non-interactive")).toBe(
       true,
     );
-    expect(container.classList.contains("excalidraw--ui-hidden")).toBe(true);
+    expect(container.classList.contains("powdoo--ui-hidden")).toBe(true);
 
     // wheel / keyboard / pointer / contextmenu are all no-ops
     const { scrollX, scrollY } = h.state;
@@ -929,7 +929,7 @@ describe("interaction={{ enabled: { links } }}", () => {
 
     expect(h.app.isLinksEnabled()).toBe(true);
     expect(h.state.viewModeEnabled).toBe(true);
-    expect(queryContainer(".excalidraw--non-interactive")).not.toBe(null);
+    expect(queryContainer(".powdoo--non-interactive")).not.toBe(null);
 
     const zoom = h.state.zoom.value;
     wheelZoom();
@@ -998,7 +998,7 @@ describe("interaction={{ enabled: { links } }}", () => {
 
     expect(h.app.isLinksEnabled()).toBe(false);
     expect(h.state.viewModeEnabled).toBe(true);
-    expect(queryContainer(".excalidraw--non-interactive")).not.toBe(null);
+    expect(queryContainer(".powdoo--non-interactive")).not.toBe(null);
 
     clickElementCenter();
     expect(onLinkOpenSpy).not.toHaveBeenCalled();
@@ -1087,7 +1087,7 @@ describe("interaction={{ enabled: { navigation } }}", () => {
   it("wheel pans & ctrl+wheel zooms the canvas", () => {
     expect(h.app.isNavigationEnabled()).toBe(true);
     expect(h.state.viewModeEnabled).toBe(true);
-    expect(queryContainer(".excalidraw--navigation")).not.toBe(null);
+    expect(queryContainer(".powdoo--navigation")).not.toBe(null);
 
     const { scrollX, scrollY } = h.state;
     wheelPan();
@@ -1260,7 +1260,7 @@ describe("interaction={{ enabled: { embeds / interactiveContent } }}", () => {
 
     expect(h.app.isEmbedsEnabled()).toBe(true);
     expect(h.app.isLinksEnabled()).toBe(false);
-    expect(queryContainer(".excalidraw--embeds")).not.toBe(null);
+    expect(queryContainer(".powdoo--embeds")).not.toBe(null);
 
     mouse.reset();
     mouse.moveTo(80, 65);
@@ -1287,7 +1287,7 @@ describe("interaction={{ enabled: { embeds / interactiveContent } }}", () => {
     addEmbeddable();
 
     expect(h.app.isEmbedsEnabled()).toBe(false);
-    expect(queryContainer(".excalidraw--embeds")).toBe(null);
+    expect(queryContainer(".powdoo--embeds")).toBe(null);
 
     mouse.reset();
     mouse.moveTo(80, 65);
@@ -1530,7 +1530,7 @@ describe("interaction={{ enabled: { tools } }}", () => {
     // exception removed (e.g. presenter → viewer) → neutral default
     rerenderWithInteraction(false);
     expect(h.state.activeTool.type).toBe("selection");
-    expect(queryContainer(".excalidraw--tools")).toBe(null);
+    expect(queryContainer(".powdoo--tools")).toBe(null);
 
     // re-enabling the exception doesn't restore the tool — tool selection
     // stays host-driven
@@ -1556,19 +1556,19 @@ describe("interaction={{ enabled: { tools } }}", () => {
     expect(onPointerUpdateSpy).not.toHaveBeenCalled();
   });
 
-  it("container gets the excalidraw--tools class only while the active tool is enabled", async () => {
+  it("container gets the powdoo--tools class only while the active tool is enabled", async () => {
     await renderWithInteraction({ enabled: { tools: { laser: true } } });
 
     // selection active — not in the enabled set
-    expect(queryContainer(".excalidraw--tools")).toBe(null);
+    expect(queryContainer(".powdoo--tools")).toBe(null);
 
     act(() => {
       h.app.setActiveTool({ type: "laser" });
     });
-    expect(queryContainer(".excalidraw--tools")).not.toBe(null);
+    expect(queryContainer(".powdoo--tools")).not.toBe(null);
 
     rerenderWithInteraction(false);
-    expect(queryContainer(".excalidraw--tools")).toBe(null);
+    expect(queryContainer(".powdoo--tools")).toBe(null);
   });
 
   it("editor is otherwise inert (keyboard, context menu, wheel, eraser button)", async () => {

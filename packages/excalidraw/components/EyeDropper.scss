@@ -1,6 +1,6 @@
-.excalidraw {
-  .excalidraw-eye-dropper-container,
-  .excalidraw-eye-dropper-backdrop {
+.powdoo {
+  .powdoo-eye-dropper-container,
+  .powdoo-eye-dropper-backdrop {
     position: absolute;
     top: 0;
     left: 0;
@@ -10,15 +10,15 @@
     touch-action: none;
   }
 
-  .excalidraw-eye-dropper-container {
+  .powdoo-eye-dropper-container {
     pointer-events: none;
   }
 
-  .excalidraw-eye-dropper-backdrop {
+  .powdoo-eye-dropper-backdrop {
     pointer-events: all;
   }
 
-  .excalidraw-eye-dropper-preview {
+  .powdoo-eye-dropper-preview {
     pointer-events: none;
     width: 3rem;
     height: 3rem;
@@ -29,7 +29,7 @@
     filter: var(--theme-filter);
   }
 
-  .excalidraw-eye-dropper-trigger {
+  .powdoo-eye-dropper-trigger {
     width: 1.25rem;
     height: 1.25rem;
     cursor: pointer;

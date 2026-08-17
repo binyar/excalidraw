@@ -30,13 +30,13 @@
   --sat: env(safe-area-inset-top);
 }
 
-body.excalidraw-cursor-resize,
-body.excalidraw-cursor-resize a:hover,
-body.excalidraw-cursor-resize * {
+body.powdoo-cursor-resize,
+body.powdoo-cursor-resize a:hover,
+body.powdoo-cursor-resize * {
   cursor: ew-resize;
 }
 
-.excalidraw {
+.powdoo {
   --ui-font: Assistant, system-ui, BlinkMacSystemFont, -apple-system, Segoe UI,
     Roboto, Helvetica, Arial, sans-serif;
   font-family: var(--ui-font);
@@ -78,7 +78,7 @@ body.excalidraw-cursor-resize * {
   //    component (e.g. if you select text in a sidebar)
   user-select: none;
 
-  .excalidraw-link,
+  .powdoo-link,
   a {
     font-weight: 500;
     text-decoration: none;
@@ -114,7 +114,7 @@ body.excalidraw-cursor-resize * {
     }
 
     // Remove the main canvas from document flow to avoid resizeObserver
-    // feedback loop (see https://github.com/excalidraw/excalidraw/pull/3379)
+    // Avoid triggering a resize feedback loop when the editor height changes.
   }
 
   &__canvas-wrapper,
@@ -322,8 +322,8 @@ body.excalidraw-cursor-resize * {
     }
   }
 
-  .excalidraw-ui-top-left,
-  .excalidraw-ui-top-right {
+  .powdoo-ui-top-left,
+  .powdoo-ui-top-right {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -626,14 +626,14 @@ body.excalidraw-cursor-resize * {
     pointer-events: none !important;
   }
 
-  &.excalidraw--view-mode {
+  &.powdoo--view-mode {
     .App-menu {
       display: flex;
       justify-content: space-between;
     }
   }
 
-  &.excalidraw--non-interactive {
+  &.powdoo--non-interactive {
     user-select: none;
 
     canvas {
@@ -646,19 +646,19 @@ body.excalidraw-cursor-resize * {
       cursor: default;
     }
 
-    &.excalidraw--allow-browser-zoom canvas {
+    &.powdoo--allow-browser-zoom canvas {
       touch-action: auto;
     }
 
     // with navigation allowed, touch input drives the canvas pan/zoom again
-    &.excalidraw--navigation canvas {
+    &.powdoo--navigation canvas {
       touch-action: none;
     }
 
     // with the active tool allowed (`interaction.enabled.tools`), touch
     // input drives the tool again — e.g. laser strokes must not scroll the
     // page
-    &.excalidraw--tools canvas {
+    &.powdoo--tools canvas {
       touch-action: none;
     }
 
@@ -666,7 +666,7 @@ body.excalidraw-cursor-resize * {
     // (also covers custom `renderEmbeddable` content) — unless embeds are
     // an allowed interaction, in which case the inline (activation-driven)
     // pointer-events apply, same as in view mode
-    &:not(.excalidraw--embeds) .excalidraw__embeddable-container__inner {
+    &:not(.powdoo--embeds) .powdoo__embeddable-container__inner {
       pointer-events: none !important;
     }
   }
@@ -678,7 +678,7 @@ body.excalidraw-cursor-resize * {
   }
 
   input[type="text"],
-  textarea:not(.excalidraw-wysiwyg) {
+  textarea:not(.powdoo-wysiwyg) {
     color: var(--text-primary-color);
     border: 1.5px solid var(--input-border-color);
     padding: 0.75rem;
@@ -789,7 +789,7 @@ body.excalidraw-cursor-resize * {
     --button-bg: var(--color-surface-mid);
   }
 
-  @at-root .excalidraw.theme--dark#{&} {
+  @at-root .powdoo.theme--dark#{&} {
     .App-mobile-menu,
     .App-menu__left {
       --button-hover-bg: #363541;
@@ -803,15 +803,15 @@ body.excalidraw-cursor-resize * {
     }
   }
 
-  .excalidraw__paragraph {
+  .powdoo__paragraph {
     margin: 1rem 0;
   }
 
   .Modal__content {
-    .excalidraw__paragraph:first-child {
+    .powdoo__paragraph:first-child {
       margin-top: 0;
     }
-    .excalidraw__paragraph + .excalidraw__paragraph {
+    .powdoo__paragraph + .powdoo__paragraph {
       margin-top: 0rem;
     }
   }
@@ -822,7 +822,7 @@ body.excalidraw-cursor-resize * {
   }
 }
 
-.ErrorSplash.excalidraw {
+.ErrorSplash.powdoo {
   min-height: 100vh;
   padding: 20px 0;
   overflow: auto;
@@ -875,8 +875,8 @@ body.excalidraw-cursor-resize * {
   }
 }
 
-.excalidraw__embeddable-container {
-  .excalidraw__embeddable-container__inner {
+.powdoo__embeddable-container {
+  .powdoo__embeddable-container__inner {
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -884,12 +884,12 @@ body.excalidraw-cursor-resize * {
     border-radius: var(--embeddable-radius);
   }
 
-  .excalidraw__embeddable__outer {
+  .powdoo__embeddable__outer {
     width: 100%;
     height: 100%;
   }
 
-  .excalidraw__embeddable__content {
+  .powdoo__embeddable__content {
     width: 100%;
     height: 100%;
     transform-origin: top left;
@@ -900,7 +900,7 @@ body.excalidraw-cursor-resize * {
     }
   }
 
-  .excalidraw__embeddable-hint {
+  .powdoo__embeddable-hint {
     position: absolute;
     z-index: 1;
     background: rgba(0, 0, 0, 0.5);

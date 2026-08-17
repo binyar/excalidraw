@@ -485,7 +485,11 @@ export const getCornerRadius = (x: number, element: ExcalidrawElement) => {
     element.roundness?.type === ROUNDNESS.PROPORTIONAL_RADIUS ||
     element.roundness?.type === ROUNDNESS.LEGACY
   ) {
-    return x * DEFAULT_PROPORTIONAL_RADIUS;
+    const progress =
+      element.roundness.type === ROUNDNESS.PROPORTIONAL_RADIUS
+        ? Math.max(0, Math.min(1, element.roundness.value ?? 1))
+        : 1;
+    return x * DEFAULT_PROPORTIONAL_RADIUS * progress;
   }
 
   if (element.roundness?.type === ROUNDNESS.ADAPTIVE_RADIUS) {

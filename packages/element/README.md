@@ -3,13 +3,13 @@
 ## Install
 
 ```bash
-npm install @excalidraw/element
+pnpm add @excalidraw/element
 ```
 
 If you prefer Yarn over npm, use this command to install the Excalidraw utils package:
 
 ```bash
-yarn add @excalidraw/element
+pnpm add @excalidraw/element
 ```
 
 With PNPM, similarly install the package with this command:

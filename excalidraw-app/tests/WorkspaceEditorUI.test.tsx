@@ -12,6 +12,7 @@ import { AppWelcomeScreen } from "../components/AppWelcomeScreen";
 describe("workspace editor UI", () => {
   it("keeps core drawing actions and removes local/cloud shortcuts", async () => {
     const onSave = vi.fn();
+    const onBackToWorkspace = vi.fn();
     const { container } = await render(
       <Excalidraw
         UIOptions={{
@@ -19,10 +20,15 @@ describe("workspace editor UI", () => {
             loadScene: false,
             saveToActiveFile: false,
             export: false,
+            toggleTheme: false,
+          },
+          tools: {
+            image: true,
+            extraTools: false,
           },
         }}
       >
-        <AppMainMenu onSave={onSave} theme="light" />
+        <AppMainMenu onSave={onSave} onBackToWorkspace={onBackToWorkspace} />
         <AppWelcomeScreen />
       </Excalidraw>,
     );
@@ -30,17 +36,25 @@ describe("workspace editor UI", () => {
     fireEvent.click(queryByTestId(container, "main-menu-trigger")!);
 
     expect(queryByTestId(container, "workspace-save-button")).not.toBeNull();
+    expect(queryByTestId(container, "back-to-workspace-button")).not.toBeNull();
     expect(queryByTestId(container, "image-export-button")).not.toBeNull();
-    expect(queryByTestId(container, "search-menu-button")).not.toBeNull();
+    expect(queryByTestId(container, "search-menu-button")).toBeNull();
     expect(queryByTestId(container, "clear-canvas-button")).not.toBeNull();
     expect(queryByTestId(container, "load-button")).toBeNull();
     expect(queryByTestId(container, "save-button")).toBeNull();
     expect(queryByTestId(container, "json-export-button")).toBeNull();
     expect(queryByTestId(container, "help-menu-item")).toBeNull();
     expect(queryByTestId(container, "command-palette-button")).toBeNull();
+    expect(
+      container.querySelector(".App-toolbar__extra-tools-trigger"),
+    ).toBeNull();
+    expect(container.querySelectorAll(".App-toolbar__divider")).toHaveLength(1);
 
     fireEvent.click(queryByTestId(container, "workspace-save-button")!);
     expect(onSave).toHaveBeenCalledTimes(1);
+    fireEvent.click(queryByTestId(container, "main-menu-trigger")!);
+    fireEvent.click(queryByTestId(container, "back-to-workspace-button")!);
+    expect(onBackToWorkspace).toHaveBeenCalledTimes(1);
   });
 
   it("shows only the workspace drawing guidance on the welcome screen", async () => {

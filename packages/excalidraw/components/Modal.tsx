@@ -6,8 +6,6 @@ import { KEYS } from "@excalidraw/common";
 
 import { useCreatePortalContainer } from "../hooks/useCreatePortalContainer";
 
-import "./Modal.scss";
-
 import type { AppState } from "../types";
 
 export const Modal: React.FC<{
@@ -21,11 +19,11 @@ export const Modal: React.FC<{
 }> = (props) => {
   const { closeOnClickOutside = true } = props;
   const modalRoot = useCreatePortalContainer({
-    className: "excalidraw-modal-container",
+    className: "powdoo-modal-container absolute z-[var(--zIndex-modal)]",
   });
 
   const animationsDisabledRef = useRef(
-    document.body.classList.contains("excalidraw-animations-disabled"),
+    document.body.classList.contains("powdoo-animations-disabled"),
   );
 
   if (!modalRoot) {
@@ -42,21 +40,25 @@ export const Modal: React.FC<{
 
   return createPortal(
     <div
-      className={clsx("Modal", props.className, {
-        "animations-disabled": animationsDisabledRef.current,
-      })}
+      className={clsx(
+        "Modal absolute inset-0 flex flex-col items-center justify-center overflow-auto p-10",
+        props.className,
+        {
+          "animations-disabled": animationsDisabledRef.current,
+        },
+      )}
       role="dialog"
       aria-modal="true"
       onKeyDown={handleKeydown}
       aria-labelledby={props.labelledBy}
     >
       <div
-        className="Modal__background"
+        className="Modal__background fixed inset-0 z-[1] bg-black/50 backdrop-blur-[1px]"
         onClick={closeOnClickOutside ? props.onCloseRequest : undefined}
       />
       <div
-        className="Modal__content"
-        style={{ "--max-width": `${props.maxWidth}px` }}
+        className="Modal__content relative z-[2] max-h-full w-full overflow-y-auto rounded-lg border bg-background shadow-lg focus:outline-none"
+        style={{ maxWidth: props.maxWidth }}
         tabIndex={0}
       >
         {props.children}

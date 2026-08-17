@@ -12,12 +12,9 @@ import {
   useEditorInterface,
   useExcalidrawSetAppState,
 } from "./App";
-import { Island } from "./Island";
 import { isLibraryMenuOpenAtom } from "./LibraryMenu";
 import { Modal } from "./Modal";
 import { CloseIcon } from "./icons";
-
-import "./Dialog.scss";
 
 export type DialogSize = number | "small" | "regular" | "wide" | undefined;
 
@@ -106,22 +103,26 @@ export const Dialog = (props: DialogProps) => {
   return (
     <Modal
       className={clsx("Dialog", props.className, {
-        "Dialog--fullscreen": isFullscreen,
+        "Dialog--fullscreen p-0 [&_.Modal__content]:absolute [&_.Modal__content]:inset-0 [&_.Modal__content]:max-w-none [&_.Modal__content]:rounded-none [&_.Modal__content]:border-0":
+          isFullscreen,
       })}
       labelledBy="dialog-title"
       maxWidth={getDialogSize(props.size)}
       onCloseRequest={onClose}
       closeOnClickOutside={props.closeOnClickOutside}
     >
-      <Island ref={setIslandNode}>
+      <div ref={setIslandNode} className="p-6">
         {props.title && (
-          <h2 id={`${id}-dialog-title`} className="Dialog__title">
+          <h2
+            id={`${id}-dialog-title`}
+            className="Dialog__title mb-6 border-b pb-3 text-left text-lg font-semibold tracking-tight"
+          >
             <span className="Dialog__titleContent">{props.title}</span>
           </h2>
         )}
         {isFullscreen && (
           <button
-            className="Dialog__close"
+            className="Dialog__close absolute right-4 top-4 inline-flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             onClick={onClose}
             title={t("buttons.close")}
             aria-label={t("buttons.close")}
@@ -131,7 +132,7 @@ export const Dialog = (props: DialogProps) => {
           </button>
         )}
         <div className="Dialog__content">{props.children}</div>
-      </Island>
+      </div>
     </Modal>
   );
 };

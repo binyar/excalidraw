@@ -265,7 +265,7 @@ export const ToggleTheme = (
           }
 
           console.warn(
-            "MainMenu.DefaultItems.ToggleTheme: `<Excalidraw/> props.onThemeChange` must be defined to use system theme selection.",
+            "MainMenu.DefaultItems.ToggleTheme: Powdoo's `onThemeChange` prop must be defined to use system theme selection.",
           );
         }}
         choices={[
@@ -614,7 +614,7 @@ export const Preferences = ({
       <DropdownMenuSub.Trigger icon={settingsIcon}>
         {t("labels.preferences")}
       </DropdownMenuSub.Trigger>
-      <DropdownMenuSub.Content className="excalidraw-main-menu-preferences-submenu">
+      <DropdownMenuSub.Content className="powdoo-main-menu-preferences-submenu">
         {children || (
           <>
             <PreferencesBoxSelectionModeItem />

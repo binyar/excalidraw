@@ -38,7 +38,7 @@ describe("Test <App/>", () => {
     await render(<Excalidraw />);
     expect(
       queryByTestId(
-        document.querySelector(".excalidraw-modal-container")!,
+        document.querySelector(".powdoo-modal-container")!,
         "brave-measure-text-error",
       ),
     ).toMatchSnapshot();

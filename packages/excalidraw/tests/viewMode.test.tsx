@@ -107,7 +107,7 @@ describe("view mode", () => {
 
     await waitFor(() => {
       expect(h.state.editingTextElement).toBe(null);
-      expect(queryContainer(".excalidraw-wysiwyg")).toBe(null);
+      expect(queryContainer(".powdoo-wysiwyg")).toBe(null);
     });
     expect(h.elements.find((element) => element.id === text.id)).toMatchObject({
       originalText: "committed before view mode",

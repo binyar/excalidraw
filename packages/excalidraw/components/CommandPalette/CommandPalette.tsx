@@ -18,7 +18,6 @@ import {
   actionClearCanvas,
   actionLink,
   actionToggleSearchMenu,
-  actionToggleTheme,
 } from "../../actions";
 import {
   actionCopyElementLink,
@@ -419,7 +418,6 @@ function CommandPaletteInner({
       ];
 
       const additionalCommands: CommandPaletteItem[] = [
-        actionToCommand(actionToggleTheme, DEFAULT_CATEGORIES.app),
         {
           label: t("toolBar.library"),
           category: DEFAULT_CATEGORIES.app,
@@ -654,13 +652,13 @@ function CommandPaletteInner({
     if (uiAppState.openDialog?.name === "commandPalette") {
       event.stopPropagation();
       event.preventDefault();
-      document.body.classList.add("excalidraw-animations-disabled");
+      document.body.classList.add("powdoo-animations-disabled");
       closeCommandPalette(() => {
         command.perform({ actionManager, event });
         setLastUsed(command);
 
         requestAnimationFrame(() => {
-          document.body.classList.remove("excalidraw-animations-disabled");
+          document.body.classList.remove("powdoo-animations-disabled");
         });
       });
     }

@@ -36,6 +36,10 @@ import {
 } from "../components/hyperlink/helpers";
 
 import { bootstrapCanvas, getNormalizedCanvasDimensions } from "./helpers";
+import {
+  isRuntimeElementVisible,
+  projectRuntimeElementForRender,
+} from "./runtimeElementRenderHook";
 
 import type {
   StaticCanvasRenderConfig,
@@ -306,9 +310,13 @@ const _renderStaticScene = ({
 
   // Paint visible elements
   visibleElements
+    .filter((element) => isExporting || isRuntimeElementVisible(element))
     .filter((el) => !isIframeLikeElement(el))
     .forEach((element) => {
       try {
+        const renderedElement = isExporting
+          ? element
+          : projectRuntimeElementForRender(element);
         const frameId = element.frameId || appState.frameToHighlight?.id;
 
         if (
@@ -341,7 +349,7 @@ const _renderStaticScene = ({
             frameClip(frame, context, renderConfig, appState);
           }
           renderElement(
-            element,
+            renderedElement,
             elementsMap,
             allElementsMap,
             rc,
@@ -351,7 +359,7 @@ const _renderStaticScene = ({
           );
         } else {
           renderElement(
-            element,
+            renderedElement,
             elementsMap,
             allElementsMap,
             rc,
@@ -364,7 +372,9 @@ const _renderStaticScene = ({
         const boundTextElement = getBoundTextElement(element, elementsMap);
         if (boundTextElement) {
           renderElement(
-            boundTextElement,
+            isExporting
+              ? boundTextElement
+              : projectRuntimeElementForRender(boundTextElement),
             elementsMap,
             allElementsMap,
             rc,
@@ -377,7 +387,7 @@ const _renderStaticScene = ({
         context.restore();
 
         if (!isExporting && renderConfig.renderLinks !== false) {
-          renderLinkIcon(element, context, appState, elementsMap);
+          renderLinkIcon(renderedElement, context, appState, elementsMap);
         }
       } catch (error: any) {
         console.error(
@@ -393,12 +403,16 @@ const _renderStaticScene = ({
 
   // render embeddables on top
   visibleElements
+    .filter((element) => isExporting || isRuntimeElementVisible(element))
     .filter((el) => isIframeLikeElement(el))
     .forEach((element) => {
       try {
+        const renderedElement = isExporting
+          ? element
+          : projectRuntimeElementForRender(element);
         const render = () => {
           renderElement(
-            element,
+            renderedElement,
             elementsMap,
             allElementsMap,
             rc,
@@ -428,7 +442,7 @@ const _renderStaticScene = ({
             );
           }
           if (!isExporting && renderConfig.renderLinks !== false) {
-            renderLinkIcon(element, context, appState, elementsMap);
+            renderLinkIcon(renderedElement, context, appState, elementsMap);
           }
         };
         // - when exporting the whole canvas, we DO NOT apply clipping

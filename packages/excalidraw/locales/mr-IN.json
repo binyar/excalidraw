@@ -67,7 +67,7 @@
     "arrowtype_elbowed": "समकोणिय तीर",
     "fontSize": "अक्षर आकार",
     "fontFamily": "अक्षर समूह",
-    "addWatermark": "\"एक्सकेलीड्रॉ ने बनवलेलं\" जोडा",
+    "addWatermark": "\"Powdoo ने बनवलेलं\" जोडा",
     "handDrawn": "हातानी बनवलेलं",
     "normal": "सामान्य",
     "code": "सांकेतिक लिपि",
@@ -102,7 +102,7 @@
     "untitled": "अशीर्षकांकित",
     "name": "नाव",
     "yourName": "तुमचे नाव",
-    "madeWithExcalidraw": "एक्सकेलीड्रॉ ने बनवलेलं",
+    "madeWithExcalidraw": "Made with Powdoo",
     "group": "समूह निवड",
     "ungroup": "समूह निवड ला रद्द करा",
     "collaborators": "Sahayog",
@@ -132,7 +132,7 @@
     "toggleTheme": "उजेड़ाची किव्हा अंधाराची प्रणाली बदला",
     "theme": "संरचना पद्धति",
     "personalLib": "वैयक्तिक संग्रह",
-    "excalidrawLib": "एक्सकेलीड्रॉ संग्रह",
+    "excalidrawLib": "Powdoo library",
     "decreaseFontSize": "अक्षर आकार छोटा करा",
     "increaseFontSize": "अक्षर आकार मोठा करा",
     "unbindText": "लेखन संबंध संपवा",
@@ -263,7 +263,7 @@
     "cannotExportEmptyCanvas": "रिकामा पटल जतन करता येत नाही.",
     "couldNotCopyToClipboard": "पटल वर कॉपी नाही झाली.",
     "decryptFailed": "डीक्रिप्ट करता आले नाही.",
-    "uploadedSecurly": "अपलोड या टोकापासून त्या टोकापर्यंत कूटबद्धित करून सुरक्षित केले गेले आहे, हयाचा अर्थ असा की एक्सकेलीड्रॉ सर्व्हर आणि तृतीय पक्ष मजकूर वाचू शकत नाहीत.",
+    "uploadedSecurly": "अपलोड या टोकापासून त्या टोकापर्यंत कूटबद्धित करून सुरक्षित केले गेले आहे, हयाचा अर्थ असा की Powdoo सर्व्हर आणि तृतीय पक्ष मजकूर वाचू शकत नाहीत.",
     "loadSceneOverridePrompt": "बाह्य रेखाचित्र लोड केल्याने तुमची तुमचा विद्यमान मजकूर बदलेल. हे काम तुम्हाला चालू ठेवायचे आहे का?",
     "collabStopOverridePrompt": "सत्र थांबवल्याने तुमचे पूर्वीचे, स्थानिकरित्या संग्रहित रेखाचित्र अधिलिखित होईल. तुला खात्री आहे?\n\n(तुम्हाला तुमचे स्थानिक रेखाचित्र ठेवायचे असल्यास, त्याऐवजी फक्त ब्राउझर टॅब बंद करा.)",
     "errorAddingToLibrary": "संग्रहात तत्व जोडू शकलो नाही",
@@ -271,7 +271,7 @@
     "confirmAddLibrary": "हे तुमच्या संग्राहात {{numShapes}} आकार (एक किव्हा अनेक) जोडेल. तुला खात्री आहे?",
     "imageDoesNotContainScene": "या प्रतिमेमध्ये कोणताही दृश्य डेटा असल्याचे दिसत नाही. बाहेर जतन करताना तुम्ही दृश्य रुतवले होते का?",
     "cannotRestoreFromImage": "प्रतिमा फ़ाइल पासून दृश्य पुनः रचित नाही झाला",
-    "invalidSceneUrl": "दिलेल्या यू-आर-एल पासून दृश्य आणू शकलो नाही. तो एकतर बरोबार नाही आहे किंवा त्यात वैध एक्सकेलीड्रॉ जेसन डेटा नाही.",
+    "invalidSceneUrl": "दिलेल्या यू-आर-एल पासून दृश्य आणू शकलो नाही. तो एकतर बरोबार नाही आहे किंवा त्यात वैध Powdoo जेसन डेटा नाही.",
     "resetLibrary": "पटल स्वच्छ होणार, तुम्हाला खात्री आहे का?",
     "removeItemsFromsLibrary": "संग्रहातून {{count}} तत्व (एक किव्हा अनेक) काढू?",
     "invalidEncryptionKey": "कूटबद्धन कुंजी 22 अक्षरांची असणे आवश्यक आहे. थेट सहयोग अक्षम केले आहे.",
@@ -327,7 +327,7 @@
     "laser": "लेसर टॉर्च",
     "hand": "हात ( सरकवण्या चे उपकरण)",
     "extraTools": "आणिक यंत्रे",
-    "mermaidToExcalidraw": "मर्मेड पासून एक्सकाली मधे",
+    "mermaidToExcalidraw": "Mermaid to Powdoo",
     "convertElementType": ""
   },
   "element": {
@@ -405,7 +405,7 @@
     "desc_inProgressIntro": "थेट सहयोग सत्र चालू आहे.",
     "desc_shareLink": "तुम्ही ज्यांच्याशी सहयोग करू इच्छिता त्यांच्याशी ही दुवा सामायिक करा:",
     "desc_exitSession": "सत्र थांबवल्याने तुम्हीं खोली तून बाहेर याल, तरिही तुम्ही स्थानिक पातळीवर दृश्यासह काम करु शकाल. लक्षात ठेवा की याचा इतर लोकांवर परिणाम होणार नाही आणि ते त्यांच्या आवृत्तीवर सहयोग करित राहातील.",
-    "shareTitle": "एक्सकेलीड्रॉ वर थेट सहयोग सत्रात सामील व्हा"
+    "shareTitle": "Powdoo वर थेट सहयोग सत्रात सामील व्हा"
   },
   "errorDialog": {
     "title": "त्रुटि"
@@ -421,9 +421,9 @@
     "link_title": "सामायिके साठी दुवा",
     "link_details": "नुसतं वाचु देणारा दुवा चा स्वरूपे बाहेर ठेवा.",
     "link_button": "दुवा स्वरूपे बाहेर ठेवा",
-    "excalidrawplus_description": "दृश्य तुमच्या एक्सकेलीड्रॉ कार्यक्षेत्र मधे जतन करा.",
+    "excalidrawplus_description": "Save the scene to your Powdoo workspace.",
     "excalidrawplus_button": "बाहेर ठेवा",
-    "excalidrawplus_exportError": "एक्सकेलीड्रॉ मधे बाहेर ठेवता नाही येत..."
+    "excalidrawplus_exportError": "Could not export to Powdoo right now..."
   },
   "helpDialog": {
     "blog": "आमचा ब्लॉग वाचा",
@@ -579,7 +579,7 @@
       "center_heading": "",
       "center_heading_line2": "",
       "center_heading_line3": "",
-      "center_heading_plus": "त्याऐवजी तुम्हाला Excalidraw+ वर जायचे आहे का?",
+      "center_heading_plus": "त्याऐवजी तुम्हाला Powdoo+ वर जायचे आहे का?",
       "menuHint": "निर्यात, आवड़ी-निवडी, भाषा, ..."
     },
     "defaults": {

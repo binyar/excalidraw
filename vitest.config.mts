@@ -6,6 +6,10 @@ export default defineConfig({
   resolve: {
     alias: [
       {
+        find: /^@\/(.*?)/,
+        replacement: path.resolve(__dirname, "./excalidraw-app/$1"),
+      },
+      {
         find: /^@excalidraw\/common$/,
         replacement: path.resolve(__dirname, "./packages/common/src/index.ts"),
       },

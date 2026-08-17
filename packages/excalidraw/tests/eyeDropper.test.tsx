@@ -14,7 +14,7 @@ describe("eye dropper", () => {
     const preview = await waitFor(() => {
       const element =
         GlobalTestState.renderResult.container.querySelector<HTMLDivElement>(
-          ".excalidraw-eye-dropper-preview",
+          ".powdoo-eye-dropper-preview",
         );
       expect(element).not.toBeNull();
       return element!;
@@ -22,7 +22,7 @@ describe("eye dropper", () => {
 
     const eyeDropperContainer =
       GlobalTestState.renderResult.container.querySelector<HTMLDivElement>(
-        ".excalidraw-eye-dropper-backdrop",
+        ".powdoo-eye-dropper-backdrop",
       )!;
 
     eyeDropperContainer.getBoundingClientRect = () => ({

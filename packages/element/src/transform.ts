@@ -18,7 +18,7 @@ import {
 
 import type { MarkOptional } from "@excalidraw/common/utility-types";
 
-import { bindBindingElement } from "./binding";
+import { bindBindingElement, updateBoundPoint } from "./binding";
 import {
   newArrowElement,
   newElement,
@@ -69,7 +69,10 @@ export type ValidLinearElement = {
   type: "arrow" | "line";
   x: number;
   y: number;
+  /** Use Excalidraw's native orthogonal router for programmatic arrows. */
+  elbowed?: ExcalidrawArrowElement["elbowed"];
   label?: {
+    id?: ExcalidrawTextElement["id"];
     text: string;
     fontSize?: number;
     fontFamily?: FontFamilyValues;
@@ -167,6 +170,7 @@ export type ValidContainer =
       type: Exclude<ExcalidrawGenericElement["type"], "selection">;
       id?: ExcalidrawGenericElement["id"];
       label?: {
+        id?: ExcalidrawTextElement["id"];
         text: string;
         fontSize?: number;
         fontFamily?: FontFamilyValues;
@@ -220,7 +224,10 @@ const DEFAULT_DIMENSION = 100;
 
 const bindTextToContainer = (
   container: ExcalidrawElement,
-  textProps: { text: string } & MarkOptional<ElementConstructorOpts, "x" | "y">,
+  textProps: { id?: ExcalidrawTextElement["id"]; text: string } & MarkOptional<
+    ElementConstructorOpts,
+    "x" | "y"
+  >,
   scene: Scene,
 ) => {
   const textElement: ExcalidrawTextElement = newTextElement({
@@ -251,6 +258,7 @@ const bindLinearElementToElement = (
   end: ValidLinearElement["end"],
   elementStore: ElementStore,
   scene: Scene,
+  snapBindingsToOutline: boolean,
 ): {
   linearElement: ExcalidrawLinearElement;
   startBoundElement?: ExcalidrawElement;
@@ -339,6 +347,7 @@ const bindLinearElementToElement = (
         "start",
         scene,
       );
+      elementStore.add(startBoundElement);
     }
   }
   if (end) {
@@ -415,6 +424,44 @@ const bindLinearElementToElement = (
         "end",
         scene,
       );
+      elementStore.add(endBoundElement);
+    }
+  }
+
+  // Programmatic arrows describe relationships through start/end bindings.
+  // Once both bindings exist, resolve their actual endpoints with the same
+  // outline-intersection logic used by the interactive arrow editor. The
+  // skeleton's x/y/width/height are only an initial direction hint and must
+  // not leave the arrow running from shape center to shape center.
+  if (snapBindingsToOutline && (startBoundElement || endBoundElement)) {
+    const elementsMap = scene.getNonDeletedElementsMap();
+    const pointUpdates = new Map();
+    if (startBoundElement && linearElement.startBinding) {
+      const point = updateBoundPoint(
+        linearElement,
+        "startBinding",
+        linearElement.startBinding,
+        startBoundElement as ExcalidrawBindableElement,
+        elementsMap,
+      );
+      if (point) {
+        pointUpdates.set(0, { point });
+      }
+    }
+    if (endBoundElement && linearElement.endBinding) {
+      const point = updateBoundPoint(
+        linearElement,
+        "endBinding",
+        linearElement.endBinding,
+        endBoundElement as ExcalidrawBindableElement,
+        elementsMap,
+      );
+      if (point) {
+        pointUpdates.set(linearElement.points.length - 1, { point });
+      }
+    }
+    if (pointUpdates.size > 0) {
+      LinearElementEditor.movePoints(linearElement, scene, pointUpdates);
     }
   }
 
@@ -514,7 +561,7 @@ class ElementStore {
 
 export const convertToExcalidrawElements = (
   elementsSkeleton: ExcalidrawElementSkeleton[] | null,
-  opts?: { regenerateIds: boolean },
+  opts?: { regenerateIds: boolean; snapBindingsToOutline?: boolean },
 ) => {
   if (!elementsSkeleton) {
     return [];
@@ -702,6 +749,7 @@ export const convertToExcalidrawElements = (
                 originalEnd,
                 elementStore,
                 scene,
+                opts?.snapBindingsToOutline === true,
               );
             container = linearElement;
             elementStore.add(linearElement);
@@ -727,6 +775,7 @@ export const convertToExcalidrawElements = (
                   end,
                   elementStore,
                   scene,
+                  opts?.snapBindingsToOutline === true,
                 );
 
               elementStore.add(linearElement);
@@ -751,7 +800,7 @@ export const convertToExcalidrawElements = (
     const frame = elementStore.getElement(id);
 
     if (!frame) {
-      throw new Error(`Excalidraw element with id ${id} doesn't exist`);
+      throw new Error(`Powdoo element with id ${id} doesn't exist`);
     }
     const childrenElements: ExcalidrawElement[] = [];
 

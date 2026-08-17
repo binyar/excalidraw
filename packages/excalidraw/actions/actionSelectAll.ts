@@ -15,6 +15,7 @@ import type {
 } from "@excalidraw/element/types";
 
 import { selectAllIcon } from "../components/icons";
+import { isRuntimeElementVisible } from "../renderer/runtimeElementRenderHook";
 
 import { register } from "./register";
 
@@ -33,6 +34,7 @@ export const actionSelectAll = register({
       .filter(
         (element) =>
           !element.isDeleted &&
+          isRuntimeElementVisible(element as NonDeleted<ExcalidrawElement>) &&
           !(isTextElement(element) && element.containerId) &&
           !element.locked,
       )

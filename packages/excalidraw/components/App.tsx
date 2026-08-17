@@ -422,6 +422,14 @@ import { LassoTrail } from "../lasso";
 import { EraserTrail } from "../eraser";
 import { getShortcutKey } from "../shortcut";
 import { tryParseSpreadsheet } from "../charts";
+import {
+  isRuntimeElementVisible,
+  projectRuntimeElementForHitTest,
+  projectRuntimeElementForRender,
+  projectRuntimeElementsMapForRender,
+  subscribeToRuntimeElementRenderChanges,
+  unprojectRuntimePointForElement,
+} from "../renderer/runtimeElementRenderHook";
 
 import ConvertElementTypePopup, {
   getConversionTypeFromElements,
@@ -618,6 +626,7 @@ class App extends React.Component<AppProps, AppState> {
   public sessionExportThemeOverride: AppState["theme"] | undefined;
   rc: RoughCanvas;
   unmounted: boolean = false;
+  private unsubscribeFromRuntimeElementChanges: (() => void) | null = null;
   actionManager: ActionManager;
   editorInterface: EditorInterface = editorInterfaceContextInitialValue;
   private stylesPanelMode: StylesPanelMode = deriveStylesPanelMode(
@@ -752,6 +761,7 @@ class App extends React.Component<AppProps, AppState> {
     const api: ExcalidrawImperativeAPI = {
       isDestroyed: false,
       updateScene: this.updateScene,
+      deleteElements: this.deleteElements,
       applyDeltas: this.applyDeltas,
       mutateElement: this.mutateElement,
       updateLibrary: this.library.updateLibrary,
@@ -1073,7 +1083,7 @@ class App extends React.Component<AppProps, AppState> {
         if (data.method === "paused") {
           let source: Window | null = null;
           const iframes = document.body.querySelectorAll(
-            "iframe.excalidraw__embeddable",
+            "iframe.powdoo__embeddable",
           );
           if (!iframes) {
             break;
@@ -1940,7 +1950,7 @@ class App extends React.Component<AppProps, AppState> {
           return (
             <div
               key={el.id}
-              className={clsx("excalidraw__embeddable-container", {
+              className={clsx("powdoo__embeddable-container", {
                 "is-hovered": isHovered,
               })}
               style={{
@@ -1982,7 +1992,7 @@ class App extends React.Component<AppProps, AppState> {
                     });
                   }
                 }}*/
-                className="excalidraw__embeddable-container__inner"
+                className="powdoo__embeddable-container__inner"
                 style={{
                   width: isVisible ? `${el.width}px` : 0,
                   height: isVisible ? `${el.height}px` : 0,
@@ -1993,18 +2003,18 @@ class App extends React.Component<AppProps, AppState> {
                 }}
               >
                 {isHovered && (
-                  <div className="excalidraw__embeddable-hint">
+                  <div className="powdoo__embeddable-hint">
                     {t("buttons.embeddableInteractionButton")}
                   </div>
                 )}
                 <div
-                  className="excalidraw__embeddable__outer"
+                  className="powdoo__embeddable__outer"
                   style={{
                     padding: `${el.strokeWidth}px`,
                   }}
                 >
                   <div
-                    className="excalidraw__embeddable__content"
+                    className="powdoo__embeddable__content"
                     style={{
                       width: `${embeddableViewportScale * 100}%`,
                       height: `${embeddableViewportScale * 100}%`,
@@ -2016,7 +2026,7 @@ class App extends React.Component<AppProps, AppState> {
                       : null) ?? (
                       <iframe
                         ref={(ref) => this.cacheEmbeddableRef(el, ref)}
-                        className="excalidraw__embeddable"
+                        className="powdoo__embeddable"
                         srcDoc={
                           src?.type === "document"
                             ? src.srcdoc(this.state.theme)
@@ -2028,7 +2038,7 @@ class App extends React.Component<AppProps, AppState> {
                         // https://stackoverflow.com/q/18470015
                         scrolling="no"
                         referrerPolicy="no-referrer-when-downgrade"
-                        title="Excalidraw Embedded Content"
+                        title="Powdoo Embedded Content"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen={true}
                         sandbox={`${
@@ -2330,22 +2340,22 @@ class App extends React.Component<AppProps, AppState> {
     return (
       <div
         translate="no"
-        className={clsx("excalidraw excalidraw-container notranslate", {
-          "excalidraw--view-mode":
+        className={clsx("powdoo powdoo-container notranslate", {
+          "powdoo--view-mode":
             this.state.viewModeEnabled ||
             this.state.openDialog?.name === "elementLinkSelector",
-          "excalidraw--mobile": this.editorInterface.formFactor === "phone",
-          "excalidraw--non-interactive": !this.isInteractionEnabled(),
-          "excalidraw--navigation":
+          "powdoo--mobile": this.editorInterface.formFactor === "phone",
+          "powdoo--non-interactive": !this.isInteractionEnabled(),
+          "powdoo--navigation":
             !this.isInteractionEnabled() && this.isNavigationEnabled(),
-          "excalidraw--tools":
+          "powdoo--tools":
             !this.isInteractionEnabled() &&
             this.isToolSupported(this.state.activeTool.type),
-          "excalidraw--embeds":
+          "powdoo--embeds":
             !this.isInteractionEnabled() && this.isEmbedsEnabled(),
-          "excalidraw--allow-browser-zoom":
+          "powdoo--allow-browser-zoom":
             !this.isInteractionEnabled() && this.isBrowserZoomEnabled(),
-          "excalidraw--ui-hidden": !this.isDefaultUIEnabled(),
+          "powdoo--ui-hidden": !this.isDefaultUIEnabled(),
         })}
         style={{
           ["--ui-pointerEvents" as any]: shouldBlockPointerEvents
@@ -2430,9 +2440,9 @@ class App extends React.Component<AppProps, AppState> {
                             {this.props.children}
                           </LayerUI>
 
-                          <div className="excalidraw-textEditorContainer" />
-                          <div className="excalidraw-contextMenuContainer" />
-                          <div className="excalidraw-eye-dropper-container" />
+                          <div className="powdoo-textEditorContainer" />
+                          <div className="powdoo-contextMenuContainer" />
+                          <div className="powdoo-eye-dropper-container" />
                           <SVGLayer
                             trails={[
                               this.laserTrails,
@@ -3710,6 +3720,33 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     this.scene.onUpdate(this.triggerRender);
+    this.unsubscribeFromRuntimeElementChanges =
+      subscribeToRuntimeElementRenderChanges(() => {
+        const hiddenSelectedIds = Object.keys(
+          this.state.selectedElementIds,
+        ).filter((elementId) => {
+          const element = this.scene.getNonDeletedElementsMap().get(elementId);
+          return element ? !isRuntimeElementVisible(element) : false;
+        });
+        if (!hiddenSelectedIds.length) {
+          return;
+        }
+        this.setState((state) => {
+          const selectedElementIds = { ...state.selectedElementIds };
+          hiddenSelectedIds.forEach((elementId) => {
+            delete selectedElementIds[elementId];
+          });
+          return {
+            selectedElementIds,
+            selectedGroupIds: {},
+            selectedLinearElement:
+              state.selectedLinearElement &&
+              hiddenSelectedIds.includes(state.selectedLinearElement.elementId)
+                ? null
+                : state.selectedLinearElement,
+          };
+        });
+      });
     this.addEventListeners();
 
     if (this.props.autoFocus && this.excalidrawContainerRef.current) {
@@ -3784,6 +3821,8 @@ class App extends React.Component<AppProps, AppState> {
     this.files = {};
     this.imageCache.clear();
     this.resizeObserver?.disconnect();
+    this.unsubscribeFromRuntimeElementChanges?.();
+    this.unsubscribeFromRuntimeElementChanges = null;
     this.unmounted = true;
     this.viewport.destroy();
     this.removeEventListeners();
@@ -5188,6 +5227,34 @@ class App extends React.Component<AppProps, AppState> {
     },
   );
 
+  public deleteElements = (elementIds: readonly ExcalidrawElement["id"][]) => {
+    const existingElementIds = new Set(
+      this.getSceneElements().map((element) => element.id),
+    );
+    const selectedElementIds = elementIds.reduce<
+      Record<ExcalidrawElement["id"], true>
+    >((selection, elementId) => {
+      if (existingElementIds.has(elementId)) {
+        selection[elementId] = true;
+      }
+      return selection;
+    }, {});
+
+    if (Object.keys(selectedElementIds).length === 0) {
+      return;
+    }
+
+    this.setState(
+      {
+        editingGroupId: null,
+        selectedElementIds,
+        selectedGroupIds: {},
+        selectedLinearElement: null,
+      },
+      () => this.actionManager.executeAction(actionDeleteSelected, "api"),
+    );
+  };
+
   public applyDeltas = (
     deltas: StoreDelta[],
     options?: ApplyToOptions,
@@ -6408,16 +6475,22 @@ class App extends React.Component<AppProps, AppState> {
       }
       const elementWithHighestZIndex =
         allHitElements[allHitElements.length - 1];
+      const runtimeElementWithHighestZIndex = projectRuntimeElementForHitTest(
+        elementWithHighestZIndex,
+      );
+      const elementsMap = projectRuntimeElementsMapForRender(
+        this.scene.getNonDeletedElementsMap(),
+      );
 
       // If we're hitting element with highest z-index only on its bounding box
       // while also hitting other element figure, the latter should be considered.
       return hitElementItself({
         point: pointFrom(x, y),
-        element: elementWithHighestZIndex,
+        element: runtimeElementWithHighestZIndex,
         // when overlapping, we would like to be more precise
         // this also avoids the need to update past tests
         threshold: this.getElementHitThreshold(elementWithHighestZIndex) / 2,
-        elementsMap: this.scene.getNonDeletedElementsMap(),
+        elementsMap,
         frameNameBound: isFrameLikeElement(elementWithHighestZIndex)
           ? this.frameNameBoundsCache.get(elementWithHighestZIndex)
           : null,
@@ -6443,7 +6516,9 @@ class App extends React.Component<AppProps, AppState> {
   ): NonDeleted<ExcalidrawElement>[] {
     const iframeLikes: Ordered<NonDeleted<ExcalidrawIframeLikeElement>>[] = [];
 
-    const elementsMap = this.scene.getNonDeletedElementsMap();
+    const elementsMap = projectRuntimeElementsMapForRender(
+      this.scene.getNonDeletedElementsMap(),
+    );
 
     const elements = (
       opts?.includeBoundTextElement && opts?.includeLockedElements
@@ -6457,7 +6532,8 @@ class App extends React.Component<AppProps, AppState> {
                   !(isTextElement(element) && element.containerId)),
             )
     )
-      .filter((el) => this.hitElement(x, y, el))
+      .filter(isRuntimeElementVisible)
+      .filter((el) => this.hitElement(x, y, el, true, elementsMap))
       .filter((element) => {
         // hitting a frame's element from outside the frame is not considered a hit
         const containingFrame = getContainingFrame(element, elementsMap);
@@ -6508,7 +6584,14 @@ class App extends React.Component<AppProps, AppState> {
     y: number,
     element: NonDeletedExcalidrawElement,
     considerBoundingBox = true,
+    runtimeElementsMap = projectRuntimeElementsMapForRender(
+      this.scene.getNonDeletedElementsMap(),
+    ),
   ) {
+    if (!isRuntimeElementVisible(element)) {
+      return false;
+    }
+    const runtimeElement = projectRuntimeElementForHitTest(element);
     // if the element is selected, then hit test is done against its bounding box
     if (
       considerBoundingBox &&
@@ -6520,8 +6603,8 @@ class App extends React.Component<AppProps, AppState> {
       if (
         hitElementBoundingBox(
           pointFrom(x, y),
-          element,
-          this.scene.getNonDeletedElementsMap(),
+          runtimeElement,
+          runtimeElementsMap,
           this.getElementHitThreshold(element),
         )
       ) {
@@ -6532,8 +6615,8 @@ class App extends React.Component<AppProps, AppState> {
     // take bound text element into consideration for hit collision as well
     const hitBoundTextOfElement = hitElementBoundText(
       pointFrom(x, y),
-      element,
-      this.scene.getNonDeletedElementsMap(),
+      runtimeElement,
+      runtimeElementsMap,
     );
     if (hitBoundTextOfElement) {
       return true;
@@ -6541,9 +6624,9 @@ class App extends React.Component<AppProps, AppState> {
 
     return hitElementItself({
       point: pointFrom(x, y),
-      element,
+      element: runtimeElement,
       threshold: this.getElementHitThreshold(element),
-      elementsMap: this.scene.getNonDeletedElementsMap(),
+      elementsMap: runtimeElementsMap,
       frameNameBound: isFrameLikeElement(element)
         ? this.frameNameBoundsCache.get(element)
         : null,
@@ -7838,8 +7921,6 @@ class App extends React.Component<AppProps, AppState> {
       return;
     }
 
-    const elements = this.scene.getNonDeletedElements();
-
     const selectedElements = this.scene.getSelectedElements(this.state);
 
     if (this.isHittingTextAutoResizeHandle(selectedElements, scenePointer)) {
@@ -7875,9 +7956,12 @@ class App extends React.Component<AppProps, AppState> {
             selectedElements[0].points.length === 2)
         )
       ) {
+        const runtimeSelectedElement = projectRuntimeElementForRender(
+          selectedElements[0],
+        );
         const elementWithTransformHandleType =
           getElementWithTransformHandleType(
-            elements,
+            [runtimeSelectedElement],
             this.state,
             scenePointerX,
             scenePointerY,
@@ -9129,7 +9213,6 @@ class App extends React.Component<AppProps, AppState> {
     pointerDownState: PointerDownState,
   ): boolean => {
     if (isSelectionLikeTool(this.state.activeTool.type)) {
-      const elements = this.scene.getNonDeletedElements();
       const elementsMap = this.scene.getNonDeletedElementsMap();
       const selectedElements = this.scene.getSelectedElements(this.state);
 
@@ -9147,17 +9230,25 @@ class App extends React.Component<AppProps, AppState> {
           this.state.selectedLinearElement.hoverPointIndex !== -1
         )
       ) {
-        const elementWithTransformHandleType =
-          getElementWithTransformHandleType(
-            elements,
-            this.state,
-            pointerDownState.origin.x,
-            pointerDownState.origin.y,
-            this.state.zoom,
-            event.pointerType,
-            this.scene.getNonDeletedElementsMap(),
-            this.editorInterface,
-          );
+        const runtimeSelectedElement = projectRuntimeElementForRender(
+          selectedElements[0],
+        );
+        const runtimeTransformHandle = getElementWithTransformHandleType(
+          [runtimeSelectedElement],
+          this.state,
+          pointerDownState.origin.x,
+          pointerDownState.origin.y,
+          this.state.zoom,
+          event.pointerType,
+          this.scene.getNonDeletedElementsMap(),
+          this.editorInterface,
+        );
+        const elementWithTransformHandleType = runtimeTransformHandle
+          ? {
+              element: selectedElements[0],
+              transformHandleType: runtimeTransformHandle.transformHandleType,
+            }
+          : null;
         if (elementWithTransformHandleType != null) {
           if (
             elementWithTransformHandleType.transformHandleType === "rotation"
@@ -9190,13 +9281,20 @@ class App extends React.Component<AppProps, AppState> {
       }
       if (pointerDownState.resize.handleType) {
         pointerDownState.resize.isResizing = true;
+        const resizeOrigin =
+          selectedElements.length === 1
+            ? unprojectRuntimePointForElement(
+                selectedElements[0],
+                pointerDownState.origin,
+              )
+            : pointerDownState.origin;
         pointerDownState.resize.offset = tupleToCoors(
           getResizeOffsetXY(
             pointerDownState.resize.handleType,
             selectedElements,
             elementsMap,
-            pointerDownState.origin.x,
-            pointerDownState.origin.y,
+            resizeOrigin.x,
+            resizeOrigin.y,
           ),
         );
         if (
@@ -11163,7 +11261,7 @@ class App extends React.Component<AppProps, AppState> {
           }
           const elementsWithinSelection = this.state.selectionElement
             ? getElementsWithinSelection(
-                elements,
+                elements.filter(isRuntimeElementVisible),
                 this.state.selectionElement,
                 this.scene.getNonDeletedElementsMap(),
                 false,
@@ -13261,7 +13359,17 @@ class App extends React.Component<AppProps, AppState> {
       isRotating: transformHandleType === "rotation",
       activeEmbeddable: null,
     });
-    const pointerCoords = pointerDownState.lastCoords;
+    const originalSelectedElement =
+      selectedElements.length === 1
+        ? pointerDownState.originalElements.get(selectedElements[0].id) ??
+          selectedElements[0]
+        : null;
+    const pointerCoords = originalSelectedElement
+      ? unprojectRuntimePointForElement(
+          originalSelectedElement,
+          pointerDownState.lastCoords,
+        )
+      : pointerDownState.lastCoords;
     let [resizeX, resizeY] = getGridPoint(
       pointerCoords.x - pointerDownState.resize.offset.x,
       pointerCoords.y - pointerDownState.resize.offset.y,
@@ -13299,9 +13407,20 @@ class App extends React.Component<AppProps, AppState> {
         event[KEYS.CTRL_OR_CMD] ? null : this.getEffectiveGridSize(),
       );
 
+      const resizeOrigin = originalSelectedElement
+        ? unprojectRuntimePointForElement(
+            originalSelectedElement,
+            pointerDownState.origin,
+          )
+        : pointerDownState.origin;
+      const [originGridX, originGridY] = getGridPoint(
+        resizeOrigin.x,
+        resizeOrigin.y,
+        event[KEYS.CTRL_OR_CMD] ? null : this.getEffectiveGridSize(),
+      );
       const dragOffset = {
-        x: gridX - pointerDownState.originInGrid.x,
-        y: gridY - pointerDownState.originInGrid.y,
+        x: gridX - originGridX,
+        y: gridY - originGridY,
       };
 
       const originalElements = [...pointerDownState.originalElements.values()];

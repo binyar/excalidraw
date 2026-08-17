@@ -2,7 +2,7 @@ FROM node:24-bookworm-slim AS build
 
 WORKDIR /opt/excalidraw
 
-COPY package.json yarn.lock ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY excalidraw-app/package.json ./excalidraw-app/package.json
 COPY packages/common/package.json ./packages/common/package.json
 COPY packages/element/package.json ./packages/element/package.json
@@ -12,15 +12,17 @@ COPY packages/laser-pointer/package.json ./packages/laser-pointer/package.json
 COPY packages/math/package.json ./packages/math/package.json
 COPY packages/utils/package.json ./packages/utils/package.json
 
-RUN --mount=type=cache,target=/usr/local/share/.cache/yarn \
-    yarn install --frozen-lockfile --network-timeout 600000
+RUN corepack enable
+RUN --mount=type=cache,target=/pnpm/store \
+    pnpm config set store-dir /pnpm/store && \
+    pnpm install --frozen-lockfile
 
 COPY . .
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
-RUN yarn build:app:docker
+RUN pnpm build:app:docker
 
 FROM node:24-bookworm-slim AS runtime
 
@@ -32,6 +34,7 @@ WORKDIR /opt/excalidraw
 
 COPY --from=build --chown=node:node /opt/excalidraw/excalidraw-app/build ./excalidraw-app/build
 COPY --from=build --chown=node:node /opt/excalidraw/excalidraw-app/workspace/server.mjs ./excalidraw-app/workspace/server.mjs
+COPY --from=build --chown=node:node /opt/excalidraw/excalidraw-app/ai ./excalidraw-app/ai
 
 RUN mkdir -p /opt/excalidraw/workspace && chown node:node /opt/excalidraw/workspace
 

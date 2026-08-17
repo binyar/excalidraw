@@ -1,0 +1,58 @@
+{
+  "name": "nucleo-glass",
+  "version": "1.4.0",
+  "description": "24px React SVG icon components from Nucleo",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "keywords": [
+    "react",
+    "svg",
+    "icons",
+    "nucleo",
+    "glass"
+  ],
+  "author": "Nucleo",
+  "homepage": "https://nucleoapp.com",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist/types",
+    "build:esm": "tsc --outDir dist --module esnext",
+    "build:min": "NODE_ENV=production rollup -c",
+    "build": "npm run clean && npm run build:types && npm run build:esm && npm run build:min",
+    "build:prod": "NODE_ENV=production npm run build"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
+  },
+  "dependencies": {
+    "tslib": "^2.0.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-terser": "^0.4.0",
+    "rollup": "^3.0.0",
+    "rollup-plugin-filesize": "^10.0.0",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "typescript": "^5.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

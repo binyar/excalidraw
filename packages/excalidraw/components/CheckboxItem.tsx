@@ -1,9 +1,8 @@
 import clsx from "clsx";
 import React from "react";
+import { Checkbox as CheckboxPrimitive } from "radix-ui";
 
 import { checkIcon } from "./icons";
-
-import "./CheckboxItem.scss";
 
 export const CheckboxItem: React.FC<{
   checked: boolean;
@@ -13,7 +12,11 @@ export const CheckboxItem: React.FC<{
 }> = ({ children, checked, onChange, className }) => {
   return (
     <div
-      className={clsx("Checkbox", className, { "is-checked": checked })}
+      className={clsx(
+        "Checkbox flex cursor-pointer select-none items-center gap-2 py-1 text-sm",
+        className,
+        { "is-checked": checked },
+      )}
       onClick={(event) => {
         onChange(!checked, event);
         (
@@ -23,15 +26,18 @@ export const CheckboxItem: React.FC<{
         ).focus();
       }}
     >
-      <button
-        type="button"
+      <CheckboxPrimitive.Root
         className="Checkbox-box"
-        role="checkbox"
-        aria-checked={checked}
+        checked={checked}
+        onCheckedChange={() => undefined}
       >
-        {checkIcon}
-      </button>
-      <div className="Checkbox-label">{children}</div>
+        <span className="flex size-4 shrink-0 items-center justify-center rounded border border-primary shadow-xs data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground">
+          <CheckboxPrimitive.Indicator className="size-3.5">
+            {checkIcon}
+          </CheckboxPrimitive.Indicator>
+        </span>
+      </CheckboxPrimitive.Root>
+      <div className="Checkbox-label flex items-center">{children}</div>
     </div>
   );
 };

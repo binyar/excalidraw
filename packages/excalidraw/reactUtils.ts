@@ -50,7 +50,7 @@ export const isRenderThrottlingEnabled = (() => {
         if (!hasWarned) {
           hasWarned = true;
           console.warn(
-            "Excalidraw: render throttling is disabled on React versions < 18.",
+            "Powdoo: render throttling is disabled on React versions < 18.",
           );
         }
         return false;

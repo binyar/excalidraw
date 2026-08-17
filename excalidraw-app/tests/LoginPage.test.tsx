@@ -1,9 +1,4 @@
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 
 import { authApi } from "../auth/client";
@@ -15,9 +10,7 @@ describe("workspace login", () => {
   });
 
   it("only shows the core login fields and reports invalid credentials", async () => {
-    vi.spyOn(authApi, "login").mockRejectedValue(
-      new Error("用户名或密码错误"),
-    );
+    vi.spyOn(authApi, "login").mockRejectedValue(new Error("用户名或密码错误"));
 
     render(<LoginPage authenticated={false} />);
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useReducer, useRef } from "react";
 
 import {
   isShallowEqual,
@@ -21,6 +21,12 @@ import type {
 
 import { t } from "../../i18n";
 import { renderInteractiveScene } from "../../renderer/interactiveScene";
+import {
+  isRuntimeElementVisible,
+  projectRuntimeElementsForRender,
+  projectRuntimeElementsMapForRender,
+  subscribeToRuntimeElementRenderChanges,
+} from "../../renderer/runtimeElementRenderHook";
 
 import { AnimationController } from "../../renderer/animation";
 
@@ -87,6 +93,12 @@ export const INTERACTIVE_SCENE_ANIMATION_KEY = "animateInteractiveScene";
 const InteractiveCanvas = (props: InteractiveCanvasProps) => {
   const isComponentMounted = useRef(false);
   const rendererParams = useRef(null as InteractiveSceneRenderConfig | null);
+  const [, requestRuntimeRender] = useReducer((revision) => revision + 1, 0);
+
+  useEffect(
+    () => subscribeToRuntimeElementRenderChanges(requestRuntimeRender),
+    [],
+  );
 
   useEffect(() => {
     if (!isComponentMounted.current) {
@@ -143,13 +155,20 @@ const InteractiveCanvas = (props: InteractiveCanvasProps) => {
         )) ||
       "#6965db";
 
+    const runtimeElementsMap = projectRuntimeElementsMapForRender(
+      props.elementsMap,
+    );
+    const runtimeAllElementsMap = projectRuntimeElementsMapForRender(
+      props.allElementsMap,
+    );
+
     rendererParams.current = {
       app: props.app,
       canvas: props.canvas,
-      elementsMap: props.elementsMap,
-      visibleElements: props.visibleElements,
-      selectedElements: props.selectedElements,
-      allElementsMap: props.allElementsMap,
+      elementsMap: runtimeElementsMap,
+      visibleElements: props.visibleElements.filter(isRuntimeElementVisible),
+      selectedElements: projectRuntimeElementsForRender(props.selectedElements),
+      allElementsMap: runtimeAllElementsMap,
       scale: window.devicePixelRatio,
       appState: props.appState,
       renderConfig: {
@@ -201,7 +220,7 @@ const InteractiveCanvas = (props: InteractiveCanvasProps) => {
 
   return (
     <canvas
-      className="excalidraw__canvas interactive"
+      className="powdoo__canvas interactive"
       // NOTE no `cursor` style here — the cursor is managed imperatively
       // (see `AppCursor`); an inline style would clobber it whenever its
       // computed value changes across rerenders

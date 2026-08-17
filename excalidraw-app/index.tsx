@@ -1,20 +1,17 @@
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { registerSW } from "virtual:pwa-register";
-
-import "../excalidraw-app/sentry";
 
 import ExcalidrawApp from "./App";
 import { authApi } from "./auth/client";
 import { LoginPage } from "./auth/LoginPage";
 import { WorkspaceManager } from "./workspace/WorkspaceManager";
+import { isWorkspaceEditorPath } from "./workspace/editorRoute";
+import "./styles/globals.css";
 
 import type { AuthSession } from "./auth/client";
 
-window.__EXCALIDRAW_SHA__ = import.meta.env.VITE_APP_GIT_SHA;
 const rootElement = document.getElementById("root")!;
 const root = createRoot(rootElement);
-registerSW();
 
 export const AuthenticatedApp = () => {
   const [session, setSession] = useState<AuthSession | null>(null);
@@ -43,11 +40,7 @@ export const AuthenticatedApp = () => {
   if (!session.authenticated) {
     return <div className="login-page login-loading">正在跳转登录...</div>;
   }
-  return window.location.pathname === "/editor" ? (
-    <ExcalidrawApp />
-  ) : (
-    <WorkspaceManager />
-  );
+  return isWorkspaceEditorPath() ? <ExcalidrawApp /> : <WorkspaceManager />;
 };
 
 root.render(

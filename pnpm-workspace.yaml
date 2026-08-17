@@ -1,0 +1,8 @@
+packages:
+  - excalidraw-app
+  - packages/*
+
+linkWorkspacePackages: true
+
+onlyBuiltDependencies:
+  - esbuild

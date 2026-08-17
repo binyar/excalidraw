@@ -21,12 +21,14 @@ import { ColorPicker } from "../components/ColorPicker/ColorPicker";
 import { IconButton } from "../components/IconButton";
 import { Tooltip } from "../components/Tooltip";
 import {
+  editorZoomInIcon,
+  editorZoomOutIcon,
+} from "../components/editorControlIcons";
+import {
   MoonIcon,
   SunIcon,
   TrashIcon,
   zoomAreaIcon,
-  ZoomInIcon,
-  ZoomOutIcon,
   ZoomResetIcon,
 } from "../components/icons";
 import { useAppStateValue } from "../hooks/useAppStateValue";
@@ -129,7 +131,7 @@ export const actionZoomIn = register({
   label: "buttons.zoomIn",
   viewMode: true,
   navigation: true,
-  icon: ZoomInIcon,
+  icon: editorZoomInIcon,
   trackEvent: { category: "canvas" },
   predicate: (elements, appState, appProps, app) => app.isNavigationEnabled(),
   perform: (_elements, appState, _, app) => {
@@ -156,7 +158,7 @@ export const actionZoomIn = register({
       <IconButton
         type="button"
         className="zoom-in-button zoom-button"
-        icon={ZoomInIcon}
+        icon={editorZoomInIcon}
         title={`${t("buttons.zoomIn")} — ${getShortcutKey("CtrlOrCmd++")}`}
         aria-label={t("buttons.zoomIn")}
         disabled={zoomValue >= MAX_ZOOM}
@@ -174,7 +176,7 @@ export const actionZoomIn = register({
 export const actionZoomOut = register({
   name: "zoomOut",
   label: "buttons.zoomOut",
-  icon: ZoomOutIcon,
+  icon: editorZoomOutIcon,
   viewMode: true,
   navigation: true,
   trackEvent: { category: "canvas" },
@@ -203,7 +205,7 @@ export const actionZoomOut = register({
       <IconButton
         type="button"
         className="zoom-out-button zoom-button"
-        icon={ZoomOutIcon}
+        icon={editorZoomOutIcon}
         title={`${t("buttons.zoomOut")} — ${getShortcutKey("CtrlOrCmd+-")}`}
         aria-label={t("buttons.zoomOut")}
         disabled={zoomValue <= MIN_ZOOM}

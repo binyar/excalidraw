@@ -17,7 +17,7 @@ describe("Test internal component fallback rendering", () => {
     expect(queryAllByTestId(container, "main-menu-trigger")?.length).toBe(2);
 
     const excalContainers = container.querySelectorAll<HTMLDivElement>(
-      ".excalidraw-container",
+      ".powdoo-container",
     );
 
     expect(
@@ -41,7 +41,7 @@ describe("Test internal component fallback rendering", () => {
     expect(queryAllByTestId(container, "main-menu-trigger")?.length).toBe(2);
 
     const excalContainers = container.querySelectorAll<HTMLDivElement>(
-      ".excalidraw-container",
+      ".powdoo-container",
     );
 
     expect(
@@ -67,7 +67,7 @@ describe("Test internal component fallback rendering", () => {
     expect(queryAllByTestId(container, "main-menu-trigger")?.length).toBe(2);
 
     const excalContainers = container.querySelectorAll<HTMLDivElement>(
-      ".excalidraw-container",
+      ".powdoo-container",
     );
 
     expect(
@@ -89,7 +89,7 @@ describe("Test internal component fallback rendering", () => {
     expect(queryAllByTestId(container, "main-menu-trigger")?.length).toBe(2);
 
     const excalContainers = container.querySelectorAll<HTMLDivElement>(
-      ".excalidraw-container",
+      ".powdoo-container",
     );
 
     expect(

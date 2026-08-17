@@ -150,7 +150,7 @@ export const hitElementItself = ({
   ) {
     const derefElement = cachedElement?.deref();
     if (
-      derefElement &&
+      derefElement === element &&
       derefElement.id === element.id &&
       derefElement.version === element.version &&
       derefElement.versionNonce === element.versionNonce

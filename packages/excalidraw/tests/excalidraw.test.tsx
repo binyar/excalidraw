@@ -22,7 +22,7 @@ describe("<Excalidraw/>", () => {
   afterEach(() => {
     const menu = document.querySelector(".dropdown-menu");
     if (menu) {
-      toggleMenu(document.querySelector(".excalidraw")!);
+      toggleMenu(document.querySelector(".powdoo")!);
     }
   });
 
@@ -386,7 +386,7 @@ describe("<Excalidraw/>", () => {
       const { container } = await render(<Excalidraw />);
 
       expect(
-        container.querySelector(".excalidraw") === document.activeElement,
+        container.querySelector(".powdoo") === document.activeElement,
       ).toBe(false);
     });
 
@@ -394,7 +394,7 @@ describe("<Excalidraw/>", () => {
       const { container } = await render(<Excalidraw autoFocus={true} />);
 
       expect(
-        container.querySelector(".excalidraw") === document.activeElement,
+        container.querySelector(".powdoo") === document.activeElement,
       ).toBe(true);
     });
   });

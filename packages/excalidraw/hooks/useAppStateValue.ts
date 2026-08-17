@@ -37,7 +37,7 @@ const getLatestValue = (
     }
 
     console.warn(
-      "useAppStateValue: excalidrawAPI not defined yet for internal component while it should always be defined. Are you sure you're rendering inside of <Excalidraw/> component tree?",
+      "useAppStateValue: editor API not defined yet for an internal component. Are you sure you're rendering inside of the Powdoo component tree?",
     );
     // fall back in case there's a bug so we don't break the app
     // (internal components using this internal useAppStateValue expect

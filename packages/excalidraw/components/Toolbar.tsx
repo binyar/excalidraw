@@ -251,13 +251,16 @@ export const Toolbar = ({
         {UIOptions.tools?.image !== false && <ImageToolButton {...toolProps} />}
         <EraserToolButton {...toolProps} />
 
-        <div className="App-toolbar__divider" />
-
-        <ExtraToolsDropdown
-          app={app}
-          activeTool={activeTool}
-          setAppState={setAppState}
-        />
+        {UIOptions.tools?.extraTools !== false && (
+          <>
+            <div className="App-toolbar__divider" />
+            <ExtraToolsDropdown
+              app={app}
+              activeTool={activeTool}
+              setAppState={setAppState}
+            />
+          </>
+        )}
       </Stack.Row>
     </Island>
   );
