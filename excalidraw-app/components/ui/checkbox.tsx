@@ -1,4 +1,4 @@
-import { IconCircleCheck } from "nucleo-glass";
+import { Check } from "lucide-react";
 import { Checkbox as CheckboxPrimitive } from "radix-ui";
 import React from "react";
 
@@ -17,7 +17,7 @@ export const Checkbox = ({
     {...props}
   >
     <CheckboxPrimitive.Indicator className="grid place-content-center text-current">
-      <IconCircleCheck aria-hidden="true" size="1em" />
+      <Check aria-hidden="true" size="1em" />
     </CheckboxPrimitive.Indicator>
   </CheckboxPrimitive.Root>
 );

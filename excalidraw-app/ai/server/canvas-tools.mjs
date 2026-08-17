@@ -15,7 +15,7 @@ const assertCanvasDraftCapacity = (state, additionalItems = 0) => {
     state.elements.length + state.libraryAssets.length + additionalItems;
   if (nextCount > MAX_CANVAS_DRAFT_ITEMS) {
     throw new Error(
-      `Canvas Draft 元素和资源数量不能超过 ${MAX_CANVAS_DRAFT_ITEMS}，当前操作后将达到 ${nextCount}`,
+      `画布草稿的元素和资源数量不能超过 ${MAX_CANVAS_DRAFT_ITEMS}，当前操作后将达到 ${nextCount}`,
     );
   }
 };
@@ -98,7 +98,7 @@ const elementSchema = Type.Object({
 
 const assertMutable = (state) => {
   if (state.frozen) {
-    throw new Error("Canvas Draft 已冻结，不能继续修改");
+    throw new Error("画布草稿已冻结，不能继续修改");
   }
 };
 
@@ -444,7 +444,7 @@ const validateAndRepairDraft = (state) => {
     throw new Error("必须先调用 define_story");
   }
   if (state.elements.length + state.libraryAssets.length === 0) {
-    throw new Error("Canvas Draft 至少需要一个元素");
+    throw new Error("画布草稿至少需要一个元素");
   }
   assertCanvasDraftCapacity(state);
   const mergedCardText = mergeLegacyCardTextIntoLabels(state);
@@ -574,7 +574,7 @@ export const createCanvasTools = ({ state, animate }) => {
       name: "define_story",
       label: "规划画布故事",
       description:
-        "Define the complete story and ordered story beats before creating canvas elements.",
+        "在创建画布元素之前，定义完整故事以及有序的故事节拍。所有面向用户的标题、摘要和说明必须使用简体中文。",
       parameters: Type.Object({
         id: Type.String({ minLength: 1, maxLength: 64 }),
         title: Type.String({ minLength: 1, maxLength: 160 }),
@@ -613,7 +613,7 @@ export const createCanvasTools = ({ state, animate }) => {
       name: "define_story_spaces",
       label: "规划章节空间关系",
       description:
-        "After define_story and before creating canvas elements, decide whether each chapter continues in the previous spatial world (same-space) or starts an independent presentation page (new-page). Decisions must be semantic and explainable, not random visual choices.",
+        "调用 define_story 之后、创建画布元素之前，判断每一章是延续上一个空间（same-space），还是开启独立演示页面（new-page）。判断必须基于故事语义并能用中文解释，不能随机选择视觉效果。",
       parameters: Type.Object({
         chapters: Type.Array(
           Type.Object({
@@ -677,7 +677,7 @@ export const createCanvasTools = ({ state, animate }) => {
       name: "search_library_assets",
       label: "搜索画布资源库",
       description:
-        "Search the bundled Excalidraw resource catalog by English keywords before creating common icons, people, devices, cloud services, UI controls, or illustrations.",
+        "在创建常用图标、人物、设备、云服务、界面控件或插画之前，搜索内置的 Excalidraw 资源目录。检索关键词属于内部工具参数；所有面向用户的资源名称、用途和说明必须使用中文。",
       parameters: Type.Object({
         query: Type.String({ minLength: 1, maxLength: 160 }),
         limit: Type.Optional(Type.Number({ minimum: 1, maximum: 12 })),
@@ -689,7 +689,7 @@ export const createCanvasTools = ({ state, animate }) => {
         return resultText(
           results.length
             ? `找到 ${results.length} 个可用资源条目。请使用 add_library_assets 并传入 ref 实例化需要的条目。`
-            : "没有找到匹配资源，请尝试更短的英文关键词或改用基础画布元素。",
+            : "没有找到匹配资源，请尝试更短的检索关键词或改用基础画布元素。",
           { kind: "library-search-results", query: params.query, results },
         );
       },
@@ -698,7 +698,7 @@ export const createCanvasTools = ({ state, animate }) => {
       name: "add_library_assets",
       label: "添加资源库内容",
       description:
-        "Instantiate selected bundled library entries. Use a real ref returned by search_library_assets. A missing optional asset is skipped without failing the draft, so continue with a basic canvas element when needed. For an icon inside a card, provide parentId and layout and omit x/y; the tool computes its position deterministically.",
+        "实例化选中的内置资源条目。必须使用 search_library_assets 返回的真实 ref。可选资源缺失时会跳过该资源而不会让画布草稿失败，此时应继续使用基础画布元素。卡片内图标需要提供 parentId 和 layout，并省略 x/y，工具会确定性计算位置。所有资源角色和用户可见说明必须使用中文。",
       parameters: Type.Object({
         assets: Type.Array(
           Type.Object({
@@ -803,7 +803,7 @@ export const createCanvasTools = ({ state, animate }) => {
       name: "add_canvas_elements",
       label: "添加画布元素",
       description:
-        "Add editable shapes or standalone text. Put all card copy directly in the parent shape label and control it with style.textAlign/style.verticalAlign; never create child text. Only library icons use parentId + layout. Top-level elements require explicit geometry.",
+        "添加可编辑图形或独立文字。卡片全部文案必须直接写入父图形的 label，并使用 style.textAlign/style.verticalAlign 控制对齐，禁止创建子文字。只有资源库图标使用 parentId 和 layout。顶层元素必须提供明确的几何信息，用户可见文案必须使用中文。",
       parameters: Type.Object({
         elements: Type.Array(elementSchema, { minItems: 1, maxItems: 80 }),
       }),
@@ -859,7 +859,7 @@ export const createCanvasTools = ({ state, animate }) => {
       name: "update_canvas_elements",
       label: "修改现有画布元素",
       description:
-        "Update existing semantic elements in place during a second edit. Omitted fields preserve their current values and geometry.",
+        "二次编辑时原位更新现有语义元素。省略的字段保持当前值和几何信息不变，用户可见文案必须使用中文。",
       parameters: Type.Object({
         updates: Type.Array(
           Type.Object({
@@ -908,7 +908,7 @@ export const createCanvasTools = ({ state, animate }) => {
       name: "remove_canvas_items",
       label: "删除现有画布内容",
       description:
-        "Remove existing semantic elements, library assets, or connectors requested by the user. Dependent connectors and beat references are cleaned automatically.",
+        "按用户要求删除现有语义元素、资源库条目或连接线。相关连接线和故事节拍引用会被自动清理。",
       parameters: Type.Object({
         ids: Type.Array(Type.String({ minLength: 1, maxLength: 64 }), {
           minItems: 1,
@@ -959,7 +959,7 @@ export const createCanvasTools = ({ state, animate }) => {
     {
       name: "update_element_styles",
       label: "设置元素样式",
-      description: "Update visual styles for existing draft elements.",
+      description: "更新画布草稿中现有元素的视觉样式。",
       parameters: Type.Object({
         updates: Type.Array(
           Type.Object({
@@ -995,7 +995,7 @@ export const createCanvasTools = ({ state, animate }) => {
       name: "layout_canvas_elements",
       label: "布局画布元素",
       description:
-        "Arrange existing draft elements horizontally, vertically, or in a grid.",
+        "将画布草稿中的现有元素按水平、垂直或网格方式排列。",
       parameters: Type.Object({
         elementIds: Type.Array(Type.String(), { minItems: 1, maxItems: 80 }),
         direction: Type.Union([
@@ -1054,7 +1054,7 @@ export const createCanvasTools = ({ state, animate }) => {
       name: "connect_canvas_elements",
       label: "连接画布元素",
       description:
-        "Optionally create editable arrows only for explicit business relationships such as process flow, causality, dependency, hierarchy, or data flow. Never use arrows for presentation order, visual guidance, decoration, or animation sequence.",
+        "仅在存在明确业务关系时选择性创建可编辑箭头，例如流程流转、因果、依赖、层级或数据流。不得用箭头表示演示顺序、视觉引导、装饰或动画顺序。",
       parameters: Type.Object({
         connectors: Type.Array(
           Type.Object({
@@ -1135,9 +1135,9 @@ export const createCanvasTools = ({ state, animate }) => {
     },
     {
       name: "finalize_canvas_draft",
-      label: "冻结画布 Draft",
+      label: "冻结画布草稿",
       description:
-        "Validate and freeze the complete canvas draft before delegating animation.",
+        "在委派动画之前，校验并冻结完整画布草稿。",
       parameters: Type.Object({
         animationBrief: Type.Union([animationBriefSchema, Type.String()]),
       }),
@@ -1155,7 +1155,7 @@ export const createCanvasTools = ({ state, animate }) => {
         state.frozen = true;
         state.animationBrief = structuredClone(animationBrief);
         return resultText(
-          `Canvas Draft 已冻结：${state.elements.length} 个基础元素、${
+          `画布草稿已冻结：${state.elements.length} 个基础元素、${
             state.libraryAssets.length
           } 个资源条目、${state.connectors.length} 条连接线。${
             repairs.removedBeatReferences.length > 0
@@ -1168,9 +1168,9 @@ export const createCanvasTools = ({ state, animate }) => {
     },
     {
       name: "delegate_animation",
-      label: "委派动画子 Agent",
+      label: "委派动画子智能体",
       description:
-        "Delegate the frozen canvas draft to the specialist animation sub-agent. This is the only tool that produces a final story artifact.",
+        "把已冻结的画布草稿交给专业动画子智能体。这是唯一能够生成最终故事成品的工具。",
       parameters: Type.Object({}),
       executionMode: "sequential",
       async execute(_id, _params, signal) {

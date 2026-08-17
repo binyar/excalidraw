@@ -2,12 +2,25 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { createCanvasDraftState, createCanvasTools } from "./canvas-tools.mjs";
+import { STORY_AGENT_SYSTEM_PROMPT } from "./prompt.mjs";
 
 const tool = (tools, name) => {
   const found = tools.find((candidate) => candidate.name === name);
   assert.ok(found, `missing tool ${name}`);
   return found;
 };
+
+test("main Agent requires Chinese output and exposes Chinese tool descriptions", () => {
+  assert.match(STORY_AGENT_SYSTEM_PROMPT, /所有面向用户的自然语言必须使用简体中文/);
+  assert.match(STORY_AGENT_SYSTEM_PROMPT, /不得输出英文句子或中英混杂的过程旁白/);
+  const tools = createCanvasTools({
+    state: createCanvasDraftState(),
+    animate: async () => ({}),
+  });
+  for (const candidate of tools) {
+    assert.match(candidate.description, /[\u3400-\u9fff]/, candidate.name);
+  }
+});
 
 test("canvas draft accepts up to 250 elements and rejects item 251", async () => {
   const state = createCanvasDraftState();

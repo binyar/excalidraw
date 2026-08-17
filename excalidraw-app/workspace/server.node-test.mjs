@@ -156,6 +156,18 @@ test("workspace API persists a drawing and supports the complete CRUD lifecycle"
   );
 });
 
+test("workspace no longer exposes the file import endpoint", async () => {
+  const response = await fetch(`${apiRoot}/import`, {
+    method: "POST",
+    headers: {
+      cookie: sessionCookie,
+      "content-type": "application/vnd.excalidraw+json",
+    },
+    body: JSON.stringify({ type: "excalidraw", elements: [] }),
+  });
+  assert.equal(response.status, 404);
+});
+
 test.after(async () => {
   await new Promise((resolve) => server.close(resolve));
   await rm(workspaceRoot, { recursive: true, force: true });

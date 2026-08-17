@@ -20,7 +20,7 @@ const PopoverContent = ({
       align={align}
       sideOffset={sideOffset}
       className={cn(
-        "z-50 rounded-md border bg-popover text-popover-foreground shadow-md outline-none",
+        "z-50 rounded-md border bg-popover font-[Inter,'PingFang_SC','Microsoft_YaHei',sans-serif] text-[11px] font-normal text-[#555] shadow-md outline-none",
         className,
       )}
       {...props}

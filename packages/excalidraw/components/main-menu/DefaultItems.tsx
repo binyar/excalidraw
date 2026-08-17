@@ -333,8 +333,11 @@ export const ChangeCanvasBackground = () => {
       <div
         data-testid="canvas-background-label"
         style={{
-          fontSize: "0.875rem",
-          marginBottom: "0.25rem",
+          color: "#777",
+          fontSize: "11px",
+          fontWeight: 400,
+          lineHeight: 1.4,
+          marginBottom: "0.375rem",
           marginLeft: "0.5rem",
         }}
       >

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { IconLock, IconUser } from "nucleo-glass";
+import { LockKeyhole, UserRound } from "lucide-react";
 
 import { authApi } from "./client";
 
@@ -72,7 +72,7 @@ export const LoginPage = ({ authenticated }: { authenticated: boolean }) => {
               <div className="grid gap-2">
                 <Label htmlFor="username">用户名</Label>
                 <div className="relative">
-                  <IconUser
+                  <UserRound
                     aria-hidden="true"
                     size="1em"
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -93,7 +93,7 @@ export const LoginPage = ({ authenticated }: { authenticated: boolean }) => {
               <div className="grid gap-2">
                 <Label htmlFor="password">密码</Label>
                 <div className="relative">
-                  <IconLock
+                  <LockKeyhole
                     aria-hidden="true"
                     size="1em"
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"

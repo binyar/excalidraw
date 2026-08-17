@@ -1,4 +1,9 @@
 const CAMERA_VIEWPORT = { width: 1280, height: 720 };
+const PAGE_CAMERA = {
+  centerX: CAMERA_VIEWPORT.width / 2,
+  centerY: CAMERA_VIEWPORT.height / 2,
+  zoom: 1,
+};
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const stableIdHash = (value) => {
@@ -502,15 +507,43 @@ const appendKeyframe = (keyframes, keyframe) => {
 };
 
 const compileCameraTrack = (plan, canvasDraft, objectWindows) => {
-  const cameraScenes = plan.scenes.filter((scene) => scene.camera);
-  if (cameraScenes.length === 0) {
+  if (!plan.scenes.some((scene) => scene.camera)) {
     return null;
   }
   const byId = elementsById(canvasDraft);
-  const values = cameraScenes.map((scene) => ({
-    scene,
-    ...cameraValueForScene(scene, byId),
-  }));
+  const beatById = new Map(
+    (canvasDraft.beats || []).map((beat) => [beat.id, beat]),
+  );
+  const values = [];
+  for (const [sceneIndex, scene] of plan.scenes.entries()) {
+    if (scene.camera) {
+      values.push({
+        scene,
+        camera: scene.camera,
+        kind: "focus",
+        ...cameraValueForScene(scene, byId),
+      });
+      continue;
+    }
+    const isInitialScene = sceneIndex === 0;
+    const isNewPage =
+      beatById.get(scene.beatId)?.relationFromPrevious === "new-page";
+    if (!isInitialScene && !isNewPage) {
+      continue;
+    }
+    if (values.at(-1)?.kind === "page") {
+      continue;
+    }
+    values.push({
+      scene,
+      camera: {
+        transition: isInitialScene ? "hold" : "return-to-page",
+        transitionDurationMs: scene.transition?.durationMs ?? 900,
+      },
+      kind: "page",
+      ...PAGE_CAMERA,
+    });
+  }
   const channels = {
     centerX: [{ atMs: 0, value: values[0].centerX, label: values[0].scene.id }],
     centerY: [{ atMs: 0, value: values[0].centerY, label: values[0].scene.id }],
@@ -520,7 +553,7 @@ const compileCameraTrack = (plan, canvasDraft, objectWindows) => {
   for (let index = 1; index < values.length; index += 1) {
     const previous = values[index - 1];
     const target = values[index];
-    const transition = target.scene.camera.transition || "reframe";
+    const transition = target.camera.transition || "reframe";
     const arrivalMs = target.scene.startMs;
     if (transition === "cut") {
       for (const field of ["centerX", "centerY", "zoom"]) {
@@ -533,7 +566,7 @@ const compileCameraTrack = (plan, canvasDraft, objectWindows) => {
       }
       continue;
     }
-    const durationMs = target.scene.camera.transitionDurationMs ?? 1200;
+    const durationMs = target.camera.transitionDurationMs ?? 1200;
     const startMs = arrivalMs - durationMs;
     if (startMs < previous.scene.startMs) {
       throw new Error(`场景 ${target.scene.id} 的镜头切换侵入上一场景起点`);
@@ -548,18 +581,42 @@ const compileCameraTrack = (plan, canvasDraft, objectWindows) => {
           .join(", ")}`,
       );
     }
-    const positionEasing = easingFor(target.scene.camera.motion, plan.style);
+    const positionEasing = easingFor(target.camera.motion, plan.style);
     const zoomEasing = easingFor(
-      target.scene.camera.zoomMotion || "precise",
+      target.camera.zoomMotion ||
+        (transition === "return-to-page" ? target.camera.motion : "precise"),
       plan.style,
     );
 
-    if (transition === "reframe") {
+    if (transition === "return-to-page") {
+      for (const field of ["centerX", "centerY"]) {
+        appendKeyframe(channels[field], {
+          atMs: startMs,
+          value: previous[field],
+          easing: positionEasing,
+        });
+        appendKeyframe(channels[field], {
+          atMs: arrivalMs,
+          value: target[field],
+          label: target.scene.id,
+        });
+      }
+      appendKeyframe(channels.zoom, {
+        atMs: startMs,
+        value: previous.zoom,
+        easing: zoomEasing,
+      });
+      appendKeyframe(channels.zoom, {
+        atMs: arrivalMs,
+        value: target.zoom,
+        label: target.scene.id,
+      });
+    } else if (transition === "reframe") {
       const zoomOutEndMs = startMs + Math.round(durationMs * 0.25);
       const positionEndMs = startMs + Math.round(durationMs * 0.75);
       const travelZoom = clamp(
         Math.min(previous.zoom, target.zoom) *
-          (target.scene.camera.travelZoomRatio ?? 0.72),
+          (target.camera.travelZoomRatio ?? 0.72),
         0.1,
         4,
       );
@@ -969,10 +1026,10 @@ const compileCue = ({
 
 export const validateStoryAnimationPlan = (plan, canvasDraft) => {
   if (!plan?.style || !plan.durationMs || plan.durationMs < 1000) {
-    throw new Error("Animation Plan 必须先定义 style 和 durationMs");
+    throw new Error("动画计划必须先定义 style 和 durationMs");
   }
   if (!Array.isArray(plan.scenes) || plan.scenes.length === 0) {
-    throw new Error("Animation Plan 至少需要一个场景");
+    throw new Error("动画计划至少需要一个场景");
   }
   const targetIds = getTargetIds(canvasDraft);
   const connectorIds = new Set(
@@ -982,22 +1039,19 @@ export const validateStoryAnimationPlan = (plan, canvasDraft) => {
   const beatById = new Map(
     (canvasDraft.beats || []).map((beat) => [beat.id, beat]),
   );
-  if (plan.scenes.some((scene) => scene.camera) && !plan.scenes[0].camera) {
-    throw new Error("使用 Camera 时必须由首场景定义初始取景");
-  }
   const sceneIds = new Set();
   let previousStart = -1;
   for (const [sceneIndex, scene] of plan.scenes.entries()) {
     if (sceneIds.has(scene.id) || scene.startMs <= previousStart) {
-      throw new Error("Animation Plan 场景 id 必须唯一并按 startMs 严格递增");
+      throw new Error("动画计划的场景 id 必须唯一并按 startMs 严格递增");
     }
     sceneIds.add(scene.id);
     previousStart = scene.startMs;
     if (sceneIndex === 0 && scene.startMs !== 0) {
-      throw new Error("Animation Plan 的首场景必须从 0ms 开始");
+      throw new Error("动画计划的首场景必须从 0ms 开始");
     }
     if (sceneIndex === 0 && scene.transition) {
-      throw new Error("Animation Plan 的首场景不能配置章节转场");
+      throw new Error("动画计划的首场景不能配置章节转场");
     }
     if (!beatIds.has(scene.beatId)) {
       throw new Error(

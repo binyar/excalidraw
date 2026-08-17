@@ -98,12 +98,12 @@ const readableToolError = (toolName, rawError) => {
       toolName === "finalize_canvas_draft" &&
       errorText.includes("animationBrief")
     ) {
-      return "动画简报参数格式不正确，PiAgent 正在调整后重试";
+      return "动画简报参数格式不正确，智能体正在调整后重试";
     }
     const field = errorText.match(/^\s*-\s*([^:]+):/m)?.[1];
     return field
-      ? `工具参数“${field}”格式不正确，PiAgent 正在调整后重试`
-      : "工具参数格式不正确，PiAgent 正在调整后重试";
+      ? `工具参数“${field}”格式不正确，智能体正在调整后重试`
+      : "工具参数格式不正确，智能体正在调整后重试";
   }
   const receivedArgumentsIndex = errorText.indexOf("Received arguments:");
   const conciseError =
@@ -207,6 +207,7 @@ const applyCurrentCanvasState = (artifact, currentCanvasState) => {
 const buildAgent = ({
   transcript,
   threadId,
+  thinkingLevel,
   currentCanvasState,
   onEvent,
   onAnimationEvent,
@@ -221,10 +222,10 @@ const buildAgent = ({
   const agent = new Agent({
     initialState: {
       systemPrompt: editContext
-        ? `${STORY_AGENT_SYSTEM_PROMPT}\n\n当前是二次编辑，不是重新创建。以下是当前画布与动画的语义快照：\n${editContext}\n\n必须保留故事 id 和未被用户要求修改的内容、布局、资源与业务关系。修改已有基础元素必须调用 update_canvas_elements 并复用稳定语义 id；删除使用 remove_canvas_items；add_canvas_elements 仅用于用户明确要求的新内容。禁止另起一套平行故事。完成修改后重新冻结 Draft 并委派动画。`
+        ? `${STORY_AGENT_SYSTEM_PROMPT}\n\n当前是二次编辑，不是重新创建。以下是当前画布与动画的语义快照：\n${editContext}\n\n必须保留故事 id 和未被用户要求修改的内容、布局、资源与业务关系。修改已有基础元素必须调用 update_canvas_elements 并复用稳定语义 id；删除使用 remove_canvas_items；add_canvas_elements 仅用于用户明确要求的新内容。禁止另起一套平行故事。完成修改后重新冻结画布草稿并委派动画。`
         : STORY_AGENT_SYSTEM_PROMPT,
       model,
-      thinkingLevel: "high",
+      thinkingLevel,
       tools: createCanvasTools({
         state: draftState,
         animate: (canvasDraft, brief, signal) =>
@@ -234,6 +235,7 @@ const buildAgent = ({
             models,
             model,
             sessionId: threadId,
+            thinkingLevel,
             signal,
             onEvent: onAnimationEvent,
           }),
@@ -319,6 +321,7 @@ export const handleAiRequest = async (
     if (!prompt) {
       throw Object.assign(new Error("请输入故事画布需求"), { status: 400 });
     }
+    const thinkingLevel = body.thinkingEnabled === true ? "high" : "off";
 
     const existing = db
       .prepare(
@@ -345,6 +348,7 @@ export const handleAiRequest = async (
         const runStartedAtMs = Date.now();
         const runStartedAt = new Date(runStartedAtMs).toISOString();
         let textId = null;
+        let pendingAssistantText = "";
         const emittedStatuses = new Set();
         let statusSequence = 0;
         const emitStatus = (
@@ -372,28 +376,39 @@ export const handleAiRequest = async (
         const animationToolLabel = (event, completed = false) => {
           const args = event.args || {};
           const suffix = completed ? "已完成" : "正在执行";
+          const toneLabels = {
+            restrained: "克制",
+            natural: "自然",
+            energetic: "活力",
+            playful: "活泼",
+          };
+          const paceLabels = {
+            slow: "舒缓",
+            normal: "适中",
+            fast: "明快",
+          };
           if (event.toolName === "define_animation_style") {
             return completed
-              ? `动画风格已定义为 ${args.tone || "natural"}/${
-                  args.pace || "normal"
-                }，总时长 ${Number(args.durationMs || 0) / 1000}s`
-              : "动画 Planner 正在定义全局节奏与风格";
+              ? `动画风格已定义为 ${toneLabels[args.tone] || "自然"}、${
+                  paceLabels[args.pace] || "适中"
+                }，总时长 ${Number(args.durationMs || 0) / 1000} 秒`
+              : "动画规划器正在定义全局节奏与风格";
           }
           if (event.toolName === "define_animation_scenes") {
             return `${suffix}：规划 ${args.scenes?.length || 0} 个故事场景`;
           }
           if (event.toolName === "define_scene_cues") {
-            return `${suffix}：场景 ${args.sceneId || ""} 规划 ${
+            return `${suffix}：为当前场景规划 ${
               args.cues?.length || 0
             } 个元素动作`;
           }
           if (event.toolName === "finalize_animation_plan") {
             return completed
-              ? "Animation Plan 已编译并冻结"
-              : "正在校验 Animation Plan 并编译 Motion 轨道";
+              ? "动画计划已编译并冻结"
+              : "正在校验动画计划并编译动画轨道";
           }
           return `${
-            completed ? "动画工具执行完成" : "动画子 Agent 正在执行工具"
+            completed ? "动画工具执行完成" : "动画子智能体正在执行工具"
           }：${event.toolName}`;
         };
         const animationToolArgs = new Map();
@@ -401,12 +416,12 @@ export const handleAiRequest = async (
           if (event.type === "agent_start") {
             emitStatus(
               "animation-agent-started",
-              "动画子 Agent 已接收冻结的画布 Draft",
+              "动画子智能体已接收冻结的画布草稿",
             );
           } else if (event.type === "turn_start") {
             emitStatus(
               "animation-planning",
-              "动画子 Agent 正在规划节拍时长、停顿和轨道重叠",
+              "动画子智能体正在规划节拍时长、停顿和轨道重叠",
             );
           } else if (event.type === "tool_execution_start") {
             animationToolArgs.set(event.toolCallId, event.args);
@@ -426,7 +441,9 @@ export const handleAiRequest = async (
                 event.isError ? "repairing" : "done"
               }`,
               event.isError
-                ? `动画计划需要调整，正在自动修正：${event.toolName}`
+                ? `动画计划需要调整，正在自动修正：${animationToolLabel(
+                    completedEvent,
+                  )}`
                 : animationToolLabel(completedEvent, true),
               { repeat: true },
             );
@@ -441,26 +458,19 @@ export const handleAiRequest = async (
         const agent = buildAgent({
           transcript,
           threadId,
+          thinkingLevel,
           currentCanvasState: body.currentCanvasState,
           onAnimationEvent,
           onEvent: (event) => {
             if (event.type === "agent_start") {
-              emitStatus("started", "已接收需求，PiAgent 开始执行");
+              emitStatus("started", "已接收需求，智能体开始执行");
             } else if (event.type === "turn_start") {
               emitStatus("planning", "正在规划故事结构和画布内容");
             } else if (
               event.type === "message_update" &&
               event.assistantMessageEvent.type === "text_delta"
             ) {
-              if (!textId) {
-                textId = randomUUID();
-                writer.write({ type: "text-start", id: textId });
-              }
-              writer.write({
-                type: "text-delta",
-                id: textId,
-                delta: event.assistantMessageEvent.delta,
-              });
+              pendingAssistantText += event.assistantMessageEvent.delta;
             } else if (
               event.type === "message_update" &&
               event.assistantMessageEvent.type === "thinking_start"
@@ -470,11 +480,34 @@ export const handleAiRequest = async (
               event.type === "message_update" &&
               event.assistantMessageEvent.type === "toolcall_start"
             ) {
-              emitStatus("toolcall", "正在调用画布工具或动画子 Agent");
+              emitStatus("toolcall", "正在调用画布工具或动画子智能体");
             } else if (
               event.type === "message_end" &&
               event.message.role === "assistant"
             ) {
+              const hasToolCall = event.message.content?.some(
+                (item) => item.type === "toolCall",
+              );
+              const assistantText = pendingAssistantText.trim();
+              pendingAssistantText = "";
+              if (!hasToolCall && assistantText) {
+                const chineseCharacterCount =
+                  assistantText.match(/[\u3400-\u9fff]/g)?.length || 0;
+                const latinCharacterCount =
+                  assistantText.match(/[A-Za-z]/g)?.length || 0;
+                const displayText =
+                  chineseCharacterCount === 0 ||
+                  latinCharacterCount > Math.max(24, chineseCharacterCount / 2)
+                    ? "故事画布和动画已生成完成。"
+                    : assistantText;
+                textId = randomUUID();
+                writer.write({ type: "text-start", id: textId });
+                writer.write({
+                  type: "text-delta",
+                  id: textId,
+                  delta: displayText,
+                });
+              }
               finishText();
             } else if (event.type === "tool_execution_start") {
               const isLibrarySearch =
@@ -487,12 +520,12 @@ export const handleAiRequest = async (
                 input: event.args,
                 title:
                   event.toolName === "delegate_animation"
-                    ? "动画子 Agent 正在规划时间轴"
+                    ? "动画子智能体正在规划时间轴"
                     : isLibrarySearch
                     ? "正在检索 Excalidraw 资源库"
                     : isLibraryAdd
-                    ? "正在把资源库条目加入画布 Draft"
-                    : "正在构建故事画布 Draft",
+                    ? "正在把资源库条目加入画布草稿"
+                    : "正在构建故事画布草稿",
               });
             } else if (event.type === "tool_execution_end") {
               const toolErrorText = event.result?.content
@@ -527,16 +560,16 @@ export const handleAiRequest = async (
         });
         activeAgents.set(threadId, agent);
         try {
-          emitStatus("queued", "请求已提交到 PiAgent");
+          emitStatus("queued", "请求已提交到智能体");
           await agent.prompt(prompt);
           finishText();
-          emitStatus("completed", "PiAgent 执行完成", { completed: true });
+          emitStatus("completed", "智能体执行完成", { completed: true });
           db.prepare(
             "UPDATE ai_threads SET transcript_json = ?, updated_at = ? WHERE id = ?",
           ).run(JSON.stringify(agent.state.messages), now(), threadId);
         } catch (error) {
           finishText();
-          emitStatus("failed", "PiAgent 执行失败", { completed: true });
+          emitStatus("failed", "智能体执行失败", { completed: true });
           throw error;
         } finally {
           finishText();

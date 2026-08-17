@@ -18,7 +18,7 @@ export const MOTION_ANIMATION_SKILL = `
 6. 默认时长参考：微反馈 120-240ms；普通进入/强调 300-700ms；较大空间移动 600-1200ms；Camera reframe 900-1800ms。必须根据距离、信息密度和阅读时间调整，而不是机械套用。
 7. 关键帧上的 easing 控制“从当前关键帧到下一个关键帧”的区段。最后一个关键帧无需 easing。hold 用于保持当前值直到下一帧。
 8. 元素是否存在于当前画布交互层由离散的 element.visibility 控制，不由 opacity 控制。enter 会在动作开始时从 hidden 切为 visible，exit 会在动作完成时从 visible 切为 hidden；hidden 元素既不绘制也不能被选择。opacity 只用于 visible 阶段的淡入淡出。Planner 必须用 enter/exit 表达真实显隐，Compiler 会自动生成可在时间轴编辑的状态轨道。
-9. 外观变化使用 type=style、effect=style，并填写 styleProperty/styleValue；不要把样式变化伪装成 emphasize。属性必须严格按元素类型选择：rectangle/diamond 支持完整图形样式和 roundness，ellipse 不支持 roundness；line 支持背景、填充、描边以及 roundness；arrow 只支持 opacity、描边颜色/宽度/样式和 roughness；freedraw 支持 opacity、描边颜色/宽度、背景和填充，但不支持 strokeStyle、roughness、roundness；独立 text 只支持 opacity、fontSize、fontFamily、textAlign，不支持任何图形描边、背景、填充、边框或 roundness，仅绑定到非箭头容器的文字才支持 verticalAlign；image 只支持 opacity 和 roundness；iframe/embeddable 按编辑器原生边框能力配置；frame/magicframe 只支持 opacity。当前 Canvas Draft 的 connector 最终物化为 arrow，library asset 默认按 opacity 的保守能力处理。
+9. 外观变化使用 type=style、effect=style，并填写 styleProperty/styleValue；不要把样式变化伪装成 emphasize。属性必须严格按元素类型选择：rectangle/diamond 支持完整图形样式和 roundness，ellipse 不支持 roundness；line 支持背景、填充、描边以及 roundness；arrow 只支持 opacity、描边颜色/宽度/样式和 roughness；freedraw 支持 opacity、描边颜色/宽度、背景和填充，但不支持 strokeStyle、roughness、roundness；独立 text 只支持 opacity、fontSize、fontFamily、textAlign，不支持任何图形描边、背景、填充、边框或 roundness，仅绑定到非箭头容器的文字才支持 verticalAlign；image 只支持 opacity 和 roundness；iframe/embeddable 按编辑器原生边框能力配置；frame/magicframe 只支持 opacity。当前画布草稿的 connector 最终物化为 arrow，资源库条目默认按 opacity 的保守能力处理。
 
 ### 样式属性精确值
 - visual.opacity：0..1；颜色使用 #RRGGBBAA。

@@ -17,7 +17,7 @@ const DropdownMenuContent = ({
       data-slot="dropdown-menu-content"
       sideOffset={sideOffset}
       className={cn(
-        "z-50 min-w-32 overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=closed]:animate-out data-[state=open]:animate-in",
+        "z-50 min-w-32 overflow-hidden rounded-md border bg-popover p-1 font-[Inter,'PingFang_SC','Microsoft_YaHei',sans-serif] text-[11px] font-normal text-[#555] shadow-md data-[state=closed]:animate-out data-[state=open]:animate-in",
         className,
       )}
       {...props}
@@ -39,7 +39,7 @@ const DropdownMenuItem = ({
     data-inset={inset}
     data-variant={variant}
     className={cn(
-      "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[inset=true]:pl-8 data-[variant=destructive]:text-destructive",
+      "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-[11px] font-normal text-[#555] outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-accent data-[highlighted]:text-[#333] data-[inset=true]:pl-8 data-[variant=destructive]:text-destructive",
       className,
     )}
     {...props}
@@ -57,7 +57,7 @@ const DropdownMenuLabel = ({
     data-slot="dropdown-menu-label"
     data-inset={inset}
     className={cn(
-      "px-2 py-1.5 text-sm font-medium data-[inset=true]:pl-8",
+      "px-2 py-1.5 text-[11px] font-medium text-[#444] data-[inset=true]:pl-8",
       className,
     )}
     {...props}

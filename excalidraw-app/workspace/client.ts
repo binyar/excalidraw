@@ -72,16 +72,6 @@ export const workspaceApi = {
       body: JSON.stringify({ name, folderId }),
     }),
   getFile: (id: string) => request<WorkspaceFile>(`/files/${id}`),
-  importFile: (file: File, folderId?: string | null) =>
-    request<WorkspaceFile>("/import", {
-      method: "POST",
-      headers: {
-        "content-type": "application/vnd.excalidraw+json",
-        "x-file-name": encodeURIComponent(file.name),
-        ...(folderId ? { "x-folder-id": folderId } : {}),
-      },
-      body: file,
-    }),
   updateFile: (
     id: string,
     patch: Partial<Pick<WorkspaceFile, "name" | "folderId" | "isFavorite">>,
@@ -97,15 +87,4 @@ export const workspaceApi = {
     }),
   restoreFile: (id: string) =>
     request<WorkspaceFile>(`/files/${id}/restore`, { method: "POST" }),
-  getContent: (id: string) => request<Blob>(`/files/${id}/content`),
-};
-
-export const downloadWorkspaceFile = async (file: WorkspaceFile) => {
-  const blob = await workspaceApi.getContent(file.id);
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = file.name;
-  anchor.click();
-  URL.revokeObjectURL(url);
 };

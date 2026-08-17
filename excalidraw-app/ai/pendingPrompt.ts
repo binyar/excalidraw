@@ -3,14 +3,18 @@ const AI_CREATE_PROMPT_PREFIX = "excalidraw-ai-create:";
 type PendingAiCreatePrompt = {
   prompt: string;
   createdAt: number;
+  thinkingEnabled?: boolean;
 };
 
 const storageKey = (workspaceFileId: string) =>
   `${AI_CREATE_PROMPT_PREFIX}${workspaceFileId}`;
+const thinkingStorageKey = (workspaceFileId: string) =>
+  `${AI_CREATE_PROMPT_PREFIX}thinking:${workspaceFileId}`;
 
 export const savePendingAiCreatePrompt = (
   workspaceFileId: string,
   prompt: string,
+  options?: { thinkingEnabled?: boolean },
 ) => {
   if (!workspaceFileId || !prompt.trim()) {
     return;
@@ -18,15 +22,34 @@ export const savePendingAiCreatePrompt = (
   const value: PendingAiCreatePrompt = {
     prompt: prompt.trim(),
     createdAt: Date.now(),
+    thinkingEnabled: options?.thinkingEnabled === true,
   };
   try {
     window.sessionStorage.setItem(
       storageKey(workspaceFileId),
       JSON.stringify(value),
     );
+    window.sessionStorage.setItem(
+      thinkingStorageKey(workspaceFileId),
+      value.thinkingEnabled ? "on" : "off",
+    );
   } catch {
     // The editor still opens when storage is unavailable; the user can submit
     // the same prompt manually from the AI panel.
+  }
+};
+
+export const getPendingAiThinkingEnabled = (workspaceFileId: string) => {
+  if (!workspaceFileId) {
+    return false;
+  }
+  try {
+    return (
+      window.sessionStorage.getItem(thinkingStorageKey(workspaceFileId)) ===
+      "on"
+    );
+  } catch {
+    return false;
   }
 };
 

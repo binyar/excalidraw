@@ -494,41 +494,6 @@ export const handleWorkspaceRequest = async (req, res) => {
       sendJson(res, 200, mapFile(row));
       return true;
     }
-    if (req.method === "POST" && resource === "import") {
-      const body = await readBody(req);
-      let parsed;
-      try {
-        parsed = JSON.parse(body.toString("utf8"));
-      } catch {
-        throw Object.assign(new Error("文件不是有效的 JSON"), { status: 400 });
-      }
-      if (!isDrawing(parsed))
-        throw Object.assign(new Error("请选择有效的 .excalidraw 文件"), {
-          status: 400,
-        });
-      const fileId = randomUUID();
-      const storageName = `${fileId}.excalidraw`;
-      await writeFile(storagePath(storageName), body);
-      const timestamp = now();
-      const encodedName = req.headers["x-file-name"];
-      const fileName = encodedName
-        ? decodeURIComponent(String(encodedName))
-        : undefined;
-      const folderId = req.headers["x-folder-id"] || null;
-      db.prepare(
-        "INSERT INTO files(id, name, folder_id, storage_name, size, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      ).run(
-        fileId,
-        normalizeDrawingName(fileName),
-        folderId,
-        storageName,
-        body.length,
-        timestamp,
-        timestamp,
-      );
-      sendJson(res, 201, mapFile(getFileRow(fileId)));
-      return true;
-    }
     if (
       resource === "files" &&
       id &&

@@ -21,6 +21,14 @@
 .editor-shell__canvas > .powdoo {
   width: 100%;
   height: 100%;
+
+  // Keep the editor chrome aligned with the compact 12px workspace UI,
+  // including on large/high-density displays where the library scales up.
+  --default-button-size: 1.875rem;
+  --default-icon-size: 0.875rem;
+  --lg-button-size: 2rem;
+  --lg-icon-size: 0.875rem;
+  --editor-container-padding: 0.75rem;
 }
 
 .ai-chatbot-layer.ai-chatbot-layer {
@@ -68,7 +76,24 @@
   }
 
   .dropdown-menu-container {
+    border: 1px solid #e7e7e7;
+    border-radius: 12px;
+    background: #fff;
+    color: #555;
+    box-shadow: 0 8px 24px rgb(15 23 42 / 9%);
+
+    .dropdown-menu-item-base {
+      column-gap: 0.5rem;
+      color: #555;
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 1.4;
+    }
+
     .dropdown-menu-item {
+      height: 2rem;
+      border-radius: 8px;
+
       &.active-collab {
         background-color: #ecfdf5;
         color: #064e3c;
@@ -81,6 +106,45 @@
         }
       }
     }
+  }
+
+  .dropdown-menu-button {
+    width: 2rem;
+    height: 2rem;
+
+    svg {
+      width: 0.875rem;
+      height: 0.875rem;
+    }
+  }
+
+  .App-toolbar-container {
+    .ToolIcon__keybinding {
+      right: 2px;
+      bottom: 1px;
+      font-size: 8px;
+    }
+
+    .App-toolbar__divider {
+      height: 1.125rem;
+    }
+
+    .HintViewer {
+      margin-top: 0.375rem;
+      font-size: 10px;
+
+      kbd {
+        padding: 0 2px;
+        font-size: 9px;
+      }
+    }
+  }
+
+  .dropdown-select {
+    color: #555;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.4;
   }
 
   &.theme--dark {

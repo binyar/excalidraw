@@ -11,6 +11,18 @@ const resultText = (text, details) => ({
   ...(details ? { details } : {}),
 });
 
+const ANIMATION_TONE_LABELS = {
+  restrained: "克制",
+  natural: "自然",
+  energetic: "活力",
+  playful: "活泼",
+};
+const ANIMATION_PACE_LABELS = {
+  slow: "舒缓",
+  normal: "适中",
+  fast: "明快",
+};
+
 const motionCharacterSchema = Type.Union([
   Type.Literal("precise"),
   Type.Literal("gentle"),
@@ -485,13 +497,6 @@ const normalizeScenesForStorySpaces = (scenes, canvasDraft) => {
             },
     };
   });
-  if (normalized.some((scene) => scene.camera) && !normalized[0]?.camera) {
-    normalized[0] = {
-      ...normalized[0],
-      camera: { framing: "fit", transition: "hold", motion: "gentle" },
-    };
-    repairs.push("首场景已补充 same-space 镜头的初始取景");
-  }
   return { scenes: normalized, repairs };
 };
 
@@ -500,7 +505,7 @@ export const createAnimationPlannerTools = (canvasDraft, state) => [
     name: "define_animation_style",
     label: "定义动画风格与总节奏",
     description:
-      "Define the story duration and global motion language before planning scenes. This is director intent, not Motion keyframes.",
+      "在规划场景之前定义故事总时长和全局运动语言。这里表达导演意图，不直接编写动画关键帧；所有说明必须使用中文。",
     parameters: Type.Object({
       durationMs: Type.Number({ minimum: 1000, maximum: 120_000 }),
       rationale: Type.String({ minLength: 1, maxLength: 1000 }),
@@ -530,7 +535,9 @@ export const createAnimationPlannerTools = (canvasDraft, state) => [
       state.compiledDraft = null;
       state.finalized = false;
       return resultText(
-        `动画风格已定义：${params.tone}/${params.pace}，总时长 ${params.durationMs}ms。`,
+        `动画风格已定义为${ANIMATION_TONE_LABELS[params.tone]}、${
+          ANIMATION_PACE_LABELS[params.pace]
+        }，总时长 ${params.durationMs} 毫秒。`,
       );
     },
   },
@@ -538,7 +545,7 @@ export const createAnimationPlannerTools = (canvasDraft, state) => [
     name: "define_animation_scenes",
     label: "规划动画场景与镜头",
     description:
-      "Plan ordered story scenes, timing, focus targets, and editable chapter transitions. Do not provide coordinates or keyframes.",
+      "规划有序的故事场景、时间、聚焦目标以及可编辑的章节转场。不要提供坐标或关键帧，所有场景说明必须使用中文。",
     parameters: Type.Object({
       scenes: Type.Array(
         Type.Object({
@@ -589,7 +596,7 @@ export const createAnimationPlannerTools = (canvasDraft, state) => [
     name: "define_scene_cues",
     label: "规划场景元素动作",
     description:
-      "Plan editable Object animation layers. In addition to enter/emphasize/exit/draw, use style cues for appearance changes. Apply this strict capability table: rectangle/diamond support shape styles plus roundness; ellipse has no roundness; line supports background/fill/stroke/roughness/roundness; arrow and Canvas connector support only opacity plus stroke color/width/style/roughness; freedraw supports opacity/stroke color/width/background/fill but no strokeStyle/roughness/roundness; standalone text supports only opacity/fontSize/fontFamily/textAlign and never shape styles, while verticalAlign is only for text bound to a non-arrow container; image supports only opacity/roundness; iframe/embeddable follow their native border capabilities; frame/magicframe and library assets support only opacity. Invalid target/property pairs are removed. Roundness is continuous: the UI and Agent write numeric 0/1 endpoints (legacy sharp/round remains readable), and it needs duration/easing like numeric and RGBA color properties. Only fillStyle, strokeStyle, roughness, fontFamily, textAlign, verticalAlign, and visibility are discrete states that switch exactly at the keyframe and have no easing or connecting segment. roughness 0/1/2 are enum ids, not interpolated measurements. enter creates real visibility and exit hides after motion; opacity is not a substitute for visibility.",
+      "规划可编辑的对象动画层。除 enter、emphasize、exit、draw 外，外观变化使用 style 动作。严格遵守能力范围：rectangle/diamond 支持图形样式和 roundness；ellipse 不支持 roundness；line 支持背景、填充、描边、roughness 和 roundness；arrow 与画布连接线只支持 opacity、描边颜色、宽度、样式和 roughness；freedraw 支持 opacity、描边颜色、宽度、背景和填充，但不支持 strokeStyle、roughness、roundness；独立 text 只支持 opacity、fontSize、fontFamily、textAlign，不能使用图形样式，verticalAlign 仅适用于绑定到非箭头容器的文字；image 只支持 opacity 和 roundness；iframe/embeddable 遵循编辑器原生边框能力；frame/magicframe 和资源库条目只支持 opacity。无效的目标与属性组合会被移除。roundness 是连续属性，界面和智能体写入数值 0/1 端点，并像其他数值或 RGBA 颜色一样需要时长和缓动。fillStyle、strokeStyle、roughness、fontFamily、textAlign、verticalAlign、visibility 是离散状态，只在关键帧处切换，不使用缓动或连接段；roughness 的 0/1/2 是枚举值，不做数值插值。enter 会创建真实可见状态，exit 会在动作后隐藏元素，opacity 不能替代可见性。所有自然语言说明必须使用中文。",
     parameters: Type.Object({
       sceneId: Type.String({ minLength: 1, maxLength: 64 }),
       cues: Type.Array(cueSchema, { minItems: 1, maxItems: 100 }),
@@ -613,8 +620,11 @@ export const createAnimationPlannerTools = (canvasDraft, state) => [
         canvasDraft,
       );
       state.scenes = candidateScenes;
+      const sceneTitle =
+        (canvasDraft.beats || []).find((beat) => beat.id === scene.beatId)
+          ?.title || "当前场景";
       return resultText(
-        `场景 ${params.sceneId} 已规划 ${normalized.cues.length} 个语义 Cue。${
+        `场景“${sceneTitle}”已规划 ${normalized.cues.length} 个语义动作。${
           normalized.repairs.length > 0
             ? ` 已自动修复 ${normalized.repairs.length} 项。`
             : ""
@@ -629,7 +639,7 @@ export const createAnimationPlannerTools = (canvasDraft, state) => [
     name: "finalize_animation_plan",
     label: "编译并冻结动画计划",
     description:
-      "Validate the complete planner DSL and deterministically compile it into the AnimationProject draft consumed by Motion Runtime.",
+      "校验完整的动画规划描述，并确定性编译为动画运行时使用的 AnimationProject 草稿。所有摘要和修复说明必须使用中文。",
     parameters: Type.Object({
       summary: Type.String({ minLength: 1, maxLength: 500 }),
     }),
@@ -644,14 +654,14 @@ export const createAnimationPlannerTools = (canvasDraft, state) => [
           track.targetType !== "transition" && track.targetType !== "camera",
       ).length;
       if (objectTrackCount === 0) {
-        throw new Error("Animation Plan 编译后没有任何 Object 元素动画轨道");
+        throw new Error("动画计划编译后没有任何对象动画轨道");
       }
       state.compiledDraft = draft;
       state.finalized = true;
       return resultText(
-        `Animation Plan 已编译：${state.scenes.length} 个场景，${
+        `动画计划已编译：${state.scenes.length} 个场景，${
           draft.tracks.length
-        } 条 Motion 轨道。${
+        } 条动画轨道。${
           prepared.repairs.length > 0
             ? ` 已自动修复 ${prepared.repairs.length} 项时间窗口冲突。`
             : ""

@@ -5,22 +5,8 @@ import {
 import { useExcalidrawAPI } from "@excalidraw/excalidraw/components/App";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, isToolUIPart, type UIMessage } from "ai";
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import {
-  IconArrowBoldUp,
-  IconBot,
-  IconBot2,
-  IconBoxCaretDown,
-  IconMsgs,
-  IconTabClose,
-} from "nucleo-glass";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowUp, ChevronDown, MessageCircle, Square, X } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -30,13 +16,16 @@ import {
   parseStoryArtifact,
   type StoryArtifact,
 } from "../../src/ai/story";
-import { AI_STORY_PROMPT_EXAMPLE } from "../ai/copy";
-import { consumePendingAiCreatePrompt } from "../ai/pendingPrompt";
+import {
+  consumePendingAiCreatePrompt,
+  getPendingAiThinkingEnabled,
+} from "../ai/pendingPrompt";
 import { mergeStoryAnimationProject } from "../ai/storyAnimationProject";
 import { getWorkspaceFileIdFromPath } from "../workspace/editorRoute";
 
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
+import { BearIcon } from "./BearIcon";
 
 import "./AIStoryPanel.scss";
 
@@ -314,35 +303,28 @@ const PanelIcon = ({
   name: "panel" | "chat" | "close" | "arrow" | "down" | "stop";
   size?: number;
 }) => {
-  const uniqueId = useId().replace(/:/g, "");
-  const icons = {
-    panel: IconBot,
-    chat: IconMsgs,
-    close: IconTabClose,
-    arrow: IconArrowBoldUp,
-    down: IconBoxCaretDown,
-    stop: IconTabClose,
-  } as const;
-  const GlassIcon = icons[name];
+  if (name === "panel") {
+    return <BearIcon aria-hidden="true" size={size} />;
+  }
 
-  return (
-    <GlassIcon
-      aria-hidden="true"
-      size={size}
-      uniqueId={`ai-panel-${uniqueId}-`}
-    />
-  );
+  const icons = {
+    chat: MessageCircle,
+    close: X,
+    arrow: ArrowUp,
+    down: ChevronDown,
+    stop: Square,
+  } as const;
+  const GenericIcon = icons[name];
+
+  return <GenericIcon aria-hidden="true" size={size} strokeWidth={1.8} />;
 };
 
 const AgentMark = ({ thinking = false }: { thinking?: boolean }) => {
-  const uniqueId = useId().replace(/:/g, "");
-  const BotIcon = thinking ? IconBot2 : IconBot;
-
   return (
-    <BotIcon
+    <BearIcon
       aria-hidden="true"
       className={`ai-agent-mark ${thinking ? "is-thinking" : "is-normal"}`}
-      uniqueId={`ai-agent-${uniqueId}-`}
+      variant={thinking ? "thinking" : "normal"}
     />
   );
 };
@@ -488,9 +470,7 @@ export const AIStoryPanel = ({ onClose }: { onClose?: () => void }) => {
     () => getThreadId(workspaceFileId || "local"),
     [workspaceFileId],
   );
-  const [input, setInput] = useState(() =>
-    workspaceFileId ? AI_STORY_PROMPT_EXAMPLE : "",
-  );
+  const [input, setInput] = useState("");
   const [historyLoaded, setHistoryLoaded] = useState(!workspaceFileId);
   const [scrolledFromBottom, setScrolledFromBottom] = useState(false);
   const [localRunStartedAt, setLocalRunStartedAt] = useState<number | null>(
@@ -607,6 +587,7 @@ export const AIStoryPanel = ({ onClose }: { onClose?: () => void }) => {
         body: () => ({
           workspaceFileId,
           threadId,
+          thinkingEnabled: getPendingAiThinkingEnabled(workspaceFileId),
           currentCanvasState: currentAiCanvasState(excalidrawAPI),
         }),
       }),

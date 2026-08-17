@@ -19,9 +19,40 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
     "items": [
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M7 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"
+            />
+            <path
+              d="M17 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"
+            />
+            <path
+              d="M9.15 14.85l8.85 -10.85"
+            />
+            <path
+              d="M6 4l8.85 10.85"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.cut",
         "name": "cut",
@@ -31,9 +62,29 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M14.375 6.458H8.958a2.5 2.5 0 0 0-2.5 2.5v5.417a2.5 2.5 0 0 0 2.5 2.5h5.417a2.5 2.5 0 0 0 2.5-2.5V8.958a2.5 2.5 0 0 0-2.5-2.5Z"
+            />
+            <path
+              clipRule="evenodd"
+              d="M11.667 3.125c.517 0 .986.21 1.325.55.34.338.55.807.55 1.325v1.458H8.333c-.485 0-.927.185-1.26.487-.343.312-.57.75-.609 1.24l-.005 5.357H5a1.87 1.87 0 0 1-1.326-.55 1.87 1.87 0 0 1-.549-1.325V5c0-.518.21-.987.55-1.326.338-.34.807-.549 1.325-.549h6.667Z"
+            />
+          </g>
+        </svg>,
         "keyTest": undefined,
         "label": "labels.copy",
         "name": "copy",
@@ -82,9 +133,34 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M8 5v10a1 1 0 0 0 1 1h10"
+            />
+            <path
+              d="M5 8h10a1 1 0 0 1 1 1v10"
+            />
+          </g>
+        </svg>,
         "keywords": [
           "image",
           "crop",
@@ -100,9 +176,43 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
       },
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M14 3v4a1 1 0 0 0 1 1h4"
+            />
+            <path
+              d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"
+            />
+            <path
+              d="M20 15h-1a2 2 0 0 0 -2 2v2a2 2 0 0 0 2 2h1v-3"
+            />
+            <path
+              d="M5 18h1.5a1.5 1.5 0 0 0 0 -3h-1.5v6"
+            />
+            <path
+              d="M11 21v-6l3 6v-6"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "png",
@@ -118,9 +228,43 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M14 3v4a1 1 0 0 0 1 1h4"
+            />
+            <path
+              d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"
+            />
+            <path
+              d="M4 20.25c0 .414 .336 .75 .75 .75h1.25a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-1a1 1 0 0 1 -1 -1v-1a1 1 0 0 1 1 -1h1.25a.75 .75 0 0 1 .75 .75"
+            />
+            <path
+              d="M10 15l2 6l2 -6"
+            />
+            <path
+              d="M20 15h-1a2 2 0 0 0 -2 2v2a2 2 0 0 0 2 2h1v-3"
+            />
+          </g>
+        </svg>,
         "keywords": [
           "svg",
           "clipboard",
@@ -150,9 +294,37 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
       },
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M5 3m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z"
+            />
+            <path
+              d="M19 6h1a2 2 0 0 1 2 2a5 5 0 0 1 -5 5l-5 0v2"
+            />
+            <path
+              d="M10 15m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.copyStyles",
         "name": "copyStyles",
@@ -162,9 +334,37 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M5 3m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z"
+            />
+            <path
+              d="M19 6h1a2 2 0 0 1 2 2a5 5 0 0 1 -5 5l-5 0v2"
+            />
+            <path
+              d="M10 15m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.pasteStyles",
         "name": "pasteStyles",
@@ -247,9 +447,42 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          style={
+            {
+              "transform": "rotate(180deg)",
+            }
+          }
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 5l0 14"
+            />
+            <path
+              d="M16 9l-4 -4"
+            />
+            <path
+              d="M8 9l4 -4"
+            />
+          </g>
+        </svg>,
         "keyPriority": 40,
         "keyTest": [Function],
         "keywords": [
@@ -266,9 +499,37 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
       },
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 5l0 14"
+            />
+            <path
+              d="M16 9l-4 -4"
+            />
+            <path
+              d="M8 9l4 -4"
+            />
+          </g>
+        </svg>,
         "keyPriority": 40,
         "keyTest": [Function],
         "keywords": [
@@ -285,9 +546,45 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
       },
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          style={
+            {
+              "transform": "rotate(180deg)",
+            }
+          }
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 10l0 10"
+            />
+            <path
+              d="M12 10l4 4"
+            />
+            <path
+              d="M12 10l-4 4"
+            />
+            <path
+              d="M4 4l16 0"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "move down",
@@ -303,9 +600,40 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
       },
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 10l0 10"
+            />
+            <path
+              d="M12 10l4 4"
+            />
+            <path
+              d="M12 10l-4 4"
+            />
+            <path
+              d="M4 4l16 0"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "move up",
@@ -321,9 +649,37 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
       },
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 3l0 18"
+            />
+            <path
+              d="M16 7l0 10l5 0l-5 -10"
+            />
+            <path
+              d="M8 7l0 10l-5 0l5 -10"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.flipHorizontal",
         "name": "flipHorizontal",
@@ -333,9 +689,37 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M3 12l18 0"
+            />
+            <path
+              d="M7 16l10 0l-10 5l0 -5"
+            />
+            <path
+              d="M7 8l10 0l-10 -5l0 5"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.flipVertical",
         "name": "flipVertical",
@@ -362,9 +746,28 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M8.333 11.667a2.917 2.917 0 0 0 4.167 0l3.333-3.334a2.946 2.946 0 1 0-4.166-4.166l-.417.416"
+            />
+            <path
+              d="M11.667 8.333a2.917 2.917 0 0 0-4.167 0l-3.333 3.334a2.946 2.946 0 0 0 4.166 4.166l.417-.416"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": [Function],
         "name": "hyperlink",
@@ -376,9 +779,32 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <React.Fragment>
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M8 8m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z"
+            />
+            <path
+              d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2"
+            />
+          </React.Fragment>
+        </svg>,
         "label": "labels.copyElementLink",
         "name": "copyElementLink",
         "perform": [Function],
@@ -390,9 +816,29 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M14.375 6.458H8.958a2.5 2.5 0 0 0-2.5 2.5v5.417a2.5 2.5 0 0 0 2.5 2.5h5.417a2.5 2.5 0 0 0 2.5-2.5V8.958a2.5 2.5 0 0 0-2.5-2.5Z"
+            />
+            <path
+              clipRule="evenodd"
+              d="M11.667 3.125c.517 0 .986.21 1.325.55.34.338.55.807.55 1.325v1.458H8.333c-.485 0-.927.185-1.26.487-.343.312-.57.75-.609 1.24l-.005 5.357H5a1.87 1.87 0 0 1-1.326-.55 1.87 1.87 0 0 1-.549-1.325V5c0-.518.21-.987.55-1.326.338-.34.807-.549 1.325-.549h6.667Z"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.duplicateSelection",
         "name": "duplicateSelection",
@@ -415,9 +861,22 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <path
+            d="M3.333 5.833h13.334M8.333 9.167v5M11.667 9.167v5M4.167 5.833l.833 10c0 .92.746 1.667 1.667 1.667h6.666c.92 0 1.667-.746 1.667-1.667l.833-10M7.5 5.833v-2.5c0-.46.373-.833.833-.833h3.334c.46 0 .833.373.833.833v2.5"
+            strokeWidth="1.25"
+          />
+        </svg>,
         "keyTest": [Function],
         "label": "labels.delete",
         "name": "deleteSelectedElements",
@@ -4235,9 +4694,40 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
     "items": [
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M7 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"
+            />
+            <path
+              d="M17 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"
+            />
+            <path
+              d="M9.15 14.85l8.85 -10.85"
+            />
+            <path
+              d="M6 4l8.85 10.85"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.cut",
         "name": "cut",
@@ -4247,9 +4737,29 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M14.375 6.458H8.958a2.5 2.5 0 0 0-2.5 2.5v5.417a2.5 2.5 0 0 0 2.5 2.5h5.417a2.5 2.5 0 0 0 2.5-2.5V8.958a2.5 2.5 0 0 0-2.5-2.5Z"
+            />
+            <path
+              clipRule="evenodd"
+              d="M11.667 3.125c.517 0 .986.21 1.325.55.34.338.55.807.55 1.325v1.458H8.333c-.485 0-.927.185-1.26.487-.343.312-.57.75-.609 1.24l-.005 5.357H5a1.87 1.87 0 0 1-1.326-.55 1.87 1.87 0 0 1-.549-1.325V5c0-.518.21-.987.55-1.326.338-.34.807-.549 1.325-.549h6.667Z"
+            />
+          </g>
+        </svg>,
         "keyTest": undefined,
         "label": "labels.copy",
         "name": "copy",
@@ -4298,9 +4808,34 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M8 5v10a1 1 0 0 0 1 1h10"
+            />
+            <path
+              d="M5 8h10a1 1 0 0 1 1 1v10"
+            />
+          </g>
+        </svg>,
         "keywords": [
           "image",
           "crop",
@@ -4316,9 +4851,43 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
       },
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M14 3v4a1 1 0 0 0 1 1h4"
+            />
+            <path
+              d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"
+            />
+            <path
+              d="M20 15h-1a2 2 0 0 0 -2 2v2a2 2 0 0 0 2 2h1v-3"
+            />
+            <path
+              d="M5 18h1.5a1.5 1.5 0 0 0 0 -3h-1.5v6"
+            />
+            <path
+              d="M11 21v-6l3 6v-6"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "png",
@@ -4334,9 +4903,43 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M14 3v4a1 1 0 0 0 1 1h4"
+            />
+            <path
+              d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"
+            />
+            <path
+              d="M4 20.25c0 .414 .336 .75 .75 .75h1.25a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-1a1 1 0 0 1 -1 -1v-1a1 1 0 0 1 1 -1h1.25a.75 .75 0 0 1 .75 .75"
+            />
+            <path
+              d="M10 15l2 6l2 -6"
+            />
+            <path
+              d="M20 15h-1a2 2 0 0 0 -2 2v2a2 2 0 0 0 2 2h1v-3"
+            />
+          </g>
+        </svg>,
         "keywords": [
           "svg",
           "clipboard",
@@ -4366,9 +4969,37 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
       },
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M5 3m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z"
+            />
+            <path
+              d="M19 6h1a2 2 0 0 1 2 2a5 5 0 0 1 -5 5l-5 0v2"
+            />
+            <path
+              d="M10 15m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.copyStyles",
         "name": "copyStyles",
@@ -4378,9 +5009,37 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M5 3m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z"
+            />
+            <path
+              d="M19 6h1a2 2 0 0 1 2 2a5 5 0 0 1 -5 5l-5 0v2"
+            />
+            <path
+              d="M10 15m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.pasteStyles",
         "name": "pasteStyles",
@@ -4463,9 +5122,42 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          style={
+            {
+              "transform": "rotate(180deg)",
+            }
+          }
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 5l0 14"
+            />
+            <path
+              d="M16 9l-4 -4"
+            />
+            <path
+              d="M8 9l4 -4"
+            />
+          </g>
+        </svg>,
         "keyPriority": 40,
         "keyTest": [Function],
         "keywords": [
@@ -4482,9 +5174,37 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
       },
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 5l0 14"
+            />
+            <path
+              d="M16 9l-4 -4"
+            />
+            <path
+              d="M8 9l4 -4"
+            />
+          </g>
+        </svg>,
         "keyPriority": 40,
         "keyTest": [Function],
         "keywords": [
@@ -4501,9 +5221,45 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
       },
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          style={
+            {
+              "transform": "rotate(180deg)",
+            }
+          }
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 10l0 10"
+            />
+            <path
+              d="M12 10l4 4"
+            />
+            <path
+              d="M12 10l-4 4"
+            />
+            <path
+              d="M4 4l16 0"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "move down",
@@ -4519,9 +5275,40 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
       },
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 10l0 10"
+            />
+            <path
+              d="M12 10l4 4"
+            />
+            <path
+              d="M12 10l-4 4"
+            />
+            <path
+              d="M4 4l16 0"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "move up",
@@ -4537,9 +5324,37 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
       },
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 3l0 18"
+            />
+            <path
+              d="M16 7l0 10l5 0l-5 -10"
+            />
+            <path
+              d="M8 7l0 10l-5 0l5 -10"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.flipHorizontal",
         "name": "flipHorizontal",
@@ -4549,9 +5364,37 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M3 12l18 0"
+            />
+            <path
+              d="M7 16l10 0l-10 5l0 -5"
+            />
+            <path
+              d="M7 8l10 0l-10 -5l0 5"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.flipVertical",
         "name": "flipVertical",
@@ -4578,9 +5421,28 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M8.333 11.667a2.917 2.917 0 0 0 4.167 0l3.333-3.334a2.946 2.946 0 1 0-4.166-4.166l-.417.416"
+            />
+            <path
+              d="M11.667 8.333a2.917 2.917 0 0 0-4.167 0l-3.333 3.334a2.946 2.946 0 0 0 4.166 4.166l.417-.416"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": [Function],
         "name": "hyperlink",
@@ -4592,9 +5454,32 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <React.Fragment>
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M8 8m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z"
+            />
+            <path
+              d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2"
+            />
+          </React.Fragment>
+        </svg>,
         "label": "labels.copyElementLink",
         "name": "copyElementLink",
         "perform": [Function],
@@ -4606,9 +5491,29 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M14.375 6.458H8.958a2.5 2.5 0 0 0-2.5 2.5v5.417a2.5 2.5 0 0 0 2.5 2.5h5.417a2.5 2.5 0 0 0 2.5-2.5V8.958a2.5 2.5 0 0 0-2.5-2.5Z"
+            />
+            <path
+              clipRule="evenodd"
+              d="M11.667 3.125c.517 0 .986.21 1.325.55.34.338.55.807.55 1.325v1.458H8.333c-.485 0-.927.185-1.26.487-.343.312-.57.75-.609 1.24l-.005 5.357H5a1.87 1.87 0 0 1-1.326-.55 1.87 1.87 0 0 1-.549-1.325V5c0-.518.21-.987.55-1.326.338-.34.807-.549 1.325-.549h6.667Z"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.duplicateSelection",
         "name": "duplicateSelection",
@@ -4631,9 +5536,22 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <path
+            d="M3.333 5.833h13.334M8.333 9.167v5M11.667 9.167v5M4.167 5.833l.833 10c0 .92.746 1.667 1.667 1.667h6.666c.92 0 1.667-.746 1.667-1.667l.833-10M7.5 5.833v-2.5c0-.46.373-.833.833-.833h3.334c.46 0 .833.373.833.833v2.5"
+            strokeWidth="1.25"
+          />
+        </svg>,
         "keyTest": [Function],
         "label": "labels.delete",
         "name": "deleteSelectedElements",
@@ -4995,9 +5913,40 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
     "items": [
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M7 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"
+            />
+            <path
+              d="M17 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"
+            />
+            <path
+              d="M9.15 14.85l8.85 -10.85"
+            />
+            <path
+              d="M6 4l8.85 10.85"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.cut",
         "name": "cut",
@@ -5007,9 +5956,29 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M14.375 6.458H8.958a2.5 2.5 0 0 0-2.5 2.5v5.417a2.5 2.5 0 0 0 2.5 2.5h5.417a2.5 2.5 0 0 0 2.5-2.5V8.958a2.5 2.5 0 0 0-2.5-2.5Z"
+            />
+            <path
+              clipRule="evenodd"
+              d="M11.667 3.125c.517 0 .986.21 1.325.55.34.338.55.807.55 1.325v1.458H8.333c-.485 0-.927.185-1.26.487-.343.312-.57.75-.609 1.24l-.005 5.357H5a1.87 1.87 0 0 1-1.326-.55 1.87 1.87 0 0 1-.549-1.325V5c0-.518.21-.987.55-1.326.338-.34.807-.549 1.325-.549h6.667Z"
+            />
+          </g>
+        </svg>,
         "keyTest": undefined,
         "label": "labels.copy",
         "name": "copy",
@@ -5058,9 +6027,34 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M8 5v10a1 1 0 0 0 1 1h10"
+            />
+            <path
+              d="M5 8h10a1 1 0 0 1 1 1v10"
+            />
+          </g>
+        </svg>,
         "keywords": [
           "image",
           "crop",
@@ -5076,9 +6070,43 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
       },
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M14 3v4a1 1 0 0 0 1 1h4"
+            />
+            <path
+              d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"
+            />
+            <path
+              d="M20 15h-1a2 2 0 0 0 -2 2v2a2 2 0 0 0 2 2h1v-3"
+            />
+            <path
+              d="M5 18h1.5a1.5 1.5 0 0 0 0 -3h-1.5v6"
+            />
+            <path
+              d="M11 21v-6l3 6v-6"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "png",
@@ -5094,9 +6122,43 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M14 3v4a1 1 0 0 0 1 1h4"
+            />
+            <path
+              d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"
+            />
+            <path
+              d="M4 20.25c0 .414 .336 .75 .75 .75h1.25a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-1a1 1 0 0 1 -1 -1v-1a1 1 0 0 1 1 -1h1.25a.75 .75 0 0 1 .75 .75"
+            />
+            <path
+              d="M10 15l2 6l2 -6"
+            />
+            <path
+              d="M20 15h-1a2 2 0 0 0 -2 2v2a2 2 0 0 0 2 2h1v-3"
+            />
+          </g>
+        </svg>,
         "keywords": [
           "svg",
           "clipboard",
@@ -5126,9 +6188,37 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
       },
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M5 3m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z"
+            />
+            <path
+              d="M19 6h1a2 2 0 0 1 2 2a5 5 0 0 1 -5 5l-5 0v2"
+            />
+            <path
+              d="M10 15m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.copyStyles",
         "name": "copyStyles",
@@ -5138,9 +6228,37 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M5 3m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z"
+            />
+            <path
+              d="M19 6h1a2 2 0 0 1 2 2a5 5 0 0 1 -5 5l-5 0v2"
+            />
+            <path
+              d="M10 15m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.pasteStyles",
         "name": "pasteStyles",
@@ -5223,9 +6341,42 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          style={
+            {
+              "transform": "rotate(180deg)",
+            }
+          }
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 5l0 14"
+            />
+            <path
+              d="M16 9l-4 -4"
+            />
+            <path
+              d="M8 9l4 -4"
+            />
+          </g>
+        </svg>,
         "keyPriority": 40,
         "keyTest": [Function],
         "keywords": [
@@ -5242,9 +6393,37 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
       },
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 5l0 14"
+            />
+            <path
+              d="M16 9l-4 -4"
+            />
+            <path
+              d="M8 9l4 -4"
+            />
+          </g>
+        </svg>,
         "keyPriority": 40,
         "keyTest": [Function],
         "keywords": [
@@ -5261,9 +6440,45 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
       },
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          style={
+            {
+              "transform": "rotate(180deg)",
+            }
+          }
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 10l0 10"
+            />
+            <path
+              d="M12 10l4 4"
+            />
+            <path
+              d="M12 10l-4 4"
+            />
+            <path
+              d="M4 4l16 0"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "move down",
@@ -5279,9 +6494,40 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
       },
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 10l0 10"
+            />
+            <path
+              d="M12 10l4 4"
+            />
+            <path
+              d="M12 10l-4 4"
+            />
+            <path
+              d="M4 4l16 0"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "move up",
@@ -5297,9 +6543,37 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
       },
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 3l0 18"
+            />
+            <path
+              d="M16 7l0 10l5 0l-5 -10"
+            />
+            <path
+              d="M8 7l0 10l-5 0l5 -10"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.flipHorizontal",
         "name": "flipHorizontal",
@@ -5309,9 +6583,37 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M3 12l18 0"
+            />
+            <path
+              d="M7 16l10 0l-10 5l0 -5"
+            />
+            <path
+              d="M7 8l10 0l-10 -5l0 5"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.flipVertical",
         "name": "flipVertical",
@@ -5338,9 +6640,28 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M8.333 11.667a2.917 2.917 0 0 0 4.167 0l3.333-3.334a2.946 2.946 0 1 0-4.166-4.166l-.417.416"
+            />
+            <path
+              d="M11.667 8.333a2.917 2.917 0 0 0-4.167 0l-3.333 3.334a2.946 2.946 0 0 0 4.166 4.166l.417-.416"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": [Function],
         "name": "hyperlink",
@@ -5352,9 +6673,32 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <React.Fragment>
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M8 8m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z"
+            />
+            <path
+              d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2"
+            />
+          </React.Fragment>
+        </svg>,
         "label": "labels.copyElementLink",
         "name": "copyElementLink",
         "perform": [Function],
@@ -5366,9 +6710,29 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M14.375 6.458H8.958a2.5 2.5 0 0 0-2.5 2.5v5.417a2.5 2.5 0 0 0 2.5 2.5h5.417a2.5 2.5 0 0 0 2.5-2.5V8.958a2.5 2.5 0 0 0-2.5-2.5Z"
+            />
+            <path
+              clipRule="evenodd"
+              d="M11.667 3.125c.517 0 .986.21 1.325.55.34.338.55.807.55 1.325v1.458H8.333c-.485 0-.927.185-1.26.487-.343.312-.57.75-.609 1.24l-.005 5.357H5a1.87 1.87 0 0 1-1.326-.55 1.87 1.87 0 0 1-.549-1.325V5c0-.518.21-.987.55-1.326.338-.34.807-.549 1.325-.549h6.667Z"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.duplicateSelection",
         "name": "duplicateSelection",
@@ -5391,9 +6755,22 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <path
+            d="M3.333 5.833h13.334M8.333 9.167v5M11.667 9.167v5M4.167 5.833l.833 10c0 .92.746 1.667 1.667 1.667h6.666c.92 0 1.667-.746 1.667-1.667l.833-10M7.5 5.833v-2.5c0-.46.373-.833.833-.833h3.334c.46 0 .833.373.833.833v2.5"
+            strokeWidth="1.25"
+          />
+        </svg>,
         "keyTest": [Function],
         "label": "labels.delete",
         "name": "deleteSelectedElements",
@@ -5815,9 +7192,43 @@ exports[`contextMenu element > shows context menu for canvas > [end of test] app
       },
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M14 3v4a1 1 0 0 0 1 1h4"
+            />
+            <path
+              d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"
+            />
+            <path
+              d="M20 15h-1a2 2 0 0 0 -2 2v2a2 2 0 0 0 2 2h1v-3"
+            />
+            <path
+              d="M5 18h1.5a1.5 1.5 0 0 0 0 -3h-1.5v6"
+            />
+            <path
+              d="M11 21v-6l3 6v-6"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "png",
@@ -5833,9 +7244,43 @@ exports[`contextMenu element > shows context menu for canvas > [end of test] app
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M14 3v4a1 1 0 0 0 1 1h4"
+            />
+            <path
+              d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"
+            />
+            <path
+              d="M4 20.25c0 .414 .336 .75 .75 .75h1.25a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-1a1 1 0 0 1 -1 -1v-1a1 1 0 0 1 1 -1h1.25a.75 .75 0 0 1 .75 .75"
+            />
+            <path
+              d="M10 15l2 6l2 -6"
+            />
+            <path
+              d="M20 15h-1a2 2 0 0 0 -2 2v2a2 2 0 0 0 2 2h1v-3"
+            />
+          </g>
+        </svg>,
         "keywords": [
           "svg",
           "clipboard",
@@ -5865,9 +7310,77 @@ exports[`contextMenu element > shows context menu for canvas > [end of test] app
       },
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g>
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M8 8m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z"
+            />
+            <path
+              d="M12 20v.01"
+            />
+            <path
+              d="M16 20v.01"
+            />
+            <path
+              d="M8 20v.01"
+            />
+            <path
+              d="M4 20v.01"
+            />
+            <path
+              d="M4 16v.01"
+            />
+            <path
+              d="M4 12v.01"
+            />
+            <path
+              d="M4 8v.01"
+            />
+            <path
+              d="M4 4v.01"
+            />
+            <path
+              d="M8 4v.01"
+            />
+            <path
+              d="M12 4v.01"
+            />
+            <path
+              d="M16 4v.01"
+            />
+            <path
+              d="M20 4v.01"
+            />
+            <path
+              d="M20 8v.01"
+            />
+            <path
+              d="M20 12v.01"
+            />
+            <path
+              d="M20 16v.01"
+            />
+            <path
+              d="M20 20v.01"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.selectAll",
         "name": "selectAll",
@@ -5878,9 +7391,58 @@ exports[`contextMenu element > shows context menu for canvas > [end of test] app
         "viewMode": false,
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <g>
+            <path
+              d="M13.542 8.542H6.458a2.5 2.5 0 0 0-2.5 2.5v3.75a2.5 2.5 0 0 0 2.5 2.5h7.084a2.5 2.5 0 0 0 2.5-2.5v-3.75a2.5 2.5 0 0 0-2.5-2.5Z"
+              stroke="currentColor"
+              strokeWidth="1.25"
+            />
+            <path
+              d="M10 13.958a1.042 1.042 0 1 0 0-2.083 1.042 1.042 0 0 0 0 2.083Z"
+              stroke="currentColor"
+              strokeWidth="1.25"
+            />
+            <mask
+              height={9}
+              id="UnlockedIcon"
+              maskUnits="userSpaceOnUse"
+              style={
+                {
+                  "maskType": "alpha",
+                }
+              }
+              width={9}
+              x={6}
+              y={1}
+            >
+              <path
+                d="M6.399 9.561V5.175c0-.93.401-1.823 1.116-2.48a3.981 3.981 0 0 1 2.693-1.028c1.01 0 1.98.37 2.694 1.027.715.658 1.116 1.55 1.116 2.481"
+                fill="#fff"
+                stroke="none"
+              />
+            </mask>
+            <g
+              mask="url(#UnlockedIcon)"
+            >
+              <path
+                d="M5.149 9.561v1.25h2.5v-1.25h-2.5Zm5.06-7.894V.417v1.25Zm2.559 3.508v1.25h2.5v-1.25h-2.5ZM7.648 8.51V5.175h-2.5V8.51h2.5Zm0-3.334c0-.564.243-1.128.713-1.561L6.668 1.775c-.959.883-1.52 2.104-1.52 3.4h2.5Zm.713-1.561a2.732 2.732 0 0 1 1.847-.697v-2.5c-1.31 0-2.585.478-3.54 1.358L8.36 3.614Zm1.847-.697c.71 0 1.374.26 1.847.697l1.694-1.839a5.231 5.231 0 0 0-3.54-1.358v2.5Zm1.847.697c.47.433.713.997.713 1.561h2.5c0-1.296-.56-2.517-1.52-3.4l-1.693 1.839Z"
+                fill="currentColor"
+                stroke="none"
+              />
+            </g>
+          </g>
+        </svg>,
         "label": "labels.elementLock.unlockAll",
         "name": "unlockAllElements",
         "perform": [Function],
@@ -5893,9 +7455,46 @@ exports[`contextMenu element > shows context menu for canvas > [end of test] app
       "separator",
       {
         "checked": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M3 6h18"
+            />
+            <path
+              d="M3 12h18"
+            />
+            <path
+              d="M3 18h18"
+            />
+            <path
+              d="M6 3v18"
+            />
+            <path
+              d="M12 3v18"
+            />
+            <path
+              d="M18 3v18"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "snap",
@@ -5912,9 +7511,37 @@ exports[`contextMenu element > shows context menu for canvas > [end of test] app
       },
       {
         "checked": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M4 13v-8a2 2 0 0 1 2 -2h1a2 2 0 0 1 2 2v8a2 2 0 0 0 6 0v-8a2 2 0 0 1 2 -2h1a2 2 0 0 1 2 2v8a8 8 0 0 1 -16 0"
+            />
+            <path
+              d="M4 8l5 0"
+            />
+            <path
+              d="M15 8l4 0"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "buttons.objectsSnapMode",
         "name": "objectsSnapMode",
@@ -5950,9 +7577,43 @@ exports[`contextMenu element > shows context menu for canvas > [end of test] app
       },
       {
         "checked": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M3 14c.83 .642 2.077 1.017 3.5 1c1.423 .017 2.67 -.358 3.5 -1c.83 -.642 2.077 -1.017 3.5 -1c1.423 -.017 2.67 .358 3.5 1"
+            />
+            <path
+              d="M8 3a2.4 2.4 0 0 0 -1 2a2.4 2.4 0 0 0 1 2"
+            />
+            <path
+              d="M12 3a2.4 2.4 0 0 0 -1 2a2.4 2.4 0 0 0 1 2"
+            />
+            <path
+              d="M3 10h14v5a6 6 0 0 1 -6 6h-2a6 6 0 0 1 -6 -6v-5z"
+            />
+            <path
+              d="M16.746 16.726a3 3 0 1 0 .252 -5.555"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "buttons.zenMode",
         "name": "zenMode",
@@ -5966,9 +7627,36 @@ exports[`contextMenu element > shows context menu for canvas > [end of test] app
       },
       {
         "checked": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"
+            />
+            <path
+              d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.viewMode",
         "name": "viewMode",
@@ -5982,9 +7670,61 @@ exports[`contextMenu element > shows context menu for canvas > [end of test] app
       },
       {
         "checked": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M5 3v18"
+            />
+            <path
+              d="M19 21v-18"
+            />
+            <path
+              d="M5 7h14"
+            />
+            <path
+              d="M5 15h14"
+            />
+            <path
+              d="M8 13v4"
+            />
+            <path
+              d="M11 13v4"
+            />
+            <path
+              d="M16 13v4"
+            />
+            <path
+              d="M14 5v4"
+            />
+            <path
+              d="M11 5v4"
+            />
+            <path
+              d="M8 5v4"
+            />
+            <path
+              d="M3 21h18"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "edit",
@@ -6134,9 +7874,40 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
     "items": [
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M7 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"
+            />
+            <path
+              d="M17 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"
+            />
+            <path
+              d="M9.15 14.85l8.85 -10.85"
+            />
+            <path
+              d="M6 4l8.85 10.85"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.cut",
         "name": "cut",
@@ -6146,9 +7917,29 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M14.375 6.458H8.958a2.5 2.5 0 0 0-2.5 2.5v5.417a2.5 2.5 0 0 0 2.5 2.5h5.417a2.5 2.5 0 0 0 2.5-2.5V8.958a2.5 2.5 0 0 0-2.5-2.5Z"
+            />
+            <path
+              clipRule="evenodd"
+              d="M11.667 3.125c.517 0 .986.21 1.325.55.34.338.55.807.55 1.325v1.458H8.333c-.485 0-.927.185-1.26.487-.343.312-.57.75-.609 1.24l-.005 5.357H5a1.87 1.87 0 0 1-1.326-.55 1.87 1.87 0 0 1-.549-1.325V5c0-.518.21-.987.55-1.326.338-.34.807-.549 1.325-.549h6.667Z"
+            />
+          </g>
+        </svg>,
         "keyTest": undefined,
         "label": "labels.copy",
         "name": "copy",
@@ -6197,9 +7988,34 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M8 5v10a1 1 0 0 0 1 1h10"
+            />
+            <path
+              d="M5 8h10a1 1 0 0 1 1 1v10"
+            />
+          </g>
+        </svg>,
         "keywords": [
           "image",
           "crop",
@@ -6215,9 +8031,43 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       },
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M14 3v4a1 1 0 0 0 1 1h4"
+            />
+            <path
+              d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"
+            />
+            <path
+              d="M20 15h-1a2 2 0 0 0 -2 2v2a2 2 0 0 0 2 2h1v-3"
+            />
+            <path
+              d="M5 18h1.5a1.5 1.5 0 0 0 0 -3h-1.5v6"
+            />
+            <path
+              d="M11 21v-6l3 6v-6"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "png",
@@ -6233,9 +8083,43 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M14 3v4a1 1 0 0 0 1 1h4"
+            />
+            <path
+              d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"
+            />
+            <path
+              d="M4 20.25c0 .414 .336 .75 .75 .75h1.25a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-1a1 1 0 0 1 -1 -1v-1a1 1 0 0 1 1 -1h1.25a.75 .75 0 0 1 .75 .75"
+            />
+            <path
+              d="M10 15l2 6l2 -6"
+            />
+            <path
+              d="M20 15h-1a2 2 0 0 0 -2 2v2a2 2 0 0 0 2 2h1v-3"
+            />
+          </g>
+        </svg>,
         "keywords": [
           "svg",
           "clipboard",
@@ -6265,9 +8149,37 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       },
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M5 3m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z"
+            />
+            <path
+              d="M19 6h1a2 2 0 0 1 2 2a5 5 0 0 1 -5 5l-5 0v2"
+            />
+            <path
+              d="M10 15m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.copyStyles",
         "name": "copyStyles",
@@ -6277,9 +8189,37 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M5 3m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z"
+            />
+            <path
+              d="M19 6h1a2 2 0 0 1 2 2a5 5 0 0 1 -5 5l-5 0v2"
+            />
+            <path
+              d="M10 15m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.pasteStyles",
         "name": "pasteStyles",
@@ -6362,9 +8302,42 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          style={
+            {
+              "transform": "rotate(180deg)",
+            }
+          }
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 5l0 14"
+            />
+            <path
+              d="M16 9l-4 -4"
+            />
+            <path
+              d="M8 9l4 -4"
+            />
+          </g>
+        </svg>,
         "keyPriority": 40,
         "keyTest": [Function],
         "keywords": [
@@ -6381,9 +8354,37 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       },
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 5l0 14"
+            />
+            <path
+              d="M16 9l-4 -4"
+            />
+            <path
+              d="M8 9l4 -4"
+            />
+          </g>
+        </svg>,
         "keyPriority": 40,
         "keyTest": [Function],
         "keywords": [
@@ -6400,9 +8401,45 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       },
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          style={
+            {
+              "transform": "rotate(180deg)",
+            }
+          }
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 10l0 10"
+            />
+            <path
+              d="M12 10l4 4"
+            />
+            <path
+              d="M12 10l-4 4"
+            />
+            <path
+              d="M4 4l16 0"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "move down",
@@ -6418,9 +8455,40 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       },
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 10l0 10"
+            />
+            <path
+              d="M12 10l4 4"
+            />
+            <path
+              d="M12 10l-4 4"
+            />
+            <path
+              d="M4 4l16 0"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "move up",
@@ -6436,9 +8504,37 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       },
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 3l0 18"
+            />
+            <path
+              d="M16 7l0 10l5 0l-5 -10"
+            />
+            <path
+              d="M8 7l0 10l-5 0l5 -10"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.flipHorizontal",
         "name": "flipHorizontal",
@@ -6448,9 +8544,37 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M3 12l18 0"
+            />
+            <path
+              d="M7 16l10 0l-10 5l0 -5"
+            />
+            <path
+              d="M7 8l10 0l-10 -5l0 5"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.flipVertical",
         "name": "flipVertical",
@@ -6477,9 +8601,28 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M8.333 11.667a2.917 2.917 0 0 0 4.167 0l3.333-3.334a2.946 2.946 0 1 0-4.166-4.166l-.417.416"
+            />
+            <path
+              d="M11.667 8.333a2.917 2.917 0 0 0-4.167 0l-3.333 3.334a2.946 2.946 0 0 0 4.166 4.166l.417-.416"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": [Function],
         "name": "hyperlink",
@@ -6491,9 +8634,32 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <React.Fragment>
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M8 8m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z"
+            />
+            <path
+              d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2"
+            />
+          </React.Fragment>
+        </svg>,
         "label": "labels.copyElementLink",
         "name": "copyElementLink",
         "perform": [Function],
@@ -6505,9 +8671,29 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M14.375 6.458H8.958a2.5 2.5 0 0 0-2.5 2.5v5.417a2.5 2.5 0 0 0 2.5 2.5h5.417a2.5 2.5 0 0 0 2.5-2.5V8.958a2.5 2.5 0 0 0-2.5-2.5Z"
+            />
+            <path
+              clipRule="evenodd"
+              d="M11.667 3.125c.517 0 .986.21 1.325.55.34.338.55.807.55 1.325v1.458H8.333c-.485 0-.927.185-1.26.487-.343.312-.57.75-.609 1.24l-.005 5.357H5a1.87 1.87 0 0 1-1.326-.55 1.87 1.87 0 0 1-.549-1.325V5c0-.518.21-.987.55-1.326.338-.34.807-.549 1.325-.549h6.667Z"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.duplicateSelection",
         "name": "duplicateSelection",
@@ -6530,9 +8716,22 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <path
+            d="M3.333 5.833h13.334M8.333 9.167v5M11.667 9.167v5M4.167 5.833l.833 10c0 .92.746 1.667 1.667 1.667h6.666c.92 0 1.667-.746 1.667-1.667l.833-10M7.5 5.833v-2.5c0-.46.373-.833.833-.833h3.334c.46 0 .833.373.833.833v2.5"
+            strokeWidth="1.25"
+          />
+        </svg>,
         "keyTest": [Function],
         "label": "labels.delete",
         "name": "deleteSelectedElements",
@@ -6668,9 +8867,40 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
     "items": [
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M7 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"
+            />
+            <path
+              d="M17 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"
+            />
+            <path
+              d="M9.15 14.85l8.85 -10.85"
+            />
+            <path
+              d="M6 4l8.85 10.85"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.cut",
         "name": "cut",
@@ -6680,9 +8910,29 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M14.375 6.458H8.958a2.5 2.5 0 0 0-2.5 2.5v5.417a2.5 2.5 0 0 0 2.5 2.5h5.417a2.5 2.5 0 0 0 2.5-2.5V8.958a2.5 2.5 0 0 0-2.5-2.5Z"
+            />
+            <path
+              clipRule="evenodd"
+              d="M11.667 3.125c.517 0 .986.21 1.325.55.34.338.55.807.55 1.325v1.458H8.333c-.485 0-.927.185-1.26.487-.343.312-.57.75-.609 1.24l-.005 5.357H5a1.87 1.87 0 0 1-1.326-.55 1.87 1.87 0 0 1-.549-1.325V5c0-.518.21-.987.55-1.326.338-.34.807-.549 1.325-.549h6.667Z"
+            />
+          </g>
+        </svg>,
         "keyTest": undefined,
         "label": "labels.copy",
         "name": "copy",
@@ -6731,9 +8981,34 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M8 5v10a1 1 0 0 0 1 1h10"
+            />
+            <path
+              d="M5 8h10a1 1 0 0 1 1 1v10"
+            />
+          </g>
+        </svg>,
         "keywords": [
           "image",
           "crop",
@@ -6749,9 +9024,43 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       },
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M14 3v4a1 1 0 0 0 1 1h4"
+            />
+            <path
+              d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"
+            />
+            <path
+              d="M20 15h-1a2 2 0 0 0 -2 2v2a2 2 0 0 0 2 2h1v-3"
+            />
+            <path
+              d="M5 18h1.5a1.5 1.5 0 0 0 0 -3h-1.5v6"
+            />
+            <path
+              d="M11 21v-6l3 6v-6"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "png",
@@ -6767,9 +9076,43 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M14 3v4a1 1 0 0 0 1 1h4"
+            />
+            <path
+              d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"
+            />
+            <path
+              d="M4 20.25c0 .414 .336 .75 .75 .75h1.25a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-1a1 1 0 0 1 -1 -1v-1a1 1 0 0 1 1 -1h1.25a.75 .75 0 0 1 .75 .75"
+            />
+            <path
+              d="M10 15l2 6l2 -6"
+            />
+            <path
+              d="M20 15h-1a2 2 0 0 0 -2 2v2a2 2 0 0 0 2 2h1v-3"
+            />
+          </g>
+        </svg>,
         "keywords": [
           "svg",
           "clipboard",
@@ -6799,9 +9142,37 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       },
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M5 3m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z"
+            />
+            <path
+              d="M19 6h1a2 2 0 0 1 2 2a5 5 0 0 1 -5 5l-5 0v2"
+            />
+            <path
+              d="M10 15m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.copyStyles",
         "name": "copyStyles",
@@ -6811,9 +9182,37 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M5 3m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z"
+            />
+            <path
+              d="M19 6h1a2 2 0 0 1 2 2a5 5 0 0 1 -5 5l-5 0v2"
+            />
+            <path
+              d="M10 15m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.pasteStyles",
         "name": "pasteStyles",
@@ -6896,9 +9295,42 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          style={
+            {
+              "transform": "rotate(180deg)",
+            }
+          }
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 5l0 14"
+            />
+            <path
+              d="M16 9l-4 -4"
+            />
+            <path
+              d="M8 9l4 -4"
+            />
+          </g>
+        </svg>,
         "keyPriority": 40,
         "keyTest": [Function],
         "keywords": [
@@ -6915,9 +9347,37 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       },
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 5l0 14"
+            />
+            <path
+              d="M16 9l-4 -4"
+            />
+            <path
+              d="M8 9l4 -4"
+            />
+          </g>
+        </svg>,
         "keyPriority": 40,
         "keyTest": [Function],
         "keywords": [
@@ -6934,9 +9394,45 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       },
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          style={
+            {
+              "transform": "rotate(180deg)",
+            }
+          }
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 10l0 10"
+            />
+            <path
+              d="M12 10l4 4"
+            />
+            <path
+              d="M12 10l-4 4"
+            />
+            <path
+              d="M4 4l16 0"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "move down",
@@ -6952,9 +9448,40 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       },
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.50000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 10l0 10"
+            />
+            <path
+              d="M12 10l4 4"
+            />
+            <path
+              d="M12 10l-4 4"
+            />
+            <path
+              d="M4 4l16 0"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "keywords": [
           "move up",
@@ -6970,9 +9497,37 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       },
       "separator",
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M12 3l0 18"
+            />
+            <path
+              d="M16 7l0 10l5 0l-5 -10"
+            />
+            <path
+              d="M8 7l0 10l-5 0l5 -10"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.flipHorizontal",
         "name": "flipHorizontal",
@@ -6982,9 +9537,37 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeWidth={"1.25000"}
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M3 12l18 0"
+            />
+            <path
+              d="M7 16l10 0l-10 5l0 -5"
+            />
+            <path
+              d="M7 8l10 0l-10 -5l0 5"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.flipVertical",
         "name": "flipVertical",
@@ -7011,9 +9594,28 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M8.333 11.667a2.917 2.917 0 0 0 4.167 0l3.333-3.334a2.946 2.946 0 1 0-4.166-4.166l-.417.416"
+            />
+            <path
+              d="M11.667 8.333a2.917 2.917 0 0 0-4.167 0l-3.333 3.334a2.946 2.946 0 0 0 4.166 4.166l.417-.416"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": [Function],
         "name": "hyperlink",
@@ -7025,9 +9627,32 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
         },
       },
       {
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <React.Fragment>
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
+            <path
+              d="M8 8m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z"
+            />
+            <path
+              d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2"
+            />
+          </React.Fragment>
+        </svg>,
         "label": "labels.copyElementLink",
         "name": "copyElementLink",
         "perform": [Function],
@@ -7039,9 +9664,29 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <g
+            strokeWidth="1.25"
+          >
+            <path
+              d="M14.375 6.458H8.958a2.5 2.5 0 0 0-2.5 2.5v5.417a2.5 2.5 0 0 0 2.5 2.5h5.417a2.5 2.5 0 0 0 2.5-2.5V8.958a2.5 2.5 0 0 0-2.5-2.5Z"
+            />
+            <path
+              clipRule="evenodd"
+              d="M11.667 3.125c.517 0 .986.21 1.325.55.34.338.55.807.55 1.325v1.458H8.333c-.485 0-.927.185-1.26.487-.343.312-.57.75-.609 1.24l-.005 5.357H5a1.87 1.87 0 0 1-1.326-.55 1.87 1.87 0 0 1-.549-1.325V5c0-.518.21-.987.55-1.326.338-.34.807-.549 1.325-.549h6.667Z"
+            />
+          </g>
+        </svg>,
         "keyTest": [Function],
         "label": "labels.duplicateSelection",
         "name": "duplicateSelection",
@@ -7064,9 +9709,22 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       "separator",
       {
         "PanelComponent": [Function],
-        "icon": <GlassIcon
-          icon={[Function]}
-        />,
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 20 20"
+        >
+          <path
+            d="M3.333 5.833h13.334M8.333 9.167v5M11.667 9.167v5M4.167 5.833l.833 10c0 .92.746 1.667 1.667 1.667h6.666c.92 0 1.667-.746 1.667-1.667l.833-10M7.5 5.833v-2.5c0-.46.373-.833.833-.833h3.334c.46 0 .833.373.833.833v2.5"
+            strokeWidth="1.25"
+          />
+        </svg>,
         "keyTest": [Function],
         "label": "labels.delete",
         "name": "deleteSelectedElements",

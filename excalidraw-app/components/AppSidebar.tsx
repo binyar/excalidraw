@@ -4,9 +4,8 @@ import {
   useExcalidrawElements,
 } from "@excalidraw/excalidraw/components/App";
 import { useUIAppState } from "@excalidraw/excalidraw/context/ui-appState";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { IconBot } from "nucleo-glass";
 
 import { animationWorkspace } from "../../src/animation/inspector";
 
@@ -14,13 +13,13 @@ import { hasPendingAiCreatePrompt } from "../ai/pendingPrompt";
 import { getWorkspaceFileIdFromPath } from "../workspace/editorRoute";
 
 import { AIStoryPanel } from "./AIStoryPanel";
+import { BearIcon } from "./BearIcon";
 import { Button } from "./ui/button";
 
 export const AppSidebar = () => {
   const { selectedElementIds, theme } = useUIAppState();
   const elements = useExcalidrawElements();
   const excalidrawAPI = useExcalidrawAPI();
-  const botIconId = useId().replace(/:/g, "");
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
   const previousSelectedElementIdRef = useRef<string | null | undefined>(
     undefined,
@@ -296,11 +295,7 @@ export const AppSidebar = () => {
             title="AI 对话"
             onClick={() => setIsAiChatOpen(true)}
           >
-            <IconBot
-              aria-hidden="true"
-              className="ai-chatbot-bot-icon"
-              uniqueId={`ai-chatbot-trigger-${botIconId}-`}
-            />
+            <BearIcon aria-hidden="true" className="ai-chatbot-bot-icon" />
           </Button>
         )}
         {isAiChatOpen && (

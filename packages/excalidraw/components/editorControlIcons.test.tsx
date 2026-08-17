@@ -58,7 +58,7 @@ describe("editor control icon boundary", () => {
     );
   });
 
-  it("keeps shared icons outside those regions on Nucleo Glass", () => {
+  it("keeps shared icons outside those regions on the product icon set", () => {
     const { container } = render(
       <>
         {LibraryIcon}
@@ -67,7 +67,8 @@ describe("editor control icon boundary", () => {
       </>,
     );
 
-    expect(container.querySelectorAll("svg.nucleo-glass-icon")).toHaveLength(3);
+    expect(container.querySelectorAll("svg")).toHaveLength(3);
+    expect(container.querySelector("svg.nucleo-glass-icon")).toBeNull();
     expect(container.querySelector("svg.editor-control-icon")).toBeNull();
     expect(container.querySelector("svg.lucide")).toBeNull();
   });

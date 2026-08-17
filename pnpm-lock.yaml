@@ -141,6 +141,9 @@ importers:
       jotai:
         specifier: 2.11.0
         version: 2.11.0(@types/react@19.0.10)(react@19.0.0)
+      lucide-react:
+        specifier: ^1.31.0
+        version: 1.31.0(react@19.0.0)
       radix-ui:
         specifier: 1.4.3
         version: 1.4.3(@types/react-dom@19.0.4(@types/react@19.0.10))(@types/react@19.0.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -269,9 +272,6 @@ importers:
       nanoid:
         specifier: 3.3.3
         version: 3.3.3
-      nucleo-glass:
-        specifier: workspace:*
-        version: link:../nucleo-glass
       pako:
         specifier: 2.0.3
         version: 2.0.3

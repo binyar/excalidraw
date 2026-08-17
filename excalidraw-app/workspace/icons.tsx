@@ -1,60 +1,61 @@
-import { useId } from "react";
 import {
-  IconArrowBoldLeft,
-  IconBoxCaretRight,
-  IconBoxCaretUp,
-  IconBrightnessIncrease,
-  IconBulletList,
-  IconCircleCheck,
-  IconCloudDownload,
-  IconCloudMoon,
-  IconCloudUpload,
-  IconDeleteX,
-  IconDotsVertical,
-  IconFile,
-  IconFolder,
-  IconGrid,
-  IconLoader2,
-  IconMagicWandSparkle,
-  IconMagnifier,
-  IconPaperPlane,
-  IconRefresh,
-  IconSparkle,
-  IconStar,
-  IconTabClose,
-  IconTriangleWarning,
-} from "nucleo-glass";
+  ArrowLeft,
+  ArrowUpDown,
+  Check,
+  ChevronRight,
+  Clock,
+  Download,
+  File,
+  Filter,
+  Folder,
+  LayoutGrid,
+  List,
+  Menu,
+  Moon,
+  MoreVertical,
+  Pencil,
+  Plus,
+  RotateCcw,
+  Search,
+  Send,
+  Sparkles,
+  Star,
+  Sun,
+  Trash2,
+  Upload,
+  WandSparkles,
+  X,
+} from "lucide-react";
 
-import type { ComponentType } from "react";
-import type { IconProps } from "nucleo-glass";
+import type { LucideIcon } from "lucide-react";
 
-type WorkspaceIcon = ComponentType<IconProps & { uniqueId?: string }>;
-
-const icons: Record<string, WorkspaceIcon> = {
-  search: IconMagnifier,
-  menu: IconBulletList,
-  grid: IconGrid,
-  list: IconBulletList,
-  folder: IconFolder,
-  clock: IconLoader2,
-  star: IconStar,
-  trash: IconDeleteX,
-  upload: IconCloudUpload,
-  download: IconCloudDownload,
-  plus: IconSparkle,
-  filter: IconTriangleWarning,
-  sort: IconBoxCaretUp,
-  more: IconDotsVertical,
-  sun: IconBrightnessIncrease,
-  moon: IconCloudMoon,
-  file: IconFile,
-  back: IconArrowBoldLeft,
-  chevron: IconBoxCaretRight,
-  restore: IconRefresh,
-  close: IconTabClose,
-  check: IconCircleCheck,
-  magic: IconMagicWandSparkle,
-  send: IconPaperPlane,
+const icons: Record<string, LucideIcon> = {
+  search: Search,
+  menu: Menu,
+  grid: LayoutGrid,
+  list: List,
+  folder: Folder,
+  clock: Clock,
+  star: Star,
+  trash: Trash2,
+  upload: Upload,
+  download: Download,
+  plus: Plus,
+  filter: Filter,
+  sort: ArrowUpDown,
+  more: MoreVertical,
+  sun: Sun,
+  moon: Moon,
+  file: File,
+  back: ArrowLeft,
+  chevron: ChevronRight,
+  restore: RotateCcw,
+  close: X,
+  check: Check,
+  magic: WandSparkles,
+  send: Send,
+  rename: Pencil,
+  sparkle: Sparkles,
 };
 
 export const Icon = ({
@@ -68,18 +69,15 @@ export const Icon = ({
   filled?: boolean;
   className?: string;
 }) => {
-  const uniqueId = useId().replace(/:/g, "");
-  const GlassIcon = icons[name] ?? IconFile;
+  const GenericIcon = icons[name] ?? File;
 
   return (
-    <GlassIcon
+    <GenericIcon
       aria-hidden="true"
-      className={
-        className ? `nucleo-glass-icon ${className}` : "nucleo-glass-icon"
-      }
+      className={className}
       data-filled={filled || undefined}
       size={size}
-      uniqueId={`workspace-${uniqueId}-`}
+      strokeWidth={1.8}
     />
   );
 };

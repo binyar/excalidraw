@@ -628,32 +628,36 @@
   }
 
   .ai-composer-shell {
+    position: relative;
     display: flex;
+    min-height: 142px;
     flex-direction: column;
-    gap: 6px;
-    padding: 8px 9px 7px;
-    border: 1px solid var(--ai-border);
-    border-radius: 14px;
-    background: color-mix(in srgb, var(--ai-panel) 96%, var(--ai-soft));
+    gap: 0;
+    overflow: hidden;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--ai-text) 10%, transparent);
+    border-radius: 18px;
+    background: var(--ai-panel);
+    box-shadow: 0 4px 18px rgb(15 23 42 / 4%);
     transition: border-color 120ms ease-out, box-shadow 120ms ease-out;
 
     &:focus-within {
-      border-color: color-mix(in srgb, #7067ee 28%, var(--ai-border));
-      box-shadow: 0 1px 2px rgb(0 0 0 / 5%), 0 0 0 1px rgb(112 103 238 / 5%);
+      border-color: color-mix(in srgb, var(--ai-text) 18%, transparent);
+      box-shadow: 0 4px 18px rgb(15 23 42 / 5%);
     }
 
     textarea {
       box-sizing: border-box;
       width: 100%;
-      min-height: 74px;
-      padding: 4px 3px 8px;
+      min-height: 142px;
+      padding: 17px 18px 48px;
       resize: none;
       border: 0;
       outline: 0;
       color: var(--ai-text);
       background: transparent;
-      font-size: 13px;
-      line-height: 1.5;
+      font-size: 11px;
+      line-height: 1.55;
 
       &::placeholder {
         color: var(--ai-faint);
@@ -665,16 +669,22 @@
   }
 
   .ai-composer-toolbar {
+    position: absolute;
+    right: 12px;
+    bottom: 10px;
+    left: 12px;
+    z-index: 2;
     min-width: 0;
-    gap: 6px;
-    padding-top: 7px;
-    border-top: 1px solid color-mix(in srgb, var(--ai-text) 8%, transparent);
+    justify-content: flex-end;
+    gap: 9px;
+    padding: 0;
+    border-top: 0;
   }
 
   .ai-model-pill {
-    height: 30px;
+    height: 27px;
     box-sizing: border-box;
-    border-radius: 9px;
+    border-radius: 999px;
     white-space: nowrap;
   }
 
@@ -687,10 +697,10 @@
     min-width: 0;
     max-width: 150px;
     gap: 5px;
-    padding: 0 8px 0 5px;
+    padding: 0 9px 0 5px;
     background: var(--ai-soft);
     color: var(--ai-muted);
-    font-size: 11px;
+    font-size: 10px;
 
     > .ai-agent-mark {
       width: 17px;
@@ -716,9 +726,9 @@
 
   .ai-send-button {
     display: inline-grid;
-    width: 32px;
-    height: 32px;
-    flex: 0 0 32px;
+    width: 27px;
+    height: 27px;
+    flex: 0 0 27px;
     padding: 0;
     place-items: center;
     border: 1px solid var(--ai-text);

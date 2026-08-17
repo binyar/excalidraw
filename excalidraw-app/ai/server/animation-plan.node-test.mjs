@@ -20,6 +20,10 @@ const tool = (tools, name) => {
 };
 
 test("animation Agent contract teaches semantic real visibility", () => {
+  assert.match(
+    ANIMATION_AGENT_SYSTEM_PROMPT,
+    /所有自然语言内容必须使用简体中文/,
+  );
   assert.match(ANIMATION_AGENT_SYSTEM_PROMPT, /element\.visibility/);
   assert.match(
     ANIMATION_AGENT_SYSTEM_PROMPT,
@@ -28,6 +32,16 @@ test("animation Agent contract teaches semantic real visibility", () => {
   assert.match(ANIMATION_AGENT_SYSTEM_PROMPT, /绝不能用单独的 fade\/opacity/);
   assert.match(ANIMATION_AGENT_SYSTEM_PROMPT, /roughness.*离散状态/);
   assert.match(ANIMATION_AGENT_SYSTEM_PROMPT, /roundness.*0\.\.1/);
+});
+
+test("animation planner exposes Chinese tool descriptions", () => {
+  const tools = createAnimationPlannerTools(
+    canvasDraft,
+    createEmptyAnimationPlan(),
+  );
+  for (const candidate of tools) {
+    assert.match(candidate.description, /[\u3400-\u9fff]/, candidate.name);
+  }
 });
 
 test("animation Agent capability map covers every supported canvas target", () => {
@@ -825,7 +839,7 @@ test("planner deterministically maps story space relations to Camera or page tra
     ],
   });
 
-  assert.equal(state.scenes[0].camera.transition, "hold");
+  assert.equal(state.scenes[0].camera, undefined);
   assert.equal(state.scenes[1].camera.transition, "reframe");
   assert.equal(state.scenes[1].transition.effect, "camera");
   assert.equal(state.scenes[2].camera, undefined);
@@ -833,6 +847,36 @@ test("planner deterministically maps story space relations to Camera or page tra
   const draft = compileStoryAnimationPlan(state, spatialCanvas);
   assert.match(draft.scenes[1].description, /镜头漫游/);
   assert.match(draft.scenes[2].description, /独立页面/);
+  const camera = draft.tracks.find((track) => track.targetType === "camera");
+  assert.ok(camera);
+  const centerX = camera.properties.find(
+    (property) => property.property === "camera.centerX",
+  );
+  const centerY = camera.properties.find(
+    (property) => property.property === "camera.centerY",
+  );
+  const zoom = camera.properties.find(
+    (property) => property.property === "camera.zoom",
+  );
+  assert.deepEqual(centerX.keyframes.at(-1), {
+    atMs: 8000,
+    value: 640,
+    label: "scene-result",
+  });
+  assert.deepEqual(centerY.keyframes.at(-1), {
+    atMs: 8000,
+    value: 360,
+    label: "scene-result",
+  });
+  assert.deepEqual(zoom.keyframes.at(-1), {
+    atMs: 8000,
+    value: 1,
+    label: "scene-result",
+  });
+  assert.equal(centerX.keyframes.at(-2).atMs, 6800);
+  assert.equal(zoom.keyframes.at(-2).atMs, 6800);
+  assert.ok(centerX.keyframes.at(-2).easing);
+  assert.ok(zoom.keyframes.at(-2).easing);
 });
 
 test("planner tools atomically repair invalid cue targets, timing, and highlight color", async () => {

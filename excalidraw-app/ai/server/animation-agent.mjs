@@ -10,6 +10,7 @@ export const runAnimationAgent = async ({
   models,
   model,
   sessionId,
+  thinkingLevel = "off",
   signal,
   onEvent,
 }) => {
@@ -64,7 +65,7 @@ export const runAnimationAgent = async ({
     initialState: {
       systemPrompt: ANIMATION_AGENT_SYSTEM_PROMPT,
       model,
-      thinkingLevel: "medium",
+      thinkingLevel,
       tools: createAnimationPlannerTools(sanitizedCanvasDraft, state),
       messages: [],
     },
@@ -79,7 +80,7 @@ export const runAnimationAgent = async ({
   signal?.addEventListener("abort", abort, { once: true });
   try {
     await agent.prompt(
-      `请为下面已经冻结的画布 Draft 规划 StoryAnimationPlan。不要直接编写 AnimationProject 或关键帧。\n\n动画要求：${JSON.stringify(
+      `请为下面已经冻结的画布草稿规划 StoryAnimationPlan。不要直接编写 AnimationProject 或关键帧。全程只使用简体中文进行自然语言说明，不要输出英文过程旁白。\n\n动画要求：${JSON.stringify(
         brief,
       )}\n\n动画规划上下文：${JSON.stringify(animationContext)}`,
     );
@@ -96,8 +97,8 @@ export const runAnimationAgent = async ({
       .trim();
     throw new Error(
       errorDetail
-        ? `动画子 Agent 未完成 Animation Plan：${errorDetail}`
-        : "动画子 Agent 未完成 Animation Plan：未调用 finalize_animation_plan",
+        ? `动画子智能体未完成动画计划：${errorDetail}`
+        : "动画子智能体未完成动画计划：未调用 finalize_animation_plan",
     );
   }
   return state.compiledDraft;
