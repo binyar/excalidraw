@@ -48,37 +48,93 @@ const getLastUserText = (messages) => {
   return "";
 };
 
-const contentText = (message) => {
+const TASK_PLAN_STEPS = Object.freeze([
+  { id: "story", label: "规划故事结构与章节空间" },
+  { id: "canvas-content", label: "准备画布元素与视觉资源" },
+  { id: "canvas-layout", label: "完成画布布局与业务关系" },
+  { id: "canvas-freeze", label: "校验并冻结画布草稿" },
+  { id: "animation-style", label: "确定动画总时长与运动风格" },
+  { id: "animation-scenes", label: "编排镜头、场景与章节转场" },
+  { id: "animation-cues", label: "为各场景添加对象动画" },
+  { id: "animation-compile", label: "编译动画并生成可播放成品" },
+]);
+
+const taskPlanSnapshot = (title, statuses = new Map()) => ({
+  title: title || "故事画布创作计划",
+  items: TASK_PLAN_STEPS.map((item) => ({
+    ...item,
+    status: statuses.get(item.id) || "pending",
+  })),
+});
+
+const transcriptMessageParts = (message) => {
   if (typeof message?.content === "string") {
-    return message.content;
+    return message.content.trim()
+      ? [{ type: "text", text: message.content.trim() }]
+      : [];
   }
   if (!Array.isArray(message?.content)) {
-    return "";
+    return [];
   }
-  return message.content
-    .filter((item) => item?.type === "text")
-    .map((item) => item.text)
-    .join("")
-    .trim();
+  return message.content.flatMap((item) => {
+    if (item?.type === "text" && String(item.text || "").trim()) {
+      return [{ type: "text", text: String(item.text).trim() }];
+    }
+    if (item?.type === "thinking" && String(item.thinking || "").trim()) {
+      return [
+        {
+          type: "reasoning",
+          text: String(item.thinking).trim(),
+          state: "done",
+        },
+      ];
+    }
+    return [];
+  });
 };
 
-const transcriptToUiMessages = (transcript) =>
-  transcript.flatMap((message, index) => {
+const transcriptToUiMessages = (transcript) => {
+  const messages = transcript.flatMap((message, index) => {
     if (message?.role !== "user" && message?.role !== "assistant") {
       return [];
     }
-    const text = contentText(message);
-    if (!text) {
+    const parts = transcriptMessageParts(message);
+    if (parts.length === 0) {
       return [];
     }
     return [
       {
         id: message.id || `history-${index}`,
         role: message.role,
-        parts: [{ type: "text", text }],
+        parts,
       },
     ];
   });
+  const artifact = [...transcript]
+    .reverse()
+    .find((message) => message?.details?.kind === "story-artifact")?.details;
+  if (artifact?.canvas) {
+    const completed = new Map(
+      TASK_PLAN_STEPS.map((item) => [item.id, "completed"]),
+    );
+    messages.push({
+      id: `history-plan-${artifact.artifactId || artifact.canvas.id}`,
+      role: "assistant",
+      parts: [
+        {
+          type: "data-task-plan",
+          data: taskPlanSnapshot(
+            artifact.canvas.title
+              ? `《${artifact.canvas.title}》创作计划`
+              : undefined,
+            completed,
+          ),
+        },
+      ],
+    });
+  }
+  return messages;
+};
 
 const safeTranscript = (value) => {
   try {
@@ -349,8 +405,117 @@ export const handleAiRequest = async (
         const runStartedAt = new Date(runStartedAtMs).toISOString();
         let textId = null;
         let pendingAssistantText = "";
+        let uiStepOpen = false;
+        const startUiStep = () => {
+          if (uiStepOpen) {
+            return;
+          }
+          writer.write({ type: "start-step" });
+          uiStepOpen = true;
+        };
+        const finishUiStep = () => {
+          if (!uiStepOpen) {
+            return;
+          }
+          writer.write({ type: "finish-step" });
+          uiStepOpen = false;
+        };
         const emittedStatuses = new Set();
         let statusSequence = 0;
+        const taskStatuses = new Map();
+        let taskPlanTitle = "故事画布创作计划";
+        let taskPlanSequence = 0;
+        const emitTaskPlan = () => {
+          writer.write({
+            type: "data-task-plan",
+            id: `${threadId}:task-plan:${taskPlanSequence++}`,
+            data: taskPlanSnapshot(taskPlanTitle, taskStatuses),
+          });
+        };
+        const updateTaskPlan = ({ complete = [], run, title } = {}) => {
+          let changed = false;
+          if (title && title !== taskPlanTitle) {
+            taskPlanTitle = title;
+            changed = true;
+          }
+          complete.forEach((id) => {
+            if (taskStatuses.get(id) !== "completed") {
+              taskStatuses.set(id, "completed");
+              changed = true;
+            }
+          });
+          if (
+            run &&
+            taskStatuses.get(run) !== "completed" &&
+            taskStatuses.get(run) !== "running"
+          ) {
+            taskStatuses.set(run, "running");
+            changed = true;
+          }
+          if (changed) {
+            emitTaskPlan();
+          }
+        };
+        const canvasTaskForTool = (toolName) => {
+          if (
+            toolName === "define_story" ||
+            toolName === "define_story_spaces"
+          ) {
+            return "story";
+          }
+          if (
+            toolName === "layout_canvas_elements" ||
+            toolName === "connect_canvas_elements"
+          ) {
+            return "canvas-layout";
+          }
+          if (toolName === "finalize_canvas_draft") {
+            return "canvas-freeze";
+          }
+          if (toolName === "delegate_animation") {
+            return "animation-style";
+          }
+          return "canvas-content";
+        };
+        const reasoningStreams = new Map();
+        let reasoningSequence = 0;
+        const forwardReasoning = (source, event) => {
+          if (
+            thinkingLevel === "off" ||
+            event.type !== "message_update" ||
+            !event.assistantMessageEvent?.type?.startsWith("thinking_")
+          ) {
+            return;
+          }
+          const reasoningEvent = event.assistantMessageEvent;
+          const key = `${source}:${reasoningEvent.contentIndex}`;
+          if (reasoningEvent.type === "thinking_start") {
+            const id = `${threadId}:reasoning:${reasoningSequence++}`;
+            reasoningStreams.set(key, id);
+            writer.write({ type: "reasoning-start", id });
+          } else if (reasoningEvent.type === "thinking_delta") {
+            const id = reasoningStreams.get(key);
+            if (id) {
+              writer.write({
+                type: "reasoning-delta",
+                id,
+                delta: reasoningEvent.delta,
+              });
+            }
+          } else if (reasoningEvent.type === "thinking_end") {
+            const id = reasoningStreams.get(key);
+            if (id) {
+              writer.write({ type: "reasoning-end", id });
+              reasoningStreams.delete(key);
+            }
+          }
+        };
+        const finishReasoning = () => {
+          reasoningStreams.forEach((id) =>
+            writer.write({ type: "reasoning-end", id }),
+          );
+          reasoningStreams.clear();
+        };
         const emitStatus = (
           phase,
           label,
@@ -413,6 +578,7 @@ export const handleAiRequest = async (
         };
         const animationToolArgs = new Map();
         const onAnimationEvent = (event) => {
+          forwardReasoning("animation", event);
           if (event.type === "agent_start") {
             emitStatus(
               "animation-agent-started",
@@ -425,6 +591,27 @@ export const handleAiRequest = async (
             );
           } else if (event.type === "tool_execution_start") {
             animationToolArgs.set(event.toolCallId, event.args);
+            if (event.toolName === "define_animation_style") {
+              updateTaskPlan({
+                complete: ["canvas-freeze"],
+                run: "animation-style",
+              });
+            } else if (event.toolName === "define_animation_scenes") {
+              updateTaskPlan({
+                complete: ["animation-style"],
+                run: "animation-scenes",
+              });
+            } else if (event.toolName === "define_scene_cues") {
+              updateTaskPlan({
+                complete: ["animation-scenes"],
+                run: "animation-cues",
+              });
+            } else if (event.toolName === "finalize_animation_plan") {
+              updateTaskPlan({
+                complete: ["animation-cues"],
+                run: "animation-compile",
+              });
+            }
             emitStatus(
               `animation-tool-${event.toolCallId}-running`,
               animationToolLabel(event),
@@ -436,6 +623,12 @@ export const handleAiRequest = async (
               args: animationToolArgs.get(event.toolCallId) || {},
             };
             animationToolArgs.delete(event.toolCallId);
+            if (
+              !event.isError &&
+              event.toolName === "finalize_animation_plan"
+            ) {
+              updateTaskPlan({ complete: ["animation-compile"] });
+            }
             emitStatus(
               `animation-tool-${event.toolCallId}-${
                 event.isError ? "repairing" : "done"
@@ -462,9 +655,12 @@ export const handleAiRequest = async (
           currentCanvasState: body.currentCanvasState,
           onAnimationEvent,
           onEvent: (event) => {
+            forwardReasoning("main", event);
             if (event.type === "agent_start") {
+              startUiStep();
               emitStatus("started", "已接收需求，智能体开始执行");
             } else if (event.type === "turn_start") {
+              startUiStep();
               emitStatus("planning", "正在规划故事结构和画布内容");
             } else if (
               event.type === "message_update" &&
@@ -485,12 +681,9 @@ export const handleAiRequest = async (
               event.type === "message_end" &&
               event.message.role === "assistant"
             ) {
-              const hasToolCall = event.message.content?.some(
-                (item) => item.type === "toolCall",
-              );
               const assistantText = pendingAssistantText.trim();
               pendingAssistantText = "";
-              if (!hasToolCall && assistantText) {
+              if (assistantText) {
                 const chineseCharacterCount =
                   assistantText.match(/[\u3400-\u9fff]/g)?.length || 0;
                 const latinCharacterCount =
@@ -509,7 +702,36 @@ export const handleAiRequest = async (
                 });
               }
               finishText();
+            } else if (event.type === "turn_end") {
+              finishUiStep();
             } else if (event.type === "tool_execution_start") {
+              const taskId = canvasTaskForTool(event.toolName);
+              const completedBefore = [];
+              if (taskId === "canvas-content") {
+                completedBefore.push("story");
+              } else if (taskId === "canvas-layout") {
+                completedBefore.push("story", "canvas-content");
+              } else if (taskId === "canvas-freeze") {
+                completedBefore.push(
+                  "story",
+                  "canvas-content",
+                  "canvas-layout",
+                );
+              } else if (taskId === "animation-style") {
+                completedBefore.push(
+                  "story",
+                  "canvas-content",
+                  "canvas-layout",
+                  "canvas-freeze",
+                );
+              }
+              updateTaskPlan({
+                complete: completedBefore,
+                run: taskId,
+                ...(event.toolName === "define_story" && event.args?.title
+                  ? { title: `《${event.args.title}》创作计划` }
+                  : {}),
+              });
               const isLibrarySearch =
                 event.toolName === "search_library_assets";
               const isLibraryAdd = event.toolName === "add_library_assets";
@@ -560,19 +782,28 @@ export const handleAiRequest = async (
         });
         activeAgents.set(threadId, agent);
         try {
+          taskStatuses.set("story", "running");
+          emitTaskPlan();
           emitStatus("queued", "请求已提交到智能体");
           await agent.prompt(prompt);
           finishText();
+          finishReasoning();
+          finishUiStep();
+          updateTaskPlan({
+            complete: TASK_PLAN_STEPS.map((item) => item.id),
+          });
           emitStatus("completed", "智能体执行完成", { completed: true });
           db.prepare(
             "UPDATE ai_threads SET transcript_json = ?, updated_at = ? WHERE id = ?",
           ).run(JSON.stringify(agent.state.messages), now(), threadId);
         } catch (error) {
           finishText();
+          finishReasoning();
           emitStatus("failed", "智能体执行失败", { completed: true });
           throw error;
         } finally {
           finishText();
+          finishReasoning();
           activeAgents.delete(threadId);
         }
       },

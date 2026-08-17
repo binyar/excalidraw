@@ -46,6 +46,23 @@
   pointer-events: auto;
 }
 
+.ai-chatbot-layer .ai-chatbot-sidebar {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+  transition: opacity 150ms ease-out,
+    transform 200ms cubic-bezier(0.23, 1, 0.32, 1), visibility 0s linear 0s;
+}
+
+.ai-chatbot-layer .ai-chatbot-sidebar.is-closed {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(100%);
+  transition: opacity 120ms ease-in,
+    transform 180ms cubic-bezier(0.55, 0, 1, 0.45), visibility 0s linear 180ms;
+}
+
 .powdoo {
   --color-primary-contrast-offset: #625ee0; // to offset Chubb illusion
 

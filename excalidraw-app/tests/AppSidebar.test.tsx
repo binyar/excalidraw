@@ -42,11 +42,22 @@ describe("AppSidebar", () => {
 
     fireEvent.click(trigger);
 
-    expect(
-      await screen.findByRole("heading", { name: "故事画布" }),
-    ).toBeInTheDocument();
+    const heading = await screen.findByRole("heading", { name: "故事画布" });
+    expect(heading).toBeInTheDocument();
     expect(document.querySelector(".ai-agent-mark.is-normal")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "AI 对话" })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "关闭 AI 对话" }));
+    expect(screen.getByRole("button", { name: "AI 对话" })).toBeInTheDocument();
+    expect(document.querySelector(".ai-chatbot-sidebar")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "AI 对话" }));
+    expect(await screen.findByRole("heading", { name: "故事画布" })).toBe(
+      heading,
+    );
   });
 
   it("removes the animation object when the selected canvas element is deleted", async () => {

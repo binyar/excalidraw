@@ -39,9 +39,21 @@ type StoryChatMessage = UIMessage<
       startedAt?: string;
       elapsedMs?: number;
     };
+    "task-plan": TaskPlanData;
   }
 >;
 type StoryMessagePart = StoryChatMessage["parts"][number];
+
+type TaskPlanItem = {
+  id: string;
+  label: string;
+  status: "pending" | "running" | "completed";
+};
+
+type TaskPlanData = {
+  title: string;
+  items: TaskPlanItem[];
+};
 
 const getThreadId = (workspaceFileId: string) => {
   const key = `excalidraw-ai-thread:${workspaceFileId}`;
@@ -59,6 +71,50 @@ const messageText = (message: StoryChatMessage) =>
     .filter((part) => part.type === "text")
     .map((part) => part.text)
     .join("");
+
+const messageReasoning = (message: StoryChatMessage) =>
+  message.parts
+    .filter((part) => part.type === "reasoning")
+    .map((part) => part.text)
+    .join("\n\n")
+    .trim();
+
+const messageHasStreamingReasoning = (message: StoryChatMessage) =>
+  message.parts.some(
+    (part) => part.type === "reasoning" && part.state === "streaming",
+  );
+
+const messageStepSegments = (message: StoryChatMessage): StoryChatMessage[] => {
+  if (message.role !== "assistant") {
+    return [message];
+  }
+
+  const segmentParts: StoryMessagePart[][] = [[]];
+  message.parts.forEach((part) => {
+    if (part.type === "step-start") {
+      if (segmentParts[segmentParts.length - 1].length > 0) {
+        segmentParts.push([]);
+      }
+      return;
+    }
+    segmentParts[segmentParts.length - 1].push(part);
+  });
+
+  return segmentParts
+    .filter((parts) => parts.length > 0)
+    .map((parts, index) => ({
+      ...message,
+      id: `${message.id}:step:${index}`,
+      parts,
+    }));
+};
+
+const taskPlanFromPart = (part: StoryMessagePart): TaskPlanData | null => {
+  if (part.type !== "data-task-plan") {
+    return null;
+  }
+  return part.data;
+};
 
 const AssistantMarkdown = ({ children }: { children: string }) => (
   <div className="ai-assistant-prose">
@@ -326,6 +382,111 @@ const AgentMark = ({ thinking = false }: { thinking?: boolean }) => {
       className={`ai-agent-mark ${thinking ? "is-thinking" : "is-normal"}`}
       variant={thinking ? "thinking" : "normal"}
     />
+  );
+};
+
+const TaskPlanPanel = ({ plan }: { plan: TaskPlanData }) => {
+  const [open, setOpen] = useState(false);
+  const isComplete = plan.items.every((item) => item.status === "completed");
+  const totalTaskCount = plan.items.length;
+  const completedTaskCount = plan.items.filter(
+    (item) => item.status === "completed",
+  ).length;
+
+  return (
+    <section
+      className={`ai-plan-panel${open ? " is-open" : ""}${
+        isComplete ? " is-complete" : ""
+      }`}
+      aria-label="任务计划"
+    >
+      <button
+        type="button"
+        className="ai-plan-panel__header"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+      >
+        <span className="ai-plan-panel__mark">
+          {isComplete ? "✓" : <span className="ai-task-spinner" />}
+        </span>
+        <span className="ai-plan-panel__title">
+          <strong>
+            {totalTaskCount} of {completedTaskCount} 任务计划
+          </strong>
+        </span>
+        <PanelIcon name="down" size={14} />
+      </button>
+      <div className="ai-plan-panel__collapse" aria-hidden={!open}>
+        <ol className="ai-plan-list">
+          {plan.items.map((item) => (
+            <li className={`is-${item.status}`} key={item.id}>
+              <span className="ai-plan-list__state" aria-hidden="true">
+                {item.status === "completed" ? (
+                  "✓"
+                ) : item.status === "running" ? (
+                  <span className="ai-task-spinner" />
+                ) : (
+                  ""
+                )}
+              </span>
+              <span>{item.label}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+};
+
+const ThinkingDisclosure = ({
+  text,
+  streaming,
+}: {
+  text: string;
+  streaming: boolean;
+}) => {
+  const [open, setOpen] = useState(streaming);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (streaming) {
+      setOpen(true);
+    }
+  }, [streaming]);
+
+  useEffect(() => {
+    if (!open || !streaming || !contentRef.current) {
+      return;
+    }
+    contentRef.current.scrollTop = contentRef.current.scrollHeight;
+  }, [open, streaming, text]);
+
+  if (!text) {
+    return null;
+  }
+
+  return (
+    <section
+      className={`ai-thinking${open ? " is-open" : ""}${
+        streaming ? " is-streaming" : ""
+      }`}
+    >
+      <button
+        type="button"
+        className="ai-thinking__header"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+      >
+        <AgentMark thinking={streaming} />
+        <span>{streaming ? "正在思考" : "查看思考过程"}</span>
+        <PanelIcon name="down" size={13} />
+      </button>
+      <div className="ai-thinking__collapse" aria-hidden={!open}>
+        <div ref={contentRef} className="ai-thinking__content">
+          <Markdown remarkPlugins={[remarkGfm]}>{text}</Markdown>
+        </div>
+      </div>
+    </section>
   );
 };
 
@@ -668,6 +829,10 @@ export const AIStoryPanel = ({ onClose }: { onClose?: () => void }) => {
     .reverse()
     .find((message) => message.role === "assistant");
   const latestAssistantMessageId = latestAssistantMessage?.id;
+  const latestTaskPlan = messages
+    .flatMap((message) => message.parts.map(taskPlanFromPart))
+    .filter((plan): plan is TaskPlanData => Boolean(plan))
+    .at(-1);
   const hasActiveProgress = Boolean(
     latestAssistantMessage?.parts.some((part) => agentProgress(part)),
   );
@@ -779,43 +944,53 @@ export const AIStoryPanel = ({ onClose }: { onClose?: () => void }) => {
               </span>
             </div>
           )}
-          {messages.map((message) => {
-            const text = messageText(message);
-            const progressParts = message.parts
-              .map(agentProgress)
-              .filter((part): part is ProgressItem => Boolean(part));
-            if (!text && progressParts.length === 0) {
-              return null;
-            }
-            if (message.role === "user") {
+          {messages.flatMap((sourceMessage) =>
+            messageStepSegments(sourceMessage).map((message) => {
+              const text = messageText(message);
+              const reasoning = messageReasoning(message);
+              const progressParts = message.parts
+                .map(agentProgress)
+                .filter((part): part is ProgressItem => Boolean(part));
+              if (!text && !reasoning && progressParts.length === 0) {
+                return null;
+              }
+              if (message.role === "user") {
+                return (
+                  <article key={message.id} className="ai-msg ai-msg-user">
+                    <div className="ai-message-context">✣&nbsp; 设计</div>
+                    {text && <div className="ai-user-bubble">{text}</div>}
+                  </article>
+                );
+              }
               return (
-                <article key={message.id} className="ai-msg ai-msg-user">
-                  <div className="ai-message-context">✣&nbsp; 设计</div>
-                  {text && <div className="ai-user-bubble">{text}</div>}
+                <article key={message.id} className="ai-msg ai-msg-assistant">
+                  <div className="ai-assistant-role">
+                    <AgentMark />
+                    <span>PiAgent</span>
+                  </div>
+                  <div className="ai-assistant-flow">
+                    {reasoning && (
+                      <ThinkingDisclosure
+                        text={reasoning}
+                        streaming={messageHasStreamingReasoning(message)}
+                      />
+                    )}
+                    {progressParts.length > 0 && !reasoning && !text && (
+                      <TaskActivity
+                        items={progressParts}
+                        active={
+                          isRunning &&
+                          sourceMessage.id === latestAssistantMessageId
+                        }
+                        fallbackStartedAt={localRunStartedAt}
+                      />
+                    )}
+                    {text && <AssistantMarkdown>{text}</AssistantMarkdown>}
+                  </div>
                 </article>
               );
-            }
-            return (
-              <article key={message.id} className="ai-msg ai-msg-assistant">
-                <div className="ai-assistant-role">
-                  <AgentMark />
-                  <span>PiAgent</span>
-                </div>
-                <div className="ai-assistant-flow">
-                  {progressParts.length > 0 && (
-                    <TaskActivity
-                      items={progressParts}
-                      active={
-                        isRunning && message.id === latestAssistantMessageId
-                      }
-                      fallbackStartedAt={localRunStartedAt}
-                    />
-                  )}
-                  {text && <AssistantMarkdown>{text}</AssistantMarkdown>}
-                </div>
-              </article>
-            );
-          })}
+            }),
+          )}
           {isRunning && !hasActiveProgress && (
             <div className="ai-running" role="status">
               <AgentMark thinking />
@@ -837,6 +1012,12 @@ export const AIStoryPanel = ({ onClose }: { onClose?: () => void }) => {
           回到最新
         </button>
       </div>
+
+      {latestTaskPlan && (
+        <div className="ai-plan-panel-wrap">
+          <TaskPlanPanel plan={latestTaskPlan} />
+        </div>
+      )}
 
       <form className="ai-composer" onSubmit={submit}>
         <div className="ai-composer-shell">

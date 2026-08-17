@@ -21,6 +21,7 @@ export const AppSidebar = () => {
   const elements = useExcalidrawElements();
   const excalidrawAPI = useExcalidrawAPI();
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
+  const [isAiChatMounted, setIsAiChatMounted] = useState(false);
   const previousSelectedElementIdRef = useRef<string | null | undefined>(
     undefined,
   );
@@ -48,9 +49,15 @@ export const AppSidebar = () => {
   useEffect(() => {
     const workspaceFileId = getWorkspaceFileIdFromPath();
     if (workspaceFileId && hasPendingAiCreatePrompt(workspaceFileId)) {
+      setIsAiChatMounted(true);
       setIsAiChatOpen(true);
     }
   }, []);
+
+  const openAiChat = () => {
+    setIsAiChatMounted(true);
+    setIsAiChatOpen(true);
+  };
 
   useEffect(() => {
     const currentElementIds = new Set(
@@ -293,15 +300,18 @@ export const AppSidebar = () => {
             className="ai-chatbot-trigger pointer-events-auto absolute right-4 top-4 size-10 rounded-none border-0 bg-transparent p-0 shadow-none hover:bg-transparent [&_svg]:size-6"
             aria-label="AI 对话"
             title="AI 对话"
-            onClick={() => setIsAiChatOpen(true)}
+            onClick={openAiChat}
           >
             <BearIcon aria-hidden="true" className="ai-chatbot-bot-icon" />
           </Button>
         )}
-        {isAiChatOpen && (
+        {isAiChatMounted && (
           <aside
-            className="ai-chatbot-sidebar pointer-events-auto absolute inset-y-0 right-0 flex w-[min(454px,100vw)] min-w-0 flex-col overflow-hidden border-l bg-background shadow-xl"
+            className={`ai-chatbot-sidebar ${
+              isAiChatOpen ? "is-open" : "is-closed"
+            } pointer-events-auto absolute inset-y-0 right-0 flex w-[min(454px,100vw)] min-w-0 flex-col overflow-hidden border-l bg-background shadow-xl`}
             aria-label="AI 对话"
+            aria-hidden={!isAiChatOpen}
           >
             <AIStoryPanel onClose={() => setIsAiChatOpen(false)} />
           </aside>
