@@ -320,7 +320,10 @@
   }
 
   .ai-thinking {
+    width: 100%;
     min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
     border-left: 2px solid color-mix(in srgb, #7067ee 32%, var(--ai-border));
   }
 
@@ -355,6 +358,7 @@
 
   .ai-thinking__content {
     box-sizing: border-box;
+    min-width: 0;
     max-height: 220px;
     margin: 2px 8px 3px;
     padding: 9px 10px;
@@ -428,13 +432,17 @@
     }
 
     pre {
+      box-sizing: border-box;
+      width: 100%;
       max-width: 100%;
       padding: 8px 9px;
-      overflow-x: auto;
+      overflow-x: hidden;
       border: 1px solid var(--ai-border);
       border-radius: 7px;
       background: var(--ai-panel);
-      white-space: pre;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
 
       code {
         padding: 0;
@@ -444,9 +452,10 @@
     }
 
     table {
-      display: block;
+      display: table;
+      width: 100%;
       max-width: 100%;
-      overflow-x: auto;
+      table-layout: fixed;
       border-spacing: 0;
       border-collapse: collapse;
     }
@@ -457,6 +466,8 @@
       border: 1px solid var(--ai-border);
       text-align: left;
       vertical-align: top;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     a {
@@ -469,6 +480,24 @@
       border: 0;
       border-top: 1px solid var(--ai-border);
     }
+  }
+
+  .ai-thinking__streaming-text {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    font: inherit;
+    color: inherit;
+  }
+
+  .ai-agent-notes {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 10px;
   }
 
   .ai-assistant-prose {
@@ -565,16 +594,22 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
         monospace;
       font-size: 0.9em;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     pre {
+      box-sizing: border-box;
+      width: 100%;
       max-width: 100%;
       padding: 11px 12px;
-      overflow-x: auto;
+      overflow-x: hidden;
       border: 1px solid var(--ai-border);
       border-radius: 9px;
       background: color-mix(in srgb, var(--ai-text) 5%, var(--ai-panel));
-      white-space: pre;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
 
       code {
         padding: 0;
@@ -585,10 +620,10 @@
     }
 
     table {
-      display: block;
+      display: table;
       width: 100%;
       max-width: 100%;
-      overflow-x: auto;
+      table-layout: fixed;
       border-spacing: 0;
       border-collapse: collapse;
       font-size: 12px;
@@ -600,6 +635,8 @@
       border: 1px solid var(--ai-border);
       text-align: left;
       vertical-align: top;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     th {
@@ -619,12 +656,16 @@
   }
 
   .ai-task-activity {
+    width: 100%;
     min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   .ai-task-activity__toggle {
     display: inline-flex;
     min-height: 32px;
+    max-width: 100%;
     align-items: center;
     gap: 7px;
     padding: 4px 0;
@@ -675,6 +716,7 @@
     display: grid;
     grid-template-rows: 0fr;
     max-width: 100%;
+    overflow-x: hidden;
     opacity: 0;
     transition: grid-template-rows 180ms cubic-bezier(0.23, 1, 0.32, 1),
       opacity 140ms ease-out;
@@ -700,6 +742,7 @@
     display: flex;
     box-sizing: border-box;
     width: 100%;
+    min-width: 0;
     max-height: 260px;
     flex-direction: column;
     gap: 8px;
@@ -749,6 +792,7 @@
     color: var(--ai-muted);
     font-size: 11px;
     line-height: 1.45;
+    min-width: 0;
 
     > span {
       width: 6px;
@@ -761,7 +805,12 @@
     }
 
     p {
+      min-width: 0;
+      max-width: 100%;
       margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     &.is-done > span {

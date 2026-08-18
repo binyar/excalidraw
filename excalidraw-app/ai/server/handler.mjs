@@ -59,6 +59,20 @@ const TASK_PLAN_STEPS = Object.freeze([
   { id: "animation-compile", label: "编译动画并生成可播放成品" },
 ]);
 
+// Reasoning is useful as lightweight progress context, but forwarding an
+// unbounded token stream makes the browser retain and repeatedly render the
+// entire model trace. Keep the agent's server-side transcript intact while
+// bounding the UI payload.
+const MAX_UI_REASONING_CHARS = 12_000;
+const REASONING_TRUNCATED_SUFFIX = "\n\n（思考过程过长，已截断显示）";
+
+const limitUiReasoning = (value) => {
+  const text = String(value || "").trim();
+  return text.length > MAX_UI_REASONING_CHARS
+    ? `${text.slice(0, MAX_UI_REASONING_CHARS)}${REASONING_TRUNCATED_SUFFIX}`
+    : text;
+};
+
 const taskPlanSnapshot = (title, statuses = new Map()) => ({
   title: title || "故事画布创作计划",
   items: TASK_PLAN_STEPS.map((item) => ({
@@ -67,7 +81,7 @@ const taskPlanSnapshot = (title, statuses = new Map()) => ({
   })),
 });
 
-const transcriptMessageParts = (message) => {
+const transcriptTextParts = (message) => {
   if (typeof message?.content === "string") {
     return message.content.trim()
       ? [{ type: "text", text: message.content.trim() }]
@@ -84,7 +98,7 @@ const transcriptMessageParts = (message) => {
       return [
         {
           type: "reasoning",
-          text: String(item.thinking).trim(),
+          text: limitUiReasoning(item.thinking),
           state: "done",
         },
       ];
@@ -93,46 +107,150 @@ const transcriptMessageParts = (message) => {
   });
 };
 
-const transcriptToUiMessages = (transcript) => {
-  const messages = transcript.flatMap((message, index) => {
-    if (message?.role !== "user" && message?.role !== "assistant") {
-      return [];
-    }
-    const parts = transcriptMessageParts(message);
-    if (parts.length === 0) {
-      return [];
-    }
-    return [
-      {
-        id: message.id || `history-${index}`,
-        role: message.role,
-        parts,
-      },
-    ];
-  });
-  const artifact = [...transcript]
-    .reverse()
-    .find((message) => message?.details?.kind === "story-artifact")?.details;
-  if (artifact?.canvas) {
-    const completed = new Map(
-      TASK_PLAN_STEPS.map((item) => [item.id, "completed"]),
-    );
-    messages.push({
-      id: `history-plan-${artifact.artifactId || artifact.canvas.id}`,
-      role: "assistant",
-      parts: [
-        {
-          type: "data-task-plan",
-          data: taskPlanSnapshot(
-            artifact.canvas.title
-              ? `《${artifact.canvas.title}》创作计划`
-              : undefined,
-            completed,
-          ),
-        },
-      ],
-    });
+const transcriptToolResults = (transcript) =>
+  new Map(
+    transcript.flatMap((message) =>
+      message?.role === "toolResult" && message.toolCallId
+        ? [[message.toolCallId, message]]
+        : [],
+    ),
+  );
+
+const transcriptToolPart = (toolCall, toolResults) => {
+  const result = toolResults.get(toolCall.id);
+  const base = {
+    type: "dynamic-tool",
+    toolCallId: toolCall.id,
+    toolName: toolCall.name,
+    input: toolCall.arguments || {},
+  };
+  if (!result) {
+    return { ...base, state: "input-available" };
   }
+  const resultText = Array.isArray(result.content)
+    ? result.content
+        .map((item) => item?.text || "")
+        .join(" ")
+        .trim()
+    : "";
+  return result.isError
+    ? {
+        ...base,
+        state: "output-error",
+        errorText: resultText || "工具执行失败",
+      }
+    : {
+        ...base,
+        state: "output-available",
+        output: result.details ?? { content: result.content },
+      };
+};
+
+export const transcriptToUiMessages = (transcript) => {
+  const messages = [];
+  const toolResults = transcriptToolResults(transcript);
+  let run = null;
+  let runSequence = 0;
+
+  const flushRun = () => {
+    if (!run) {
+      return;
+    }
+    const reasoning = limitUiReasoning(run.reasoning.join("\n\n"));
+    const finalText =
+      run.finalText ||
+      (run.artifact?.canvas ? "故事画布和动画已生成完成。" : "");
+    const parts = [
+      ...(reasoning
+        ? [{ type: "reasoning", text: reasoning, state: "done" }]
+        : []),
+      ...run.notes.map((text, index) => ({
+        type: "data-agent-note",
+        id: `history-note-${runSequence}-${index}`,
+        data: { text },
+      })),
+      ...run.tools,
+      ...(finalText ? [{ type: "text", text: finalText }] : []),
+    ];
+    if (run.artifact?.canvas) {
+      const completed = new Map(
+        TASK_PLAN_STEPS.map((item) => [item.id, "completed"]),
+      );
+      parts.push({
+        type: "data-task-plan",
+        data: taskPlanSnapshot(
+          run.artifact.canvas.title
+            ? `《${run.artifact.canvas.title}》创作计划`
+            : undefined,
+          completed,
+        ),
+      });
+    }
+    if (parts.length > 0) {
+      messages.push({
+        id: `history-run-${runSequence++}`,
+        role: "assistant",
+        parts,
+      });
+    }
+    run = null;
+  };
+
+  transcript.forEach((message, index) => {
+    if (message?.role === "user") {
+      flushRun();
+      const parts = transcriptTextParts(message).filter(
+        (part) => part.type === "text",
+      );
+      if (parts.length > 0) {
+        messages.push({
+          id: message.id || `history-user-${index}`,
+          role: "user",
+          parts,
+        });
+      }
+      run = {
+        reasoning: [],
+        notes: [],
+        tools: [],
+        latestText: "",
+        finalText: "",
+        artifact: null,
+      };
+      return;
+    }
+    if (message?.details?.kind === "story-artifact" && run) {
+      run.artifact = message.details;
+    }
+    if (message?.role !== "assistant") {
+      return;
+    }
+    run ||= {
+      reasoning: [],
+      notes: [],
+      tools: [],
+      latestText: "",
+      finalText: "",
+      artifact: null,
+    };
+    const content = Array.isArray(message.content) ? message.content : [];
+    const hasToolCall = content.some((item) => item?.type === "toolCall");
+    content.forEach((item) => {
+      if (item?.type === "thinking" && String(item.thinking || "").trim()) {
+        run.reasoning.push(String(item.thinking).trim());
+      } else if (item?.type === "text" && String(item.text || "").trim()) {
+        run.latestText = String(item.text).trim();
+        if (!hasToolCall) {
+          run.finalText = run.latestText;
+        } else {
+          run.notes.push(run.latestText);
+        }
+      } else if (item?.type === "toolCall" && item.id && item.name) {
+        run.tools.push(transcriptToolPart(item, toolResults));
+      }
+    });
+  });
+  flushRun();
   return messages;
 };
 
@@ -405,6 +523,9 @@ export const handleAiRequest = async (
         const runStartedAt = new Date(runStartedAtMs).toISOString();
         let textId = null;
         let pendingAssistantText = "";
+        let latestAssistantText = "";
+        let finalAssistantText = "";
+        let agentNoteSequence = 0;
         let uiStepOpen = false;
         const startUiStep = () => {
           if (uiStepOpen) {
@@ -491,28 +612,52 @@ export const handleAiRequest = async (
           const key = `${source}:${reasoningEvent.contentIndex}`;
           if (reasoningEvent.type === "thinking_start") {
             const id = `${threadId}:reasoning:${reasoningSequence++}`;
-            reasoningStreams.set(key, id);
+            reasoningStreams.set(key, {
+              id,
+              forwardedChars: 0,
+              truncated: false,
+            });
             writer.write({ type: "reasoning-start", id });
           } else if (reasoningEvent.type === "thinking_delta") {
-            const id = reasoningStreams.get(key);
-            if (id) {
-              writer.write({
-                type: "reasoning-delta",
-                id,
-                delta: reasoningEvent.delta,
-              });
+            const stream = reasoningStreams.get(key);
+            if (stream && !stream.truncated) {
+              const delta = String(reasoningEvent.delta || "");
+              const remaining = Math.max(
+                0,
+                MAX_UI_REASONING_CHARS - stream.forwardedChars,
+              );
+              const forwardedDelta = delta.slice(0, remaining);
+              if (forwardedDelta) {
+                writer.write({
+                  type: "reasoning-delta",
+                  id: stream.id,
+                  delta: forwardedDelta,
+                });
+                stream.forwardedChars += forwardedDelta.length;
+              }
+              if (delta.length > remaining) {
+                writer.write({
+                  type: "reasoning-delta",
+                  id: stream.id,
+                  delta: REASONING_TRUNCATED_SUFFIX,
+                });
+                stream.truncated = true;
+              }
             }
           } else if (reasoningEvent.type === "thinking_end") {
-            const id = reasoningStreams.get(key);
-            if (id) {
-              writer.write({ type: "reasoning-end", id });
+            const stream = reasoningStreams.get(key);
+            if (stream) {
+              writer.write({
+                type: "reasoning-end",
+                id: stream.id,
+              });
               reasoningStreams.delete(key);
             }
           }
         };
         const finishReasoning = () => {
-          reasoningStreams.forEach((id) =>
-            writer.write({ type: "reasoning-end", id }),
+          reasoningStreams.forEach((stream) =>
+            writer.write({ type: "reasoning-end", id: stream.id }),
           );
           reasoningStreams.clear();
         };
@@ -648,6 +793,23 @@ export const handleAiRequest = async (
             textId = null;
           }
         };
+        const emitFinalText = () => {
+          const assistantText = finalAssistantText || latestAssistantText;
+          const chineseCharacterCount =
+            assistantText.match(/[\u3400-\u9fff]/g)?.length || 0;
+          const latinCharacterCount =
+            assistantText.match(/[A-Za-z]/g)?.length || 0;
+          const displayText =
+            !assistantText ||
+            chineseCharacterCount === 0 ||
+            latinCharacterCount > Math.max(24, chineseCharacterCount / 2)
+              ? "故事画布和动画已生成完成。"
+              : assistantText;
+          textId = randomUUID();
+          writer.write({ type: "text-start", id: textId });
+          writer.write({ type: "text-delta", id: textId, delta: displayText });
+          finishText();
+        };
         const agent = buildAgent({
           transcript,
           threadId,
@@ -660,7 +822,6 @@ export const handleAiRequest = async (
               startUiStep();
               emitStatus("started", "已接收需求，智能体开始执行");
             } else if (event.type === "turn_start") {
-              startUiStep();
               emitStatus("planning", "正在规划故事结构和画布内容");
             } else if (
               event.type === "message_update" &&
@@ -684,26 +845,20 @@ export const handleAiRequest = async (
               const assistantText = pendingAssistantText.trim();
               pendingAssistantText = "";
               if (assistantText) {
-                const chineseCharacterCount =
-                  assistantText.match(/[\u3400-\u9fff]/g)?.length || 0;
-                const latinCharacterCount =
-                  assistantText.match(/[A-Za-z]/g)?.length || 0;
-                const displayText =
-                  chineseCharacterCount === 0 ||
-                  latinCharacterCount > Math.max(24, chineseCharacterCount / 2)
-                    ? "故事画布和动画已生成完成。"
-                    : assistantText;
-                textId = randomUUID();
-                writer.write({ type: "text-start", id: textId });
-                writer.write({
-                  type: "text-delta",
-                  id: textId,
-                  delta: displayText,
-                });
+                latestAssistantText = assistantText;
+                const hasToolCall = event.message.content?.some(
+                  (item) => item.type === "toolCall",
+                );
+                if (!hasToolCall) {
+                  finalAssistantText = assistantText;
+                } else {
+                  writer.write({
+                    type: "data-agent-note",
+                    id: `${threadId}:agent-note:${agentNoteSequence++}`,
+                    data: { text: assistantText },
+                  });
+                }
               }
-              finishText();
-            } else if (event.type === "turn_end") {
-              finishUiStep();
             } else if (event.type === "tool_execution_start") {
               const taskId = canvasTaskForTool(event.toolName);
               const completedBefore = [];
@@ -786,13 +941,13 @@ export const handleAiRequest = async (
           emitTaskPlan();
           emitStatus("queued", "请求已提交到智能体");
           await agent.prompt(prompt);
-          finishText();
           finishReasoning();
-          finishUiStep();
           updateTaskPlan({
             complete: TASK_PLAN_STEPS.map((item) => item.id),
           });
           emitStatus("completed", "智能体执行完成", { completed: true });
+          emitFinalText();
+          finishUiStep();
           db.prepare(
             "UPDATE ai_threads SET transcript_json = ?, updated_at = ? WHERE id = ?",
           ).run(JSON.stringify(agent.state.messages), now(), threadId);
@@ -800,6 +955,7 @@ export const handleAiRequest = async (
           finishText();
           finishReasoning();
           emitStatus("failed", "智能体执行失败", { completed: true });
+          finishUiStep();
           throw error;
         } finally {
           finishText();

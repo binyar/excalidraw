@@ -20,6 +20,10 @@ import {
   consumePendingAiCreatePrompt,
   getPendingAiThinkingEnabled,
 } from "../ai/pendingPrompt";
+import {
+  aggregateStoryProgress,
+  type StoryProgressItem,
+} from "../ai/storyChatPresentation";
 import { mergeStoryAnimationProject } from "../ai/storyAnimationProject";
 import { getWorkspaceFileIdFromPath } from "../workspace/editorRoute";
 
@@ -28,6 +32,8 @@ import { Textarea } from "./ui/textarea";
 import { BearIcon } from "./BearIcon";
 
 import "./AIStoryPanel.scss";
+
+const CHAT_STREAM_THROTTLE_MS = 120;
 
 type StoryChatMessage = UIMessage<
   unknown,
@@ -40,6 +46,9 @@ type StoryChatMessage = UIMessage<
       elapsedMs?: number;
     };
     "task-plan": TaskPlanData;
+    "agent-note": {
+      text: string;
+    };
   }
 >;
 type StoryMessagePart = StoryChatMessage["parts"][number];
@@ -84,30 +93,12 @@ const messageHasStreamingReasoning = (message: StoryChatMessage) =>
     (part) => part.type === "reasoning" && part.state === "streaming",
   );
 
-const messageStepSegments = (message: StoryChatMessage): StoryChatMessage[] => {
-  if (message.role !== "assistant") {
-    return [message];
-  }
-
-  const segmentParts: StoryMessagePart[][] = [[]];
-  message.parts.forEach((part) => {
-    if (part.type === "step-start") {
-      if (segmentParts[segmentParts.length - 1].length > 0) {
-        segmentParts.push([]);
-      }
-      return;
-    }
-    segmentParts[segmentParts.length - 1].push(part);
-  });
-
-  return segmentParts
-    .filter((parts) => parts.length > 0)
-    .map((parts, index) => ({
-      ...message,
-      id: `${message.id}:step:${index}`,
-      parts,
-    }));
-};
+const messageAgentNotes = (message: StoryChatMessage) =>
+  message.parts.flatMap((part) =>
+    part.type === "data-agent-note" && part.data.text.trim()
+      ? [part.data.text.trim()]
+      : [],
+  );
 
 const taskPlanFromPart = (part: StoryMessagePart): TaskPlanData | null => {
   if (part.type !== "data-task-plan") {
@@ -297,12 +288,7 @@ const describeCanvasTool = (
   return `${prefix}：${toolName}`;
 };
 
-type ProgressItem = {
-  tone: "done" | "error" | "running" | "warning";
-  label: string;
-  startedAt?: string;
-  elapsedMs?: number;
-};
+type ProgressItem = StoryProgressItem;
 
 const agentProgress = (part: StoryMessagePart): ProgressItem | null => {
   if (part.type === "data-agent-status") {
@@ -322,6 +308,13 @@ const agentProgress = (part: StoryMessagePart): ProgressItem | null => {
   if (!isToolUIPart(part)) {
     return null;
   }
+  const toolPart = part as typeof part & {
+    toolName?: string;
+    input?: unknown;
+  };
+  const toolName =
+    toolPart.toolName ||
+    (part.type.startsWith("tool-") ? part.type.slice("tool-".length) : "tool");
   if (part.state === "output-error") {
     const errorText = readableProgressError(part.errorText || "AI 创建失败");
     const isRecoverableLayoutValidation =
@@ -331,24 +324,26 @@ const agentProgress = (part: StoryMessagePart): ProgressItem | null => {
       label: isRecoverableLayoutValidation
         ? `连接线布局需调整：${errorText}`
         : errorText,
+      ...(toolName === "search_library_assets"
+        ? { groupKey: "library-search" as const }
+        : {}),
     };
   }
-  const toolPart = part as typeof part & {
-    toolName?: string;
-    input?: unknown;
-  };
-  const toolName =
-    toolPart.toolName ||
-    (part.type.startsWith("tool-") ? part.type.slice("tool-".length) : "tool");
   if (part.state === "output-available") {
     return {
       tone: "done",
       label: describeCanvasTool(toolName, toolPart.input, true),
+      ...(toolName === "search_library_assets"
+        ? { groupKey: "library-search" as const }
+        : {}),
     };
   }
   return {
     tone: "running",
     label: describeCanvasTool(toolName, toolPart.input, false),
+    ...(toolName === "search_library_assets"
+      ? { groupKey: "library-search" as const }
+      : {}),
   };
 };
 
@@ -411,7 +406,7 @@ const TaskPlanPanel = ({ plan }: { plan: TaskPlanData }) => {
         </span>
         <span className="ai-plan-panel__title">
           <strong>
-            {totalTaskCount} of {completedTaskCount} 任务计划
+            {completedTaskCount} of {totalTaskCount} 任务计划
           </strong>
         </span>
         <PanelIcon name="down" size={14} />
@@ -447,11 +442,15 @@ const ThinkingDisclosure = ({
 }) => {
   const [open, setOpen] = useState(streaming);
   const contentRef = useRef<HTMLDivElement>(null);
+  const wasStreamingRef = useRef(streaming);
 
   useEffect(() => {
     if (streaming) {
       setOpen(true);
+    } else if (wasStreamingRef.current) {
+      setOpen(false);
     }
+    wasStreamingRef.current = streaming;
   }, [streaming]);
 
   useEffect(() => {
@@ -483,7 +482,11 @@ const ThinkingDisclosure = ({
       </button>
       <div className="ai-thinking__collapse" aria-hidden={!open}>
         <div ref={contentRef} className="ai-thinking__content">
-          <Markdown remarkPlugins={[remarkGfm]}>{text}</Markdown>
+          {streaming ? (
+            <pre className="ai-thinking__streaming-text">{text}</pre>
+          ) : (
+            <Markdown remarkPlugins={[remarkGfm]}>{text}</Markdown>
+          )}
         </div>
       </div>
     </section>
@@ -507,11 +510,12 @@ const TaskActivity = ({
   active: boolean;
   fallbackStartedAt: number | null;
 }) => {
-  const latest = items.at(-1)!;
+  const displayItems = aggregateStoryProgress(items);
+  const latest = displayItems.at(-1)!;
   const startedAt =
-    [...items].reverse().find((item) => item.startedAt)?.startedAt ??
+    [...displayItems].reverse().find((item) => item.startedAt)?.startedAt ??
     (fallbackStartedAt ? new Date(fallbackStartedAt).toISOString() : undefined);
-  const elapsedMs = [...items]
+  const elapsedMs = [...displayItems]
     .reverse()
     .find((item) => item.elapsedMs !== undefined)?.elapsedMs;
   const running = active;
@@ -536,7 +540,7 @@ const TaskActivity = ({
       return;
     }
     activityBody.scrollTop = activityBody.scrollHeight;
-  }, [items.length, open, running]);
+  }, [displayItems.length, open, running]);
 
   const updateActivityScrollState = () => {
     const activityBody = activityBodyRef.current;
@@ -587,11 +591,13 @@ const TaskActivity = ({
         >
           <div className="ai-task-activity__caption">
             <span>执行过程</span>
-            <span>{items.length} 条</span>
+            <span>{displayItems.length} 项</span>
           </div>
-          {items.map((item, index) => {
+          {displayItems.map((item, index) => {
             const isCurrentStep =
-              running && item.tone === "running" && index === items.length - 1;
+              running &&
+              item.tone === "running" &&
+              index === displayItems.length - 1;
             const displayTone =
               item.tone === "running" && !isCurrentStep ? "done" : item.tone;
             return (
@@ -759,7 +765,7 @@ export const AIStoryPanel = ({ onClose }: { onClose?: () => void }) => {
     useChat<StoryChatMessage>({
       id: threadId,
       transport,
-      experimental_throttle: 40,
+      experimental_throttle: CHAT_STREAM_THROTTLE_MS,
       onData: (dataPart) => {
         if (dataPart.type === "data-story") {
           applyArtifact(dataPart.data);
@@ -845,11 +851,17 @@ export const AIStoryPanel = ({ onClose }: { onClose?: () => void }) => {
   }, [isRunning, localRunStartedAt]);
   useEffect(() => {
     if (
-      !scrolledFromBottomRef.current &&
-      typeof messagesEndRef.current?.scrollIntoView === "function"
+      scrolledFromBottomRef.current ||
+      typeof messagesEndRef.current?.scrollIntoView !== "function"
     ) {
-      messagesEndRef.current.scrollIntoView({ block: "end" });
+      return;
     }
+    const frame = window.requestAnimationFrame(() => {
+      if (!scrolledFromBottomRef.current) {
+        messagesEndRef.current?.scrollIntoView({ block: "end" });
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [messages, status, historyLoaded, error]);
 
   const updateScrollState = () => {
@@ -944,53 +956,65 @@ export const AIStoryPanel = ({ onClose }: { onClose?: () => void }) => {
               </span>
             </div>
           )}
-          {messages.flatMap((sourceMessage) =>
-            messageStepSegments(sourceMessage).map((message) => {
-              const text = messageText(message);
-              const reasoning = messageReasoning(message);
-              const progressParts = message.parts
-                .map(agentProgress)
-                .filter((part): part is ProgressItem => Boolean(part));
-              if (!text && !reasoning && progressParts.length === 0) {
-                return null;
-              }
-              if (message.role === "user") {
-                return (
-                  <article key={message.id} className="ai-msg ai-msg-user">
-                    <div className="ai-message-context">✣&nbsp; 设计</div>
-                    {text && <div className="ai-user-bubble">{text}</div>}
-                  </article>
-                );
-              }
+          {messages.map((message) => {
+            const text = messageText(message);
+            const reasoning = messageReasoning(message);
+            const notes = messageAgentNotes(message);
+            const progressParts = message.parts
+              .map(agentProgress)
+              .filter((part): part is ProgressItem => Boolean(part));
+            if (
+              !text &&
+              !reasoning &&
+              notes.length === 0 &&
+              progressParts.length === 0
+            ) {
+              return null;
+            }
+            if (message.role === "user") {
               return (
-                <article key={message.id} className="ai-msg ai-msg-assistant">
-                  <div className="ai-assistant-role">
-                    <AgentMark />
-                    <span>PiAgent</span>
-                  </div>
-                  <div className="ai-assistant-flow">
-                    {reasoning && (
-                      <ThinkingDisclosure
-                        text={reasoning}
-                        streaming={messageHasStreamingReasoning(message)}
-                      />
-                    )}
-                    {progressParts.length > 0 && !reasoning && !text && (
-                      <TaskActivity
-                        items={progressParts}
-                        active={
-                          isRunning &&
-                          sourceMessage.id === latestAssistantMessageId
-                        }
-                        fallbackStartedAt={localRunStartedAt}
-                      />
-                    )}
-                    {text && <AssistantMarkdown>{text}</AssistantMarkdown>}
-                  </div>
+                <article key={message.id} className="ai-msg ai-msg-user">
+                  <div className="ai-message-context">✣&nbsp; 设计</div>
+                  {text && <div className="ai-user-bubble">{text}</div>}
                 </article>
               );
-            }),
-          )}
+            }
+            return (
+              <article key={message.id} className="ai-msg ai-msg-assistant">
+                <div className="ai-assistant-role">
+                  <AgentMark />
+                  <span>PiAgent</span>
+                </div>
+                <div className="ai-assistant-flow">
+                  {reasoning && (
+                    <ThinkingDisclosure
+                      text={reasoning}
+                      streaming={messageHasStreamingReasoning(message)}
+                    />
+                  )}
+                  {notes.length > 0 && (
+                    <div className="ai-agent-notes">
+                      {notes.map((note, index) => (
+                        <AssistantMarkdown key={`${message.id}:note:${index}`}>
+                          {note}
+                        </AssistantMarkdown>
+                      ))}
+                    </div>
+                  )}
+                  {progressParts.length > 0 && (
+                    <TaskActivity
+                      items={progressParts}
+                      active={
+                        isRunning && message.id === latestAssistantMessageId
+                      }
+                      fallbackStartedAt={localRunStartedAt}
+                    />
+                  )}
+                  {text && <AssistantMarkdown>{text}</AssistantMarkdown>}
+                </div>
+              </article>
+            );
+          })}
           {isRunning && !hasActiveProgress && (
             <div className="ai-running" role="status">
               <AgentMark thinking />
