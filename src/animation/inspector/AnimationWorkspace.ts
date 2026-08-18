@@ -846,7 +846,7 @@ export class AnimationWorkspace {
       ...this.project,
       durationMs: Math.max(
         DEFAULT_ANIMATION_PROJECT_DURATION_MS,
-        getProjectDuration(tracks),
+        getProjectDuration(this.project, tracks),
       ),
       tracks,
     });
@@ -866,7 +866,7 @@ export class AnimationWorkspace {
       ...this.project,
       durationMs: Math.max(
         DEFAULT_ANIMATION_PROJECT_DURATION_MS,
-        getProjectDuration(tracks),
+        getProjectDuration(this.project, tracks),
       ),
       tracks,
     };
@@ -906,7 +906,7 @@ export class AnimationWorkspace {
       ...this.project,
       durationMs: Math.max(
         DEFAULT_ANIMATION_PROJECT_DURATION_MS,
-        getProjectDuration(tracks),
+        getProjectDuration(this.project, tracks),
       ),
       tracks,
     });
@@ -942,7 +942,7 @@ export class AnimationWorkspace {
       ...this.project,
       durationMs: Math.max(
         DEFAULT_ANIMATION_PROJECT_DURATION_MS,
-        getProjectDuration(tracks),
+        getProjectDuration(this.project, tracks),
       ),
       tracks,
     });
@@ -1250,9 +1250,13 @@ const resolveWorkspaceGroup = (
   );
 };
 
-const getProjectDuration = (tracks: AnimationTrack[]) =>
+const getProjectDuration = (
+  project: AnimationProject,
+  tracks: AnimationTrack[],
+) =>
   Math.max(
     1,
+    ...(project.scenes ?? []).map((scene) => scene.startMs + scene.durationMs),
     ...tracks.map((track) => {
       const contentEnd = Math.max(
         0,
@@ -1269,7 +1273,10 @@ const getProjectDuration = (tracks: AnimationTrack[]) =>
               (loop.durationMs + (loop.delayMs ?? 0)) * loop.iterations,
         ),
       );
-      return (track.startMs ?? 0) + (track.durationMs ?? contentEnd);
+      return (
+        getTrackAbsoluteStartMs(project, track) +
+        (track.durationMs ?? contentEnd)
+      );
     }),
   );
 

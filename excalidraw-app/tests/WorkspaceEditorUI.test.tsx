@@ -7,7 +7,6 @@ import {
 import { vi } from "vitest";
 
 import { AppMainMenu } from "../components/AppMainMenu";
-import { AppWelcomeScreen } from "../components/AppWelcomeScreen";
 
 describe("workspace editor UI", () => {
   it("keeps core drawing actions and removes local/cloud shortcuts", async () => {
@@ -29,7 +28,6 @@ describe("workspace editor UI", () => {
         }}
       >
         <AppMainMenu onSave={onSave} onBackToWorkspace={onBackToWorkspace} />
-        <AppWelcomeScreen />
       </Excalidraw>,
     );
 
@@ -57,14 +55,11 @@ describe("workspace editor UI", () => {
     expect(onBackToWorkspace).toHaveBeenCalledTimes(1);
   });
 
-  it("shows only the workspace drawing guidance on the welcome screen", async () => {
-    const { container } = await render(
-      <Excalidraw>
-        <AppWelcomeScreen />
-      </Excalidraw>,
-    );
+  it("keeps an empty canvas free of welcome guidance", async () => {
+    const { container } = await render(<Excalidraw />);
 
-    expect(container.textContent).toContain("内容会自动保存到文件管理系统");
+    expect(container.textContent).not.toContain("选择工具开始绘制");
+    expect(container.textContent).not.toContain("内容会自动保存到文件管理系统");
     expect(
       queryByTestId(container, "welcome-screen-menu-item-load-scene"),
     ).toBeNull();

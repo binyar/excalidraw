@@ -23,6 +23,9 @@ const ANIMATION_PACE_LABELS = {
   fast: "明快",
 };
 
+const MIN_SCENE_READING_DURATION_MS = 3000;
+const MAX_ANIMATION_DURATION_MS = 120_000;
+
 const motionCharacterSchema = Type.Union([
   Type.Literal("precise"),
   Type.Literal("gentle"),
@@ -500,6 +503,60 @@ const normalizeScenesForStorySpaces = (scenes, canvasDraft) => {
   return { scenes: normalized, repairs };
 };
 
+const ensureReadableSceneDurations = (scenes, currentDurationMs) => {
+  const repairs = [];
+  let previousScene = null;
+  const normalized = scenes.map((scene) => {
+    const durationMs = Math.max(
+      MIN_SCENE_READING_DURATION_MS,
+      scene.durationMs,
+    );
+    const cameraTransitionDurationMs =
+      scene.camera && scene.camera.transition !== "cut"
+        ? scene.camera.transitionDurationMs ?? 1200
+        : 0;
+    const boundaryDurationMs = Math.max(
+      scene.transition?.durationMs || 0,
+      cameraTransitionDurationMs,
+    );
+    const minimumStartMs = previousScene
+      ? Math.max(
+          previousScene.startMs + previousScene.durationMs,
+          previousScene.startMs + boundaryDurationMs,
+        )
+      : 0;
+    const startMs = previousScene
+      ? Math.max(scene.startMs, minimumStartMs)
+      : scene.startMs;
+
+    if (durationMs !== scene.durationMs) {
+      repairs.push(
+        `场景 ${scene.id} 的阅读时间已从 ${scene.durationMs}ms 延长为 ${durationMs}ms`,
+      );
+    }
+    if (startMs !== scene.startMs) {
+      repairs.push(`场景 ${scene.id} 已顺延至 ${startMs}ms`);
+    }
+
+    const nextScene = { ...scene, startMs, durationMs };
+    previousScene = nextScene;
+    return nextScene;
+  });
+  const requiredDurationMs = Math.max(
+    currentDurationMs,
+    ...normalized.map((scene) => scene.startMs + scene.durationMs),
+  );
+  if (requiredDurationMs > MAX_ANIMATION_DURATION_MS) {
+    throw new Error(
+      `动画场景至少需要 ${MIN_SCENE_READING_DURATION_MS}ms 阅读时间，请减少场景数量或缩短已有长场景`,
+    );
+  }
+  if (requiredDurationMs !== currentDurationMs) {
+    repairs.push(`动画总时长已延长为 ${requiredDurationMs}ms`);
+  }
+  return { scenes: normalized, durationMs: requiredDurationMs, repairs };
+};
+
 export const createAnimationPlannerTools = (canvasDraft, state) => [
   {
     name: "define_animation_style",
@@ -545,7 +602,7 @@ export const createAnimationPlannerTools = (canvasDraft, state) => [
     name: "define_animation_scenes",
     label: "规划动画场景与镜头",
     description:
-      "规划有序的故事场景、时间、聚焦目标以及可编辑的章节转场。不要提供坐标或关键帧，所有场景说明必须使用中文。",
+      "规划有序的故事场景、时间、聚焦目标以及可编辑的章节转场。每个场景必须至少保留 3000ms 阅读时间；不要提供坐标或关键帧，所有场景说明必须使用中文。",
     parameters: Type.Object({
       scenes: Type.Array(
         Type.Object({
@@ -572,21 +629,28 @@ export const createAnimationPlannerTools = (canvasDraft, state) => [
         params.scenes.map((scene) => ({ ...scene, cues: [] })),
         canvasDraft,
       );
-      state.scenes = storySpaceResult.scenes;
+      const readingTimeResult = ensureReadableSceneDurations(
+        storySpaceResult.scenes,
+        state.durationMs,
+      );
+      state.scenes = readingTimeResult.scenes;
+      state.durationMs = readingTimeResult.durationMs;
       validateStoryAnimationPlan(
         { ...state, scenes: state.scenes, summary: "planning" },
         canvasDraft,
       );
+      const repairs = [
+        ...storySpaceResult.repairs,
+        ...readingTimeResult.repairs,
+      ];
       return resultText(
         `已规划 ${state.scenes.length} 个动画场景。${
-          storySpaceResult.repairs.length > 0
-            ? ` 已依据章节空间关系校正 ${storySpaceResult.repairs.length} 个场景边界。`
-            : ""
+          repairs.length > 0 ? ` 已自动校正 ${repairs.length} 项场景时序。` : ""
         }`,
-        storySpaceResult.repairs.length > 0
+        repairs.length > 0
           ? {
               kind: "story-space-animation-repairs",
-              repairs: storySpaceResult.repairs,
+              repairs,
             }
           : undefined,
       );

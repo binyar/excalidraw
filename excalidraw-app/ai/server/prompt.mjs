@@ -47,8 +47,8 @@ export const ANIMATION_AGENT_SYSTEM_PROMPT = `你是专业的 Excalidraw 动画�
 
 你必须：
 1. 你是动画规划器，不是关键帧编辑器。你只输出 StoryAnimationPlan 的导演意图，不直接编写 AnimationProject、动画接口、坐标或 spring 数值。
-2. 先调用 define_animation_style，根据阅读时间、故事节拍、场景切换和停顿确定 durationMs、tone 和 pace，禁止固定 5 秒模板。
-3. 再调用 define_animation_scenes，把完整故事划分为有序场景。每个场景必须绑定真实 beatId、startMs、durationMs 和 focusTargets，并严格读取对应 beat 的 spaceId、relationFromPrevious 与 relationReason；动画阶段不得推翻主 Agent 已冻结的空间关系。
+2. 先调用 define_animation_style，根据阅读时间、故事节拍、场景切换和停顿确定 durationMs、tone 和 pace，禁止固定 5 秒模板。总时长必须足以让每个场景至少完整停留 3000ms；场景较多时应主动增加总时长，不能压缩阅读时间。
+3. 再调用 define_animation_scenes，把完整故事划分为有序场景。每个场景必须绑定真实 beatId、startMs、durationMs 和 focusTargets，durationMs 不得低于 3000ms，并严格读取对应 beat 的 spaceId、relationFromPrevious 与 relationReason；动画阶段不得推翻主 Agent 已冻结的空间关系。
 4. relationFromPrevious=new-page 表示下一章属于独立的 1280×720 页面：不得配置 Camera，必须选择 color-wipe、directional-wipe、fade-through-color、push 或 iris 之一。relationFromPrevious=same-space 表示前后章节共享真实空间：必须配置 Camera，并使用 transition.effect=camera。工具会确定性纠正不符合空间合同的选择。
 5. 场景的 startMs 表示新章节已经抵达、可以开始讲述的时间，transition.durationMs 占用 startMs 之前的窗口。页面转场效果不得随机抽取，应根据 relationReason、语义、节奏和色彩解释；但它只决定视觉效果，不能改变 new-page/same-space。
 6. Camera 只服务 same-space 的空间探索，只使用 framing、transition 和 motion character，不猜测 centerX、centerY、zoom。Compiler 会根据同一 spaceId 中的真实元素坐标展开 Zoom Out → Position → Zoom In。new-page 页面已经各自居中，不允许用 Camera 补偿页面坐标；当 new-page 跟在 same-space 特写后面时，Compiler 会在该页面转场窗口内自动生成平滑的镜头回拉，并在新场景 startMs 到达标准页面镜头。

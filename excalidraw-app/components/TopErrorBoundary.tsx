@@ -1,6 +1,25 @@
-import Trans from "@excalidraw/excalidraw/components/Trans";
 import { t } from "@excalidraw/excalidraw/i18n";
 import React from "react";
+
+const ErrorSplashButtonMessage = ({
+  message,
+  onClick,
+}: {
+  message: string;
+  onClick: () => void;
+}) => {
+  const match = message.match(/^(.*)<button>(.*)<\/button>(.*)$/s);
+  if (!match) {
+    return <button onClick={onClick}>{message}</button>;
+  }
+  return (
+    <>
+      {match[1]}
+      <button onClick={onClick}>{match[2]}</button>
+      {match[3]}
+    </>
+  );
+};
 
 type TopErrorBoundaryState = {
   hasError: boolean;
@@ -40,24 +59,19 @@ export class TopErrorBoundary extends React.Component<
       <div className="ErrorSplash powdoo">
         <div className="ErrorSplash-messageContainer">
           <div className="ErrorSplash-paragraph bigger align-center">
-            <Trans
-              i18nKey="errorSplash.headingMain"
-              button={(content) => (
-                <button onClick={() => window.location.reload()}>
-                  {content}
-                </button>
-              )}
+            <ErrorSplashButtonMessage
+              message={t("errorSplash.headingMain")}
+              onClick={() => window.location.reload()}
             />
           </div>
           <div className="ErrorSplash-paragraph align-center">
-            <button
+            <ErrorSplashButtonMessage
+              message={t("errorSplash.clearCanvasMessage")}
               onClick={() => {
                 localStorage.clear();
                 window.location.reload();
               }}
-            >
-              {t("errorSplash.clearCanvasMessage")}
-            </button>
+            />
           </div>
           <div className="ErrorSplash-details">
             <label>{t("errorSplash.sceneContent")}</label>

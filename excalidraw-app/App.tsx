@@ -54,7 +54,7 @@ import {
 import { Provider, appJotaiStore } from "./app-jotai";
 import { AppMainMenu } from "./components/AppMainMenu";
 import { AppSidebar } from "./components/AppSidebar";
-import { AppWelcomeScreen } from "./components/AppWelcomeScreen";
+import { CanvasGenerationLoading } from "./components/CanvasGenerationLoading";
 import { TopErrorBoundary } from "./components/TopErrorBoundary";
 import CustomStats from "./CustomStats";
 import { updateStaleImageStatuses } from "./data/FileManager";
@@ -488,9 +488,9 @@ const ExcalidrawWrapper = () => {
             }
             onBackToWorkspace={() => window.location.assign("/")}
           />
-          <AppWelcomeScreen />
           {excalidrawAPI && <AppSidebar />}
         </Excalidraw>
+        <CanvasGenerationLoading />
       </main>
       <AnimationEditorDock />
     </div>

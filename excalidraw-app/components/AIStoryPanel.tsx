@@ -20,6 +20,8 @@ import {
   consumePendingAiCreatePrompt,
   getPendingAiThinkingEnabled,
 } from "../ai/pendingPrompt";
+import { isCanvasGeneratingAtom } from "../ai/canvasGenerationState";
+import { useSetAtom } from "../app-jotai";
 import {
   aggregateStoryProgress,
   type StoryProgressItem,
@@ -632,6 +634,7 @@ const TaskActivity = ({
 
 export const AIStoryPanel = ({ onClose }: { onClose?: () => void }) => {
   const excalidrawAPI = useExcalidrawAPI();
+  const setIsCanvasGenerating = useSetAtom(isCanvasGeneratingAtom);
   const workspaceFileId = getWorkspaceFileIdFromPath();
   const threadId = useMemo(
     () => getThreadId(workspaceFileId || "local"),
@@ -735,6 +738,7 @@ export const AIStoryPanel = ({ onClose }: { onClose?: () => void }) => {
         captureUpdate: CaptureUpdateAction.IMMEDIATELY,
       });
       animationWorkspace.loadProject(nextAnimationProject, true, 0);
+      setIsCanvasGenerating(false);
       // Only mark the artifact after the canvas and animation project have both
       // been accepted. A malformed legacy artifact can then be retried after a
       // hot fix instead of being silently skipped for the rest of the session.
@@ -744,7 +748,7 @@ export const AIStoryPanel = ({ onClose }: { onClose?: () => void }) => {
         duration: 4000,
       });
     },
-    [excalidrawAPI],
+    [excalidrawAPI, setIsCanvasGenerating],
   );
 
   const transport = useMemo(
@@ -831,6 +835,15 @@ export const AIStoryPanel = ({ onClose }: { onClose?: () => void }) => {
   }, [historyLoaded, sendMessage, workspaceFileId]);
 
   const isRunning = status === "submitted" || status === "streaming";
+  useEffect(() => {
+    setIsCanvasGenerating(isRunning);
+  }, [isRunning, setIsCanvasGenerating]);
+  useEffect(
+    () => () => {
+      setIsCanvasGenerating(false);
+    },
+    [setIsCanvasGenerating],
+  );
   const latestAssistantMessage = [...messages]
     .reverse()
     .find((message) => message.role === "assistant");

@@ -33,6 +33,7 @@ test("animation Agent contract teaches semantic real visibility", () => {
   assert.match(ANIMATION_AGENT_SYSTEM_PROMPT, /绝不能用单独的 fade\/opacity/);
   assert.match(ANIMATION_AGENT_SYSTEM_PROMPT, /roughness.*离散状态/);
   assert.match(ANIMATION_AGENT_SYSTEM_PROMPT, /roundness.*0\.\.1/);
+  assert.match(ANIMATION_AGENT_SYSTEM_PROMPT, /至少完整停留 3000ms/);
 });
 
 test("animation planner exposes Chinese tool descriptions", () => {
@@ -43,6 +44,50 @@ test("animation planner exposes Chinese tool descriptions", () => {
   for (const candidate of tools) {
     assert.match(candidate.description, /[\u3400-\u9fff]/, candidate.name);
   }
+});
+
+test("animation planner guarantees at least three seconds per scene", async () => {
+  const state = createEmptyAnimationPlan();
+  const tools = createAnimationPlannerTools(canvasDraft, state);
+  await tool(tools, "define_animation_style").execute("style", {
+    durationMs: 3000,
+    rationale: "验证可读停留时间",
+    tone: "restrained",
+    pace: "normal",
+  });
+
+  const result = await tool(tools, "define_animation_scenes").execute(
+    "scenes",
+    {
+      scenes: [
+        {
+          id: "opening-scene",
+          beatId: "opening",
+          startMs: 0,
+          durationMs: 1000,
+          focusTargets: ["hero"],
+        },
+        {
+          id: "detail-scene",
+          beatId: "detail",
+          startMs: 1000,
+          durationMs: 1000,
+          focusTargets: ["detail"],
+        },
+      ],
+    },
+  );
+
+  assert.deepEqual(
+    state.scenes.map(({ startMs, durationMs }) => ({ startMs, durationMs })),
+    [
+      { startMs: 0, durationMs: 3000 },
+      { startMs: 3000, durationMs: 3000 },
+    ],
+  );
+  assert.equal(state.durationMs, 6000);
+  assert.match(result.content[0].text, /自动校正/);
+  assert.ok(result.details.repairs.some((repair) => /阅读时间/.test(repair)));
 });
 
 test("animation Agent capability map covers every supported canvas target", () => {
@@ -910,7 +955,7 @@ test("planner tools atomically repair invalid cue targets, timing, and highlight
         id: "too-late",
         type: "emphasize",
         targets: ["detail"],
-        atMs: 2550,
+        atMs: 2950,
         durationMs: 500,
         effect: "pulse",
       },
@@ -919,7 +964,7 @@ test("planner tools atomically repair invalid cue targets, timing, and highlight
 
   assert.equal(state.scenes[1].cues.length, 1);
   assert.deepEqual(state.scenes[1].cues[0].targets, ["detail"]);
-  assert.equal(state.scenes[1].cues[0].durationMs, 300);
+  assert.equal(state.scenes[1].cues[0].durationMs, 700);
   assert.equal(state.scenes[1].cues[0].color, "#FFD43B88");
   const draft = compileStoryAnimationPlan(state, canvasDraft);
   const highlightTrack = draft.tracks.find((track) =>

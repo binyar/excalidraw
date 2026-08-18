@@ -125,6 +125,44 @@ describe("AnimationWorkspace", () => {
     workspace.dispose();
   });
 
+  it("keeps the project long enough for scenes when canvas elements are removed", () => {
+    const workspace = new AnimationWorkspace({
+      runtimeFactory: vi.fn(async () => new FakeRuntime()),
+    });
+    workspace.loadProject({
+      schemaVersion: "1.0",
+      id: "scene-duration-after-erase",
+      durationMs: 15_000,
+      frameRate: 60,
+      scenes: [
+        { id: "opening", name: "Opening", startMs: 0, durationMs: 10_000 },
+        { id: "ending", name: "Ending", startMs: 10_000, durationMs: 5_000 },
+      ],
+      tracks: [
+        {
+          id: "camera",
+          target: { type: "camera", cameraId: "main" },
+          durationMs: 10_000,
+          properties: [],
+        },
+        {
+          id: "ending-element",
+          target: { type: "element", elementId: "erased-element" },
+          sceneId: "ending",
+          durationMs: 5_000,
+          properties: [],
+        },
+      ],
+    });
+
+    expect(() =>
+      workspace.removeElementAnimations(new Set(["erased-element"])),
+    ).not.toThrow();
+    expect(workspace.getSnapshot().project.durationMs).toBe(15_000);
+    expect(workspace.getElementTrack("erased-element")).toBeUndefined();
+    workspace.dispose();
+  });
+
   it("removes the selected Object and every direct animation for its targets", () => {
     const workspace = new AnimationWorkspace({
       runtimeFactory: vi.fn(async () => new FakeRuntime()),
