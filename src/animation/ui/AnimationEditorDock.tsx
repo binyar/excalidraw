@@ -11,6 +11,7 @@ import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import { animationWorkspace } from "../inspector";
 import {
   applyCameraSnapshot,
+  MAIN_CAMERA_RUNTIME_ID,
   readCameraViewport,
   restoreCameraViewport,
   type CameraViewport,
@@ -22,6 +23,7 @@ import { StageTransitionOverlay } from "./StageTransitionOverlay";
 import "./AnimationEditorDock.scss";
 
 import type { AnimationTrack } from "../types";
+import type { AnimationRuntimeSnapshot } from "../runtime/AnimationRuntime";
 
 const DEFAULT_DOCK_HEIGHT = 420;
 const MIN_DOCK_HEIGHT = 180;
@@ -144,6 +146,40 @@ export const clearCanvasSelectionForPlayback = (
   });
 };
 
+type CameraPreviewState = {
+  active: boolean;
+  editorViewport: CameraViewport | null;
+};
+
+/**
+ * Keeps camera playback correct even when playback is started outside the
+ * timeline controls (for example, immediately after AI story generation).
+ */
+export const syncCameraPreviewForPlayback = (
+  excalidrawAPI: Pick<ExcalidrawImperativeAPI, "getAppState" | "updateScene">,
+  snapshot: AnimationRuntimeSnapshot,
+  hasCameraTrack: boolean,
+  state: CameraPreviewState,
+): CameraPreviewState => {
+  if (!hasCameraTrack || !snapshot.values[MAIN_CAMERA_RUNTIME_ID]) {
+    return state;
+  }
+
+  const nextState =
+    snapshot.status === "playing" && !state.active
+      ? {
+          active: true,
+          editorViewport:
+            state.editorViewport ?? readCameraViewport(excalidrawAPI),
+        }
+      : state;
+
+  if (nextState.active) {
+    applyCameraSnapshot(excalidrawAPI, snapshot);
+  }
+  return nextState;
+};
+
 export const selectCanvasElementsForTrack = (
   excalidrawAPI: Pick<
     ExcalidrawImperativeAPI,
@@ -240,12 +276,12 @@ export const AnimationEditorDock = () => {
         editorViewportRef.current = null;
         return;
       }
-      if (
-        cameraPreviewActiveRef.current &&
-        animationWorkspace.getCameraTrack() &&
-        current.values
-      ) {
-        applyCameraSnapshot(excalidrawAPI, {
+      if (!current.values) {
+        return;
+      }
+      const nextCameraPreview = syncCameraPreviewForPlayback(
+        excalidrawAPI,
+        {
           timeMs: current.timeMs,
           durationMs: current.project.durationMs,
           status:
@@ -255,8 +291,15 @@ export const AnimationEditorDock = () => {
               ? current.status
               : "paused",
           values: current.values,
-        });
-      }
+        },
+        Boolean(animationWorkspace.getCameraTrack()),
+        {
+          active: cameraPreviewActiveRef.current,
+          editorViewport: editorViewportRef.current,
+        },
+      );
+      cameraPreviewActiveRef.current = nextCameraPreview.active;
+      editorViewportRef.current = nextCameraPreview.editorViewport;
     });
   }, [excalidrawAPI]);
 

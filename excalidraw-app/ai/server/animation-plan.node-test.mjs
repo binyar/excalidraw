@@ -24,6 +24,7 @@ test("animation Agent contract teaches semantic real visibility", () => {
     ANIMATION_AGENT_SYSTEM_PROMPT,
     /所有自然语言内容必须使用简体中文/,
   );
+  assert.match(ANIMATION_AGENT_SYSTEM_PROMPT, /禁止.*Emoji 表情符号/);
   assert.match(ANIMATION_AGENT_SYSTEM_PROMPT, /element\.visibility/);
   assert.match(
     ANIMATION_AGENT_SYSTEM_PROMPT,

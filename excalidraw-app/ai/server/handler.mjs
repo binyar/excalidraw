@@ -65,9 +65,20 @@ const TASK_PLAN_STEPS = Object.freeze([
 // bounding the UI payload.
 const MAX_UI_REASONING_CHARS = 12_000;
 const REASONING_TRUNCATED_SUFFIX = "\n\n（思考过程过长，已截断显示）";
+const EMOJI_SEQUENCE_PATTERN =
+  /(?:\p{Regional_Indicator}{2}|[#*0-9]\uFE0F?\u20E3|\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?(?:\p{Emoji_Modifier})?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?(?:\p{Emoji_Modifier})?)*(?:[\u{E0020}-\u{E007E}]+\u{E007F})?)/gu;
+
+/** Removes every user-visible Emoji sequence even if a model ignores prompt rules. */
+export const stripEmoji = (value) =>
+  String(value || "")
+    .replace(EMOJI_SEQUENCE_PATTERN, "")
+    .replace(
+      /(?:\p{Regional_Indicator}|\p{Emoji_Modifier}|[\u20E3\uFE0E\uFE0F\u200D]|[\u{E0020}-\u{E007F}])/gu,
+      "",
+    );
 
 const limitUiReasoning = (value) => {
-  const text = String(value || "").trim();
+  const text = stripEmoji(value).trim();
   return text.length > MAX_UI_REASONING_CHARS
     ? `${text.slice(0, MAX_UI_REASONING_CHARS)}${REASONING_TRUNCATED_SUFFIX}`
     : text;
@@ -237,9 +248,9 @@ export const transcriptToUiMessages = (transcript) => {
     const hasToolCall = content.some((item) => item?.type === "toolCall");
     content.forEach((item) => {
       if (item?.type === "thinking" && String(item.thinking || "").trim()) {
-        run.reasoning.push(String(item.thinking).trim());
+        run.reasoning.push(stripEmoji(item.thinking).trim());
       } else if (item?.type === "text" && String(item.text || "").trim()) {
-        run.latestText = String(item.text).trim();
+        run.latestText = stripEmoji(item.text).trim();
         if (!hasToolCall) {
           run.finalText = run.latestText;
         } else {
@@ -621,7 +632,7 @@ export const handleAiRequest = async (
           } else if (reasoningEvent.type === "thinking_delta") {
             const stream = reasoningStreams.get(key);
             if (stream && !stream.truncated) {
-              const delta = String(reasoningEvent.delta || "");
+              const delta = stripEmoji(reasoningEvent.delta);
               const remaining = Math.max(
                 0,
                 MAX_UI_REASONING_CHARS - stream.forwardedChars,
@@ -794,7 +805,9 @@ export const handleAiRequest = async (
           }
         };
         const emitFinalText = () => {
-          const assistantText = finalAssistantText || latestAssistantText;
+          const assistantText = stripEmoji(
+            finalAssistantText || latestAssistantText,
+          ).trim();
           const chineseCharacterCount =
             assistantText.match(/[\u3400-\u9fff]/g)?.length || 0;
           const latinCharacterCount =
@@ -842,7 +855,7 @@ export const handleAiRequest = async (
               event.type === "message_end" &&
               event.message.role === "assistant"
             ) {
-              const assistantText = pendingAssistantText.trim();
+              const assistantText = stripEmoji(pendingAssistantText).trim();
               pendingAssistantText = "";
               if (assistantText) {
                 latestAssistantText = assistantText;

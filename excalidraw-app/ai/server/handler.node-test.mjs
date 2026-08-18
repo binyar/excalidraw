@@ -1,7 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { transcriptToUiMessages } from "./handler.mjs";
+import { stripEmoji, transcriptToUiMessages } from "./handler.mjs";
+
+test("assistant output strips simple and composed Emoji sequences", () => {
+  assert.equal(
+    stripEmoji("已完成 ✅ 家庭👨‍👩‍👧‍👦 国旗🇨🇳 按键1️⃣ 肤色👍🏽"),
+    "已完成  家庭 国旗 按键 肤色",
+  );
+  assert.equal(stripEmoji("🇨"), "");
+  assert.equal(stripEmoji("🇳"), "");
+});
 
 test("history merges one user run into one assistant card with tools", () => {
   const artifact = {

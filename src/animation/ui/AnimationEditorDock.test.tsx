@@ -8,6 +8,7 @@ import {
   clearCanvasSelectionForPlayback,
   deleteCanvasElementsForTrack,
   selectCanvasElementsForTrack,
+  syncCameraPreviewForPlayback,
   updateAnimationPanelPlaybackUi,
 } from "./AnimationEditorDock";
 
@@ -171,6 +172,61 @@ describe("AnimationEditorDock", () => {
           selectedGroupIds: {},
           selectedLinearElement: null,
         }),
+      }),
+    );
+  });
+
+  it("enters camera preview when playback starts outside the timeline controls", () => {
+    const updateScene = vi.fn();
+    const getAppState = () => ({
+      width: 1000,
+      height: 800,
+      offsetLeft: 0,
+      offsetTop: 0,
+      scrollX: 0,
+      scrollY: 0,
+      zoom: { value: 1 },
+    });
+
+    const nextState = syncCameraPreviewForPlayback(
+      { getAppState, updateScene } as unknown as Pick<
+        ExcalidrawImperativeAPI,
+        "getAppState" | "updateScene"
+      >,
+      {
+        timeMs: 0,
+        durationMs: 1000,
+        status: "playing",
+        values: {
+          "camera:main": {
+            transform: { x: 0, y: 0, scale: 1, rotate: 0 },
+            visual: {
+              opacity: 1,
+              backgroundColor: "#00000000",
+              fillStyle: "solid",
+            },
+            advanced: { drawProgress: 1 },
+            camera: { centerX: 100, centerY: 200, zoom: 2 },
+            visibility: "visible",
+          },
+        },
+      },
+      true,
+      { active: false, editorViewport: null },
+    );
+
+    expect(nextState).toEqual({
+      active: true,
+      editorViewport: { centerX: 500, centerY: 400, zoom: 1 },
+    });
+    expect(updateScene).toHaveBeenCalledWith(
+      expect.objectContaining({
+        appState: expect.objectContaining({
+          scrollX: 150,
+          scrollY: 0,
+          zoom: { value: 2 },
+        }),
+        captureUpdate: "NEVER",
       }),
     );
   });

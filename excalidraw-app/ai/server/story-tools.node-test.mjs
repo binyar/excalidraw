@@ -11,8 +11,15 @@ const tool = (tools, name) => {
 };
 
 test("main Agent requires Chinese output and exposes Chinese tool descriptions", () => {
-  assert.match(STORY_AGENT_SYSTEM_PROMPT, /所有面向用户的自然语言必须使用简体中文/);
-  assert.match(STORY_AGENT_SYSTEM_PROMPT, /不得输出英文句子或中英混杂的过程旁白/);
+  assert.match(
+    STORY_AGENT_SYSTEM_PROMPT,
+    /所有面向用户的自然语言必须使用简体中文/,
+  );
+  assert.match(
+    STORY_AGENT_SYSTEM_PROMPT,
+    /不得输出英文句子或中英混杂的过程旁白/,
+  );
+  assert.match(STORY_AGENT_SYSTEM_PROMPT, /禁止.*Emoji 表情符号/);
   const tools = createCanvasTools({
     state: createCanvasDraftState(),
     animate: async () => ({}),
