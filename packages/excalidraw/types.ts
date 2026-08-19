@@ -999,7 +999,7 @@ export type UIOptions = Partial<{
   dockedSidebarBreakpoint: number;
   /** Whether to render Excalidraw's built-in search/library sidebar. */
   defaultSidebar: boolean;
-  /** Whether selecting canvas elements should open the native style panel. */
+  /** Whether to render the native style panel for selections and drawing tools. */
   selectedShapeActions: boolean;
   canvasActions: CanvasActions;
   tools: {

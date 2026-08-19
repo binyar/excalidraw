@@ -25,10 +25,10 @@ import "./AnimationEditorDock.scss";
 import type { AnimationTrack } from "../types";
 import type { AnimationRuntimeSnapshot } from "../runtime/AnimationRuntime";
 
-const DEFAULT_DOCK_HEIGHT = 420;
-const MIN_DOCK_HEIGHT = 180;
-const MAX_DOCK_HEIGHT = 700;
-const COLLAPSED_DOCK_HEIGHT = 40;
+const DEFAULT_DOCK_HEIGHT = 320;
+const MIN_DOCK_HEIGHT = 160;
+const MAX_DOCK_HEIGHT = 560;
+const COLLAPSED_DOCK_HEIGHT = 36;
 const RESIZE_DRAG_THRESHOLD = 4;
 
 export const areAnimationPanelPlaybackPropsEqual = (

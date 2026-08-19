@@ -2,17 +2,17 @@
   position: relative;
   z-index: 4;
   display: grid;
-  grid-template-rows: 8px minmax(0, 1fr);
+  grid-template-rows: 6px minmax(0, 1fr);
   min-width: 0;
-  min-height: 180px;
-  max-height: min(700px, 55svh);
+  min-height: 160px;
+  max-height: min(560px, 48svh);
   overflow: hidden;
   background: var(--background);
   transition: height 180ms cubic-bezier(0.23, 1, 0.32, 1);
 
   &[data-collapsed="true"] {
-    grid-template-rows: 40px 0;
-    min-height: 40px;
+    grid-template-rows: 36px 0;
+    min-height: 36px;
 
     .animation-panel--docked {
       visibility: hidden;
@@ -48,7 +48,7 @@
 
   .animation-editor-dock__grip {
     width: 44px;
-    height: 16px;
+    height: 12px;
     overflow: visible;
     color: color-mix(
       in srgb,
@@ -240,7 +240,7 @@
 }
 
 .animation-panel--docked {
-  grid-template-rows: 54px minmax(0, 1fr);
+  grid-template-rows: 44px minmax(0, 1fr);
   width: 100%;
   height: 100%;
   min-width: 0;

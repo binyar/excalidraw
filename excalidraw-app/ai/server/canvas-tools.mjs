@@ -554,15 +554,26 @@ const getConnectorSpacingWarning = (connector, from, to) => {
   return null;
 };
 
-export const createCanvasTools = ({ state, animate }) => {
+export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
+  const installedAssetSources = [...new Set(assetSources.map(String))];
+  const installedAssetSourceSet = new Set(installedAssetSources);
   const recentLibrarySearches = new Map();
   const resolveLibraryRef = async (candidate) => {
     if (isLibraryCatalogRef(candidate)) {
+      const ref = String(candidate);
+      const source = ref.slice(0, ref.lastIndexOf("#"));
+      if (!installedAssetSourceSet.has(source)) {
+        return null;
+      }
       return { ref: candidate, resolvedFromQuery: null };
     }
     const query = String(candidate || "").trim();
     const cachedResults = recentLibrarySearches.get(query.toLowerCase());
-    const results = cachedResults || (await searchLibraryCatalog(query, 1));
+    const results =
+      cachedResults ||
+      (await searchLibraryCatalog(query, 1, {
+        sources: installedAssetSources,
+      }));
     if (results.length === 0) {
       return null;
     }
@@ -675,30 +686,34 @@ export const createCanvasTools = ({ state, animate }) => {
     },
     {
       name: "search_library_assets",
-      label: "搜索画布资源库",
+      label: "搜索已安装素材",
       description:
-        "在创建常用图标、人物、设备、云服务、界面控件或插画之前，搜索内置的 Excalidraw 资源目录。检索关键词属于内部工具参数；所有面向用户的资源名称、用途和说明必须使用中文。",
+        "按当前用户的已安装素材配置搜索图标、人物、设备、云服务、界面控件或插画。工具必须保留，但不得读取未安装素材包。检索关键词属于内部工具参数；所有面向用户的资源名称、用途和说明必须使用中文。",
       parameters: Type.Object({
         query: Type.String({ minLength: 1, maxLength: 160 }),
         limit: Type.Optional(Type.Number({ minimum: 1, maximum: 12 })),
       }),
       executionMode: "sequential",
       async execute(_id, params) {
-        const results = await searchLibraryCatalog(params.query, params.limit);
+        const results = await searchLibraryCatalog(params.query, params.limit, {
+          sources: installedAssetSources,
+        });
         recentLibrarySearches.set(params.query.trim().toLowerCase(), results);
         return resultText(
           results.length
             ? `找到 ${results.length} 个可用资源条目。请使用 add_library_assets 并传入 ref 实例化需要的条目。`
-            : "没有找到匹配资源，请尝试更短的检索关键词或改用基础画布元素。",
+            : installedAssetSources.length === 0
+            ? "当前没有安装任何素材包，请直接使用基础画布元素继续。"
+            : "已安装素材中没有匹配内容，请尝试更短的检索关键词或改用基础画布元素。",
           { kind: "library-search-results", query: params.query, results },
         );
       },
     },
     {
       name: "add_library_assets",
-      label: "添加资源库内容",
+      label: "添加已安装素材",
       description:
-        "实例化选中的内置资源条目。必须使用 search_library_assets 返回的真实 ref。可选资源缺失时会跳过该资源而不会让画布草稿失败，此时应继续使用基础画布元素。卡片内图标需要提供 parentId 和 layout，并省略 x/y，工具会确定性计算位置。所有资源角色和用户可见说明必须使用中文。",
+        "实例化当前用户已安装素材包中的条目。必须使用 search_library_assets 返回的真实 ref，不能绕过安装配置读取其他素材。可选资源缺失时会跳过该资源而不会让画布草稿失败，此时应继续使用基础画布元素。卡片内图标需要提供 parentId 和 layout，并省略 x/y，工具会确定性计算位置。所有资源角色和用户可见说明必须使用中文。",
       parameters: Type.Object({
         assets: Type.Array(
           Type.Object({
@@ -755,7 +770,9 @@ export const createCanvasTools = ({ state, animate }) => {
             continue;
           }
           const { ref, resolvedFromQuery } = resolved;
-          const item = await getLibraryCatalogItem(ref);
+          const item = await getLibraryCatalogItem(ref, {
+            sources: installedAssetSources,
+          });
           const requestedWidth = asset.width ?? item.width;
           const requestedHeight = asset.height ?? item.height;
           if (!requestedWidth || !requestedHeight) {
@@ -994,8 +1011,7 @@ export const createCanvasTools = ({ state, animate }) => {
     {
       name: "layout_canvas_elements",
       label: "布局画布元素",
-      description:
-        "将画布草稿中的现有元素按水平、垂直或网格方式排列。",
+      description: "将画布草稿中的现有元素按水平、垂直或网格方式排列。",
       parameters: Type.Object({
         elementIds: Type.Array(Type.String(), { minItems: 1, maxItems: 80 }),
         direction: Type.Union([
@@ -1136,8 +1152,7 @@ export const createCanvasTools = ({ state, animate }) => {
     {
       name: "finalize_canvas_draft",
       label: "冻结画布草稿",
-      description:
-        "在委派动画之前，校验并冻结完整画布草稿。",
+      description: "在委派动画之前，校验并冻结完整画布草稿。",
       parameters: Type.Object({
         animationBrief: Type.Union([animationBriefSchema, Type.String()]),
       }),

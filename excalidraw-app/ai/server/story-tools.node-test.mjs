@@ -2,7 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { createCanvasDraftState, createCanvasTools } from "./canvas-tools.mjs";
+import { listLibraryCatalogPacks } from "./library-catalog.mjs";
 import { STORY_AGENT_SYSTEM_PROMPT } from "./prompt.mjs";
+
+const installedAssetSources = (await listLibraryCatalogPacks()).map(
+  (pack) => pack.source,
+);
 
 const tool = (tools, name) => {
   const found = tools.find((candidate) => candidate.name === name);
@@ -726,7 +731,11 @@ test("legacy card child text is migrated into the native parent label", async ()
 
 test("canvas tools search and freeze selected library assets", async () => {
   const state = createCanvasDraftState();
-  const tools = createCanvasTools({ state, animate: async () => ({}) });
+  const tools = createCanvasTools({
+    state,
+    animate: async () => ({}),
+    assetSources: installedAssetSources,
+  });
   await tool(tools, "define_story").execute("story", {
     id: "cloud-story",
     title: "Cloud story",
@@ -755,7 +764,11 @@ test("canvas tools search and freeze selected library assets", async () => {
 
 test("canvas library tool resolves an accidental search query used as ref", async () => {
   const state = createCanvasDraftState();
-  const tools = createCanvasTools({ state, animate: async () => ({}) });
+  const tools = createCanvasTools({
+    state,
+    animate: async () => ({}),
+    assetSources: installedAssetSources,
+  });
   await tool(tools, "search_library_assets").execute("search", {
     query: "chart",
     limit: 5,
@@ -795,4 +808,21 @@ test("canvas library tool skips an unmatched optional asset without failing", as
       },
     ],
   });
+});
+
+test("canvas keeps asset tools available but exposes no catalog content before installation", async () => {
+  const state = createCanvasDraftState();
+  const tools = createCanvasTools({ state, animate: async () => ({}) });
+  const search = await tool(tools, "search_library_assets").execute("search", {
+    query: "cloud",
+    limit: 5,
+  });
+  assert.deepEqual(search.details.results, []);
+  assert.match(search.content[0].text, /没有安装任何素材包/);
+
+  const add = await tool(tools, "add_library_assets").execute("assets", {
+    assets: [{ id: "cloud", ref: "aws-architecture-icons#0", x: 0, y: 0 }],
+  });
+  assert.equal(state.libraryAssets.length, 0);
+  assert.deepEqual(add.details.addedAssetIds, []);
 });

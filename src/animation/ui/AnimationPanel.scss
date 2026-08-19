@@ -6,16 +6,16 @@
   --animation-panel-muted: var(--muted-foreground);
   --animation-panel-text: var(--foreground);
   --animation-panel-label-width: clamp(300px, 23vw, 360px);
-  --animation-panel-object-row-height: 36px;
-  --animation-panel-property-row-height: 29px;
+  --animation-panel-object-row-height: 32px;
+  --animation-panel-property-row-height: 25px;
   --animation-panel-grid-line: var(--border);
 
   display: grid;
   position: relative;
-  grid-template-rows: 54px minmax(0, 1fr);
+  grid-template-rows: 44px minmax(0, 1fr);
   width: min(100%, 1440px);
   min-width: 560px;
-  min-height: 420px;
+  min-height: 340px;
   overflow: hidden;
   color: var(--animation-panel-text);
   background: var(--animation-panel-bg);
@@ -58,24 +58,24 @@
 
 .animation-panel__transport {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
   min-width: 0;
-  padding: 7px 16px;
+  padding: 5px 12px;
   background: var(--background);
   border-bottom: 1px solid var(--animation-panel-border);
 }
 
 .animation-panel__transport-buttons {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   align-items: center;
 
   button {
     display: grid;
-    width: 32px;
-    height: 32px;
-    padding: 8px;
+    width: 28px;
+    height: 28px;
+    padding: 6px;
     place-items: center;
     color: var(--animation-panel-muted);
     background: var(--background);
@@ -126,7 +126,7 @@
   display: flex;
   gap: 5px;
   align-items: baseline;
-  min-width: 190px;
+  min-width: 170px;
   font-variant-numeric: tabular-nums;
 
   strong {
@@ -287,8 +287,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 44px;
-  padding: 0 16px;
+  height: 36px;
+  padding: 0 12px;
   background: var(--background);
   border-right: 1px solid var(--animation-panel-border);
   border-bottom: 1px solid var(--animation-panel-border);
@@ -342,7 +342,7 @@
 
 .animation-panel__section-heading,
 .animation-panel__section-divider {
-  min-height: 30px;
+  min-height: 26px;
   border-top: 1px solid var(--animation-panel-border);
   border-bottom: 1px solid var(--animation-panel-border);
 }
@@ -354,7 +354,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 12px;
   color: var(--animation-panel-muted);
   background: var(--muted);
   border-right: 1px solid var(--animation-panel-border);
@@ -380,7 +380,7 @@
   position: sticky;
   top: 0;
   z-index: 7;
-  height: 44px;
+  height: 36px;
   overflow: visible;
   background-color: #fff;
   background-image: repeating-linear-gradient(
@@ -397,14 +397,14 @@
       #d6d9e4 calc(var(--animation-panel-major-tick-width) - 1px),
       #d6d9e4 var(--animation-panel-major-tick-width)
     );
-  background-position: 0 34px, 0 29px;
-  background-size: 100% 10px, 100% 15px;
+  background-position: 0 28px, 0 24px;
+  background-size: 100% 8px, 100% 12px;
   background-repeat: no-repeat;
   border-bottom: 1px solid var(--animation-panel-border);
 
   > span {
     position: absolute;
-    top: 10px;
+    top: 7px;
     color: var(--animation-panel-muted);
     font-size: 10px;
     font-variant-numeric: tabular-nums;
@@ -435,10 +435,10 @@
 .animation-panel__duration-handle {
   position: absolute;
   z-index: 5;
-  top: 27px;
+  top: 22px;
   right: -5px;
   width: 10px;
-  height: 17px;
+  height: 14px;
   padding: 0;
   background: #fff;
   border: 1px solid var(--animation-panel-accent);
@@ -449,8 +449,8 @@
 
   &::before {
     position: absolute;
-    top: 3px;
-    bottom: 3px;
+    top: 2px;
+    bottom: 2px;
     left: 4px;
     width: 1px;
     content: "";
@@ -461,7 +461,7 @@
 .animation-panel__ruler-playhead {
   position: absolute;
   z-index: 3;
-  top: 33px;
+  top: 27px;
   bottom: 0;
   width: 1px;
   left: clamp(6px, var(--animation-panel-playhead-position), calc(100% - 6px));
@@ -483,9 +483,9 @@
 .animation-panel__ruler-playhead-label {
   position: absolute;
   z-index: 4;
-  top: 3px;
+  top: 2px;
   min-width: 62px;
-  padding: 4px 6px;
+  padding: 3px 6px;
   color: #fff;
   font-size: 9px;
   font-variant-numeric: tabular-nums;

@@ -245,7 +245,7 @@ describe("AnimationEditorDock", () => {
     expect(deleteElements).toHaveBeenCalledWith(["card", "card-label"]);
   });
 
-  it("resizes vertically and clamps the panel between 180px and 700px", () => {
+  it("resizes vertically and clamps the compact panel between 160px and 560px", () => {
     render(<AnimationEditorDock />);
     const dock = screen.getByTestId("animation-editor-dock");
     const handle = screen.getByRole("separator", {
@@ -261,8 +261,8 @@ describe("AnimationEditorDock", () => {
       new MouseEvent("pointermove", { bubbles: true, clientY: -100 }),
     );
     fireEvent(window, new MouseEvent("pointerup", { bubbles: true }));
-    expect(dock).toHaveStyle({ height: "700px" });
-    expect(handle).toHaveAttribute("aria-valuenow", "700");
+    expect(dock).toHaveStyle({ height: "560px" });
+    expect(handle).toHaveAttribute("aria-valuenow", "560");
 
     fireEvent(
       handle,
@@ -273,10 +273,10 @@ describe("AnimationEditorDock", () => {
       new MouseEvent("pointermove", { bubbles: true, clientY: 900 }),
     );
     fireEvent(window, new MouseEvent("pointerup", { bubbles: true }));
-    expect(dock).toHaveStyle({ height: "180px" });
+    expect(dock).toHaveStyle({ height: "160px" });
 
     fireEvent.keyDown(handle, { key: "ArrowUp" });
-    expect(dock).toHaveStyle({ height: "200px" });
+    expect(dock).toHaveStyle({ height: "180px" });
   });
 
   it("collapses on a handle click and restores the last dragged height", () => {
@@ -295,7 +295,7 @@ describe("AnimationEditorDock", () => {
       new MouseEvent("pointermove", { bubbles: true, clientY: 400 }),
     );
     fireEvent(window, new MouseEvent("pointerup", { bubbles: true }));
-    expect(dock).toHaveStyle({ height: "520px" });
+    expect(dock).toHaveStyle({ height: "420px" });
 
     fireEvent(
       handle,
@@ -305,14 +305,14 @@ describe("AnimationEditorDock", () => {
       window,
       new MouseEvent("pointerup", { bubbles: true, clientY: 400 }),
     );
-    expect(dock).toHaveStyle({ height: "40px" });
+    expect(dock).toHaveStyle({ height: "36px" });
     expect(dock).toHaveAttribute("data-collapsed", "true");
 
     const expandHandle = screen.getByRole("separator", {
       name: "展开动画面板",
     });
     fireEvent.pointerDown(expandHandle, { clientY: 400 });
-    expect(dock).toHaveStyle({ height: "520px" });
+    expect(dock).toHaveStyle({ height: "420px" });
     expect(dock).not.toHaveAttribute("data-collapsed");
   });
 
@@ -324,12 +324,12 @@ describe("AnimationEditorDock", () => {
     });
 
     fireEvent.keyDown(handle, { key: "Enter" });
-    expect(dock).toHaveStyle({ height: "40px" });
+    expect(dock).toHaveStyle({ height: "36px" });
 
     fireEvent.keyDown(screen.getByRole("separator", { name: "展开动画面板" }), {
       key: " ",
     });
-    expect(dock).toHaveStyle({ height: "420px" });
+    expect(dock).toHaveStyle({ height: "320px" });
   });
 
   it("shows compact playback controls while collapsed", () => {

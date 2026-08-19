@@ -8,6 +8,11 @@ import { randomUUID } from "node:crypto";
 import dotenv from "dotenv";
 
 import { handleAiRequest } from "../ai/server/handler.mjs";
+import {
+  getLibraryCatalogPack,
+  getLibraryCatalogPackItem,
+  listLibraryCatalogPacks,
+} from "../ai/server/library-catalog.mjs";
 
 const APP_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -67,6 +72,15 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_ai_threads_workspace
     ON ai_threads(workspace_file_id, username, updated_at DESC);
+  CREATE TABLE IF NOT EXISTS asset_pack_installations (
+    username TEXT NOT NULL,
+    pack_id TEXT NOT NULL,
+    source TEXT NOT NULL,
+    installed_at TEXT NOT NULL,
+    PRIMARY KEY (username, pack_id)
+  );
+  CREATE INDEX IF NOT EXISTS idx_asset_pack_installations_user
+    ON asset_pack_installations(username, installed_at DESC);
 `);
 
 const AUTH_USERNAME = process.env.EXCALIDRAW_USERNAME || "fanmd";
@@ -217,6 +231,13 @@ const getFileRow = (id) =>
   db.prepare("SELECT * FROM files WHERE id = ?").get(id);
 const getFolderRow = (id) =>
   db.prepare("SELECT * FROM folders WHERE id = ?").get(id);
+const getInstalledAssetSources = (username) =>
+  db
+    .prepare(
+      "SELECT source FROM asset_pack_installations WHERE username = ? ORDER BY installed_at DESC",
+    )
+    .all(username)
+    .map((row) => row.source);
 
 const folderDescendants = (folderId) => {
   const rows = db
@@ -324,6 +345,7 @@ export const handleWorkspaceRequest = async (req, res) => {
       db,
       getFileRow,
       now,
+      getInstalledAssetSources,
     });
   }
   if (!isAuthRequest && !isWorkspaceRequest) return false;
@@ -362,13 +384,83 @@ export const handleWorkspaceRequest = async (req, res) => {
       sendJson(res, 404, { error: "接口不存在" });
       return true;
     }
-    if (!getSession(req)) {
+    const workspaceSession = getSession(req);
+    if (!workspaceSession) {
       sendJson(res, 401, { error: "请先登录" });
       return true;
     }
 
     const parts = url.pathname.split("/").filter(Boolean).slice(2);
-    const [resource, id, action] = parts;
+    const [resource, id, action, itemIndex] = parts;
+
+    if (resource === "asset-packs" && req.method === "GET" && !id) {
+      const installedIds = new Set(
+        db
+          .prepare(
+            "SELECT pack_id FROM asset_pack_installations WHERE username = ?",
+          )
+          .all(workspaceSession.username)
+          .map((row) => row.pack_id),
+      );
+      const packs = (await listLibraryCatalogPacks()).map((pack) => ({
+        ...pack,
+        installed: installedIds.has(pack.id),
+      }));
+      sendJson(res, 200, {
+        packs,
+        installedCount: installedIds.size,
+      });
+      return true;
+    }
+    if (resource === "asset-packs" && id && req.method === "GET" && !action) {
+      const pack = await getLibraryCatalogPack(id);
+      const installed = Boolean(
+        db
+          .prepare(
+            "SELECT 1 FROM asset_pack_installations WHERE username = ? AND pack_id = ?",
+          )
+          .get(workspaceSession.username, id),
+      );
+      sendJson(res, 200, { ...pack, installed });
+      return true;
+    }
+    if (
+      resource === "asset-packs" &&
+      id &&
+      action === "items" &&
+      itemIndex !== undefined &&
+      req.method === "GET"
+    ) {
+      sendJson(res, 200, await getLibraryCatalogPackItem(id, itemIndex));
+      return true;
+    }
+    if (
+      resource === "asset-packs" &&
+      id &&
+      action === "install" &&
+      req.method === "POST"
+    ) {
+      const pack = await getLibraryCatalogPack(id);
+      db.prepare(
+        `INSERT INTO asset_pack_installations(username, pack_id, source, installed_at)
+         VALUES (?, ?, ?, ?)
+         ON CONFLICT(username, pack_id) DO UPDATE SET source = excluded.source, installed_at = excluded.installed_at`,
+      ).run(workspaceSession.username, pack.id, pack.source, now());
+      sendJson(res, 200, { ...pack, installed: true });
+      return true;
+    }
+    if (
+      resource === "asset-packs" &&
+      id &&
+      action === "install" &&
+      req.method === "DELETE"
+    ) {
+      db.prepare(
+        "DELETE FROM asset_pack_installations WHERE username = ? AND pack_id = ?",
+      ).run(workspaceSession.username, id);
+      sendJson(res, 200, { id, installed: false });
+      return true;
+    }
 
     if (req.method === "GET" && resource === "items") {
       sendJson(res, 200, { ...listItems(url), stats: workspaceStats() });

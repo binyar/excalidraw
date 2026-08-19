@@ -285,12 +285,9 @@ const LayerUI = ({
   };
 
   const renderFixedSideContainer = () => {
-    const hasCanvasSelection = elements.some(
-      (element) => appState.selectedElementIds[element.id],
-    );
     const shouldRenderSelectedShapeActions =
       defaultUIEnabled &&
-      !(UIOptions.selectedShapeActions === false && hasCanvasSelection) &&
+      UIOptions.selectedShapeActions !== false &&
       showSelectedShapeActions(appState, elements);
 
     const shouldShowStats =

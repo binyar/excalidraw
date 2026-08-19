@@ -64,4 +64,20 @@ describe("workspace editor UI", () => {
       queryByTestId(container, "welcome-screen-menu-item-load-scene"),
     ).toBeNull();
   });
+
+  it("keeps native shape properties hidden while drawing timeline objects", async () => {
+    const { container, getByToolName } = await render(
+      <Excalidraw UIOptions={{ selectedShapeActions: false }} />,
+    );
+
+    fireEvent.click(getByToolName("ellipse"));
+    expect(container.querySelector(".selected-shape-actions")).toBeNull();
+
+    const canvas = container.querySelector("canvas.interactive")!;
+    fireEvent.pointerDown(canvas, { clientX: 30, clientY: 20 });
+    fireEvent.pointerMove(canvas, { clientX: 90, clientY: 80 });
+    fireEvent.pointerUp(canvas);
+
+    expect(container.querySelector(".selected-shape-actions")).toBeNull();
+  });
 });

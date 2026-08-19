@@ -394,6 +394,7 @@ const buildAgent = ({
   threadId,
   thinkingLevel,
   currentCanvasState,
+  assetSources,
   onEvent,
   onAnimationEvent,
 }) => {
@@ -413,6 +414,7 @@ const buildAgent = ({
       thinkingLevel,
       tools: createCanvasTools({
         state: draftState,
+        assetSources,
         animate: (canvasDraft, brief, signal) =>
           runAnimationAgent({
             canvasDraft,
@@ -438,7 +440,7 @@ const buildAgent = ({
 export const handleAiRequest = async (
   req,
   res,
-  { session, db, getFileRow, now },
+  { session, db, getFileRow, now, getInstalledAssetSources = () => [] },
 ) => {
   const url = new URL(req.url, "http://localhost");
   if (!url.pathname.startsWith("/api/ai")) {
@@ -507,6 +509,7 @@ export const handleAiRequest = async (
       throw Object.assign(new Error("请输入故事画布需求"), { status: 400 });
     }
     const thinkingLevel = body.thinkingEnabled === true ? "high" : "off";
+    const assetSources = await getInstalledAssetSources(session.username);
 
     const existing = db
       .prepare(
@@ -828,6 +831,7 @@ export const handleAiRequest = async (
           threadId,
           thinkingLevel,
           currentCanvasState: body.currentCanvasState,
+          assetSources,
           onAnimationEvent,
           onEvent: (event) => {
             forwardReasoning("main", event);

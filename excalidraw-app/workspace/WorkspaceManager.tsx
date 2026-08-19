@@ -7,6 +7,7 @@ import {
   Folder,
   Lightbulb,
   Monitor,
+  PackageOpen,
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
@@ -21,6 +22,8 @@ import { savePendingAiCreatePrompt } from "../ai/pendingPrompt";
 import { authApi } from "../auth/client";
 
 import { workspaceApi } from "./client";
+import { AssetLibrary } from "./AssetLibrary";
+import { getAssetPackIdFromPath, isAssetLibraryPath } from "./assetPacks";
 import { getWorkspaceEditorPath } from "./editorRoute";
 import { Icon } from "./icons";
 import "./WorkspaceManager.css";
@@ -298,9 +301,13 @@ const FolderNameDialog = ({
 };
 
 export const WorkspaceManager = () => {
-  const [workspaceMode, setWorkspaceMode] = useState<"create" | "projects">(
-    "create",
+  const [workspaceMode, setWorkspaceMode] = useState<
+    "create" | "projects" | "assets"
+  >(isAssetLibraryPath() ? "assets" : "create");
+  const [assetPackId, setAssetPackId] = useState<string | null>(() =>
+    getAssetPackIdFromPath(),
   );
+  const [installedAssetCount, setInstalledAssetCount] = useState(0);
   const [allFolders, setAllFolders] = useState<WorkspaceFolder[]>([]);
   const [stats, setStats] = useState(emptyStats);
   const [folderId, setFolderId] = useState<string | null>(null);
@@ -340,6 +347,32 @@ export const WorkspaceManager = () => {
     document.documentElement.dataset.workspaceTheme = "light";
     localStorage.removeItem("workspace-theme");
   }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (isAssetLibraryPath()) {
+        setWorkspaceMode("assets");
+        setAssetPackId(getAssetPackIdFromPath());
+      } else {
+        setWorkspaceMode("create");
+        setAssetPackId(null);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const navigateWorkspace = (
+    mode: "create" | "projects" | "assets",
+    path: string,
+    nextPackId: string | null = null,
+  ) => {
+    if (`${window.location.pathname}${window.location.search}` !== path) {
+      window.history.pushState({}, "", path);
+    }
+    setWorkspaceMode(mode);
+    setAssetPackId(nextPackId);
+  };
 
   useEffect(() => {
     if (!toast) {
@@ -460,7 +493,7 @@ export const WorkspaceManager = () => {
         )}
         onClick={() => {
           setFolderId(folder.id);
-          setWorkspaceMode("projects");
+          navigateWorkspace("projects", "/");
         }}
       >
         <Folder className="size-4" />
@@ -555,12 +588,21 @@ export const WorkspaceManager = () => {
             className="justify-start"
             aria-current={workspaceMode === "create" ? "page" : undefined}
             onClick={() => {
-              setWorkspaceMode("create");
+              navigateWorkspace("create", "/");
               setFolderId(null);
             }}
           >
             <FilePenLine className="size-4" />
             创作
+          </Button>
+          <Button
+            variant={workspaceMode === "assets" ? "default" : "ghost"}
+            className="justify-start"
+            aria-current={workspaceMode === "assets" ? "page" : undefined}
+            onClick={() => navigateWorkspace("assets", "/assets")}
+          >
+            <PackageOpen className="size-4" />
+            素材
           </Button>
           <Button variant="ghost" className="justify-start" disabled>
             <Lightbulb className="size-4" />
@@ -573,53 +615,83 @@ export const WorkspaceManager = () => {
         </nav>
 
         <section className="workspace-home__folders flex min-h-0 flex-1 flex-col border-t px-3 py-4">
-          <div className="mb-2 flex items-center justify-between px-2">
-            <div>
-              <h2 className="text-xs font-medium text-muted-foreground">
-                文件夹
-              </h2>
-              <p className="mt-0.5 text-[11px] text-muted-foreground/70">
-                浏览工作台项目文件
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              onClick={() =>
-                setFolderDialog({ title: "新建文件夹", initial: "" })
-              }
-              aria-label="新建文件夹"
-            >
-              <Plus className="size-4" />
-            </Button>
-          </div>
+          {workspaceMode === "assets" ? (
+            <>
+              <div className="mb-2 px-2">
+                <h2 className="text-xs font-medium text-muted-foreground">
+                  素材库
+                </h2>
+                <p className="mt-0.5 text-[11px] text-muted-foreground/70">
+                  管理 Agent 可使用的素材
+                </p>
+              </div>
+              <div className="space-y-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-9 w-full justify-start bg-sidebar-accent text-sm font-medium"
+                  onClick={() => navigateWorkspace("assets", "/assets")}
+                >
+                  <PackageOpen className="size-4" />
+                  全部素材包
+                </Button>
+                <div className="flex items-center justify-between px-3 py-2 text-xs text-muted-foreground">
+                  <span>已安装</span>
+                  <span>{installedAssetCount}</span>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="mb-2 flex items-center justify-between px-2">
+                <div>
+                  <h2 className="text-xs font-medium text-muted-foreground">
+                    文件夹
+                  </h2>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground/70">
+                    浏览工作台项目文件
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() =>
+                    setFolderDialog({ title: "新建文件夹", initial: "" })
+                  }
+                  aria-label="新建文件夹"
+                >
+                  <Plus className="size-4" />
+                </Button>
+              </div>
 
-          <div className="min-h-0 flex-1 space-y-1 overflow-y-auto">
-            <Button
-              type="button"
-              variant="ghost"
-              className={cn(
-                "h-9 w-full justify-start text-sm font-normal",
-                workspaceMode === "projects" &&
-                  !folderId &&
-                  "bg-sidebar-accent font-medium",
-              )}
-              onClick={() => {
-                setFolderId(null);
-                setWorkspaceMode("projects");
-              }}
-            >
-              <Folder className="size-4" />
-              全部文件
-            </Button>
-            {rootFolders.map(renderFolder)}
-            {!rootFolders.length && (
-              <p className="px-2 py-4 text-xs text-muted-foreground">
-                还没有文件夹
-              </p>
-            )}
-          </div>
+              <div className="min-h-0 flex-1 space-y-1 overflow-y-auto">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className={cn(
+                    "h-9 w-full justify-start text-sm font-normal",
+                    workspaceMode === "projects" &&
+                      !folderId &&
+                      "bg-sidebar-accent font-medium",
+                  )}
+                  onClick={() => {
+                    setFolderId(null);
+                    navigateWorkspace("projects", "/");
+                  }}
+                >
+                  <Folder className="size-4" />
+                  全部文件
+                </Button>
+                {rootFolders.map(renderFolder)}
+                {!rootFolders.length && (
+                  <p className="px-2 py-4 text-xs text-muted-foreground">
+                    还没有文件夹
+                  </p>
+                )}
+              </div>
+            </>
+          )}
         </section>
 
         <section className="workspace-home__account shrink-0 border-t p-3">
@@ -958,7 +1030,7 @@ export const WorkspaceManager = () => {
               </div>
             </section>
           </div>
-        ) : (
+        ) : workspaceMode === "projects" ? (
           <div className="workspace-home__projects">
             <WorkspaceProjectList
               folderId={folderId}
@@ -967,6 +1039,19 @@ export const WorkspaceManager = () => {
               onWorkspaceChanged={() => void loadWorkspace()}
             />
           </div>
+        ) : (
+          <AssetLibrary
+            packId={assetPackId}
+            onOpenPack={(id) =>
+              navigateWorkspace(
+                "assets",
+                `/assets/${encodeURIComponent(id)}`,
+                id,
+              )
+            }
+            onBack={() => navigateWorkspace("assets", "/assets")}
+            onInstalledChange={setInstalledAssetCount}
+          />
         )}
       </main>
 

@@ -156,6 +156,41 @@ test("workspace API persists a drawing and supports the complete CRUD lifecycle"
   );
 });
 
+test("asset packs are uninstalled by default and persist per-user installation config", async () => {
+  const initial = await request("/asset-packs");
+  assert.ok(initial.packs.length > 0);
+  assert.equal(initial.installedCount, 0);
+  assert.equal(
+    initial.packs.every((pack) => !pack.installed),
+    true,
+  );
+
+  const candidate = initial.packs[0];
+  const detail = await request(`/asset-packs/${candidate.id}`);
+  assert.equal(detail.installed, false);
+  assert.equal(detail.items.length, candidate.itemCount);
+  const preview = await request(`/asset-packs/${candidate.id}/items/0`);
+  assert.equal(preview.ref, detail.items[0].ref);
+  assert.ok(preview.elements.length > 0);
+
+  const installed = await request(`/asset-packs/${candidate.id}/install`, {
+    method: "POST",
+  });
+  assert.equal(installed.installed, true);
+  assert.equal(installed.source, candidate.source);
+
+  const configured = await request("/asset-packs");
+  assert.equal(configured.installedCount, 1);
+  assert.equal(
+    configured.packs.find((pack) => pack.id === candidate.id).installed,
+    true,
+  );
+
+  await request(`/asset-packs/${candidate.id}/install`, { method: "DELETE" });
+  const cleared = await request("/asset-packs");
+  assert.equal(cleared.installedCount, 0);
+});
+
 test("workspace no longer exposes the file import endpoint", async () => {
   const response = await fetch(`${apiRoot}/import`, {
     method: "POST",
