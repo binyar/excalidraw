@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowUpDown, Grid2X2, List, Plus } from "lucide-react";
 
 import { workspaceApi } from "./client";
-import { getWorkspaceEditorPath } from "./editorRoute";
+import { getWorkspaceEditorPath, getWorkspacePreviewPath } from "./editorRoute";
 import { getWorkspaceFileDisplayName } from "./fileName";
 import { Icon } from "./icons";
 import { WorkspacePreview } from "./WorkspacePreview";
@@ -244,6 +244,7 @@ export const WorkspaceProjectList = ({
             size="icon-sm"
             className="absolute right-2 top-2 z-10 opacity-70 hover:opacity-100"
             aria-label={`打开 ${displayName} 的操作菜单`}
+            onClick={(event) => event.stopPropagation()}
             onDoubleClick={(event) => event.stopPropagation()}
           >
             <Icon name="more" size={18} />
@@ -252,11 +253,22 @@ export const WorkspaceProjectList = ({
         <DropdownMenuContent
           align="end"
           className="w-64 max-w-[calc(100vw-2rem)]"
+          onClick={(event) => event.stopPropagation()}
         >
           <DropdownMenuLabel className="truncate" title={displayName}>
             {displayName}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
+          {file && (
+            <DropdownMenuItem
+              onSelect={() =>
+                (window.location.href = getWorkspaceEditorPath(file.id))
+              }
+            >
+              <Icon name="edit" size={17} />
+              编辑
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem
             onSelect={() =>
               setNameDialog({
@@ -337,12 +349,12 @@ export const WorkspaceProjectList = ({
       <Card
         key={key}
         className={cn(
-          "group relative cursor-default gap-0 overflow-hidden py-0 transition-colors hover:bg-muted/30",
+          "group relative cursor-pointer gap-0 overflow-hidden py-0 transition-colors hover:bg-muted/30",
           view === "list" && "grid grid-cols-[160px_1fr]",
           selected.has(key) && "border-primary ring-2 ring-primary/15",
         )}
-        onDoubleClick={() =>
-          (window.location.href = getWorkspaceEditorPath(file.id))
+        onClick={() =>
+          (window.location.href = getWorkspacePreviewPath(file.id))
         }
       >
         <Checkbox
@@ -352,6 +364,20 @@ export const WorkspaceProjectList = ({
           onCheckedChange={() => toggleSelection(key)}
           aria-label="选择文件"
         />
+        <Button
+          type="button"
+          variant="secondary"
+          size="icon-sm"
+          className="absolute right-3 top-3 z-10 size-8 border bg-background opacity-0 shadow-sm transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+          aria-label={`编辑 ${displayName}`}
+          onClick={(event) => {
+            event.stopPropagation();
+            window.location.href = getWorkspaceEditorPath(file.id);
+          }}
+          onDoubleClick={(event) => event.stopPropagation()}
+        >
+          <Icon name="edit" size={16} />
+        </Button>
         <div
           className={cn(
             "relative h-52 overflow-hidden border-b bg-muted/50 [_.workspace-preview]:block [_.workspace-preview]:size-full",
@@ -405,7 +431,7 @@ export const WorkspaceProjectList = ({
             <Button
               variant="ghost"
               size="sm"
-              className="text-destructive hover:text-destructive"
+              className="inline-flex items-center gap-1.5 !text-red-600 hover:!bg-red-50 hover:!text-red-700 [&_svg]:shrink-0"
               onClick={requestSelectedDeletion}
             >
               <Icon name="trash" size={17} />

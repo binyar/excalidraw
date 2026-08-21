@@ -5,7 +5,7 @@ import ExcalidrawApp from "./App";
 import { authApi } from "./auth/client";
 import { LoginPage } from "./auth/LoginPage";
 import { WorkspaceManager } from "./workspace/WorkspaceManager";
-import { isWorkspaceEditorPath } from "./workspace/editorRoute";
+import { isWorkspaceCanvasPath } from "./workspace/editorRoute";
 import "./styles/globals.css";
 
 import type { AuthSession } from "./auth/client";
@@ -40,7 +40,7 @@ export const AuthenticatedApp = () => {
   if (!session.authenticated) {
     return <div className="login-page login-loading">正在跳转登录...</div>;
   }
-  return isWorkspaceEditorPath() ? <ExcalidrawApp /> : <WorkspaceManager />;
+  return isWorkspaceCanvasPath() ? <ExcalidrawApp /> : <WorkspaceManager />;
 };
 
 root.render(

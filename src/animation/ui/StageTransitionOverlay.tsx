@@ -3,12 +3,63 @@ import { createPortal } from "react-dom";
 import { transitionRuntimeId } from "../runtime/MotionAdapter";
 
 import type { AnimationRuntimeObjectValue } from "../runtime/MotionAdapter";
-import type { AnimationProject, AnimationTransitionDirection } from "../types";
+import type {
+  AnimationProject,
+  AnimationTransitionDirection,
+  AnimationTransitionEffect,
+} from "../types";
 
 type StageTransitionOverlayProps = {
   project: AnimationProject;
   values?: Readonly<Record<string, AnimationRuntimeObjectValue>>;
 };
+
+export type StageTransitionLayer = {
+  id: string;
+  effect: Exclude<AnimationTransitionEffect, "camera">;
+  direction: AnimationTransitionDirection;
+  progress: number;
+  opacity: number;
+  color: string;
+  blur: number;
+  scale: number;
+  transitionId: string;
+  layerId: string;
+};
+
+export const getStageTransitionLayers = (
+  project: AnimationProject,
+  values?: Readonly<Record<string, AnimationRuntimeObjectValue>>,
+): StageTransitionLayer[] =>
+  project.tracks.flatMap((track) => {
+    if (track.enabled === false || track.target.type !== "transition") {
+      return [];
+    }
+    const target = track.target;
+    const value =
+      values?.[transitionRuntimeId(target.transitionId, target.layerId)];
+    if (
+      !value ||
+      target.effect === "camera" ||
+      value.transition.opacity <= 0.001
+    ) {
+      return [];
+    }
+    return [
+      {
+        id: track.id,
+        effect: target.effect,
+        direction: target.direction ?? "left",
+        progress: value.transition.progress,
+        opacity: value.transition.opacity,
+        color: value.transition.color,
+        blur: value.transition.blur,
+        scale: value.transition.scale,
+        transitionId: target.transitionId,
+        layerId: target.layerId,
+      },
+    ];
+  });
 
 const percent = (value: number) => `${Math.max(0, Math.min(1, value)) * 100}%`;
 
@@ -64,47 +115,36 @@ export const StageTransitionOverlay = ({
     return null;
   }
 
-  const layers = project.tracks.flatMap((track, index) => {
-    if (track.enabled === false || track.target.type !== "transition") {
-      return [];
-    }
-    const target = track.target;
-    const value =
-      values?.[transitionRuntimeId(target.transitionId, target.layerId)];
-    if (
-      !value ||
-      target.effect === "camera" ||
-      value.transition.opacity <= 0.001
-    ) {
-      return [];
-    }
-    const { progress, opacity, color, blur, scale } = value.transition;
-    const direction = target.direction ?? "left";
-    return [
-      <div
-        key={track.id}
-        className="stage-transition-overlay__layer"
-        data-effect={target.effect}
-        data-direction={direction}
-        data-transition-id={target.transitionId}
-        data-layer-id={target.layerId}
-        style={{
-          zIndex: index + 1,
-          opacity,
-          backgroundColor: color,
-          clipPath:
-            target.effect === "fade-through-color" || target.effect === "push"
-              ? undefined
-              : revealClipPath(target.effect, direction, progress),
-          transform:
-            target.effect === "push"
-              ? pushTransform(direction, progress, scale)
-              : `scale(${scale})`,
-          backdropFilter: blur > 0 ? `blur(${blur}px)` : undefined,
-        }}
-      />,
-    ];
-  });
+  const layers = getStageTransitionLayers(project, values)
+    .map((layer, index) => {
+      const { effect, direction, progress, opacity, color, blur, scale } =
+        layer;
+      return [
+        <div
+          key={layer.id}
+          className="stage-transition-overlay__layer"
+          data-effect={effect}
+          data-direction={direction}
+          data-transition-id={layer.transitionId}
+          data-layer-id={layer.layerId}
+          style={{
+            zIndex: index + 1,
+            opacity,
+            backgroundColor: color,
+            clipPath:
+              effect === "fade-through-color" || effect === "push"
+                ? undefined
+                : revealClipPath(effect, direction, progress),
+            transform:
+              effect === "push"
+                ? pushTransform(direction, progress, scale)
+                : `scale(${scale})`,
+            backdropFilter: blur > 0 ? `blur(${blur}px)` : undefined,
+          }}
+        />,
+      ];
+    })
+    .flat();
 
   if (layers.length === 0) {
     return null;

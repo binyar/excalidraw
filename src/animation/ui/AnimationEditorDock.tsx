@@ -232,9 +232,13 @@ export const deleteCanvasElementsForTrack = (
   excalidrawAPI?.deleteElements(targetElementIds);
 };
 
-export const AnimationEditorDock = () => {
+export const AnimationEditorDock = ({
+  previewOnly = false,
+}: {
+  previewOnly?: boolean;
+}) => {
   const [height, setHeight] = useState(DEFAULT_DOCK_HEIGHT);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(previewOnly);
   const [resizing, setResizing] = useState(false);
   const lastExpandedHeightRef = useRef(DEFAULT_DOCK_HEIGHT);
   const resizeCleanupRef = useRef<(() => void) | null>(null);
@@ -403,20 +407,38 @@ export const AnimationEditorDock = () => {
         className="animation-editor-dock"
         data-testid="animation-editor-dock"
         data-collapsed={collapsed || undefined}
+        data-preview-only={previewOnly || undefined}
         data-resizing={resizing || undefined}
-        style={{ height: collapsed ? COLLAPSED_DOCK_HEIGHT : height }}
+        style={{
+          height: previewOnly
+            ? undefined
+            : collapsed
+            ? COLLAPSED_DOCK_HEIGHT
+            : height,
+        }}
       >
         <div
           className="animation-editor-dock__resize-handle"
-          role="separator"
-          aria-label={collapsed ? "展开动画面板" : "调整动画面板高度"}
-          aria-orientation="horizontal"
-          aria-valuemin={MIN_DOCK_HEIGHT}
-          aria-valuemax={MAX_DOCK_HEIGHT}
-          aria-valuenow={collapsed ? COLLAPSED_DOCK_HEIGHT : height}
-          tabIndex={0}
-          onPointerDown={beginResize}
+          role={previewOnly ? undefined : "separator"}
+          aria-label={
+            previewOnly
+              ? undefined
+              : collapsed
+              ? "展开动画面板"
+              : "调整动画面板高度"
+          }
+          aria-orientation={previewOnly ? undefined : "horizontal"}
+          aria-valuemin={previewOnly ? undefined : MIN_DOCK_HEIGHT}
+          aria-valuemax={previewOnly ? undefined : MAX_DOCK_HEIGHT}
+          aria-valuenow={
+            previewOnly ? undefined : collapsed ? COLLAPSED_DOCK_HEIGHT : height
+          }
+          tabIndex={previewOnly ? undefined : 0}
+          onPointerDown={previewOnly ? undefined : beginResize}
           onKeyDown={(event) => {
+            if (previewOnly) {
+              return;
+            }
             if (event.key === "Enter" || event.key === " ") {
               event.preventDefault();
               toggleCollapsed();
@@ -447,7 +469,11 @@ export const AnimationEditorDock = () => {
                 type="button"
                 aria-label={
                   snapshot.status === "playing"
-                    ? "在折叠面板中暂停动画"
+                    ? previewOnly
+                      ? "暂停动画"
+                      : "在折叠面板中暂停动画"
+                    : previewOnly
+                    ? "播放动画"
                     : "在折叠面板中播放动画"
                 }
                 aria-pressed={snapshot.status === "playing"}
@@ -465,7 +491,10 @@ export const AnimationEditorDock = () => {
               >
                 <DockPlayIcon paused={snapshot.status !== "playing"} />
               </button>
-              <output aria-label="折叠面板动画时间" aria-live="off">
+              <output
+                aria-label={previewOnly ? "动画时间" : "折叠面板动画时间"}
+                aria-live="off"
+              >
                 <strong>{formatDockTime(snapshot.timeMs)}</strong>
                 <span> / {formatDockTime(snapshot.project.durationMs)}</span>
               </output>
@@ -499,102 +528,107 @@ export const AnimationEditorDock = () => {
               />
             </div>
           )}
-          <DockGripIcon />
+          {!previewOnly && <DockGripIcon />}
         </div>
-        <StableAnimationPanel
-          className="animation-panel--docked"
-          project={snapshot.project}
-          currentTimeMs={snapshot.timeMs}
-          isPlaying={snapshot.status === "playing"}
-          activeTrackId={
-            snapshot.activeTrackId ??
-            (snapshot.activeElementId
-              ? animationWorkspace.getElementTrack(snapshot.activeElementId)?.id
-              : null)
-          }
-          playback={{
-            play: async () => {
-              if (animationWorkspace.getCameraTrack()) {
+        {!previewOnly && (
+          <StableAnimationPanel
+            className="animation-panel--docked"
+            project={snapshot.project}
+            currentTimeMs={snapshot.timeMs}
+            isPlaying={snapshot.status === "playing"}
+            activeTrackId={
+              snapshot.activeTrackId ??
+              (snapshot.activeElementId
+                ? animationWorkspace.getElementTrack(snapshot.activeElementId)
+                    ?.id
+                : null)
+            }
+            playback={{
+              play: async () => {
+                if (animationWorkspace.getCameraTrack()) {
+                  enterCameraPreview();
+                }
+                clearCanvasSelectionForPlayback(excalidrawAPI);
+                await animationWorkspace.play();
+              },
+              pause: () => animationWorkspace.pause(),
+              seek: (timeMs) => animationWorkspace.seek(timeMs),
+            }}
+            onProjectChange={(project) =>
+              animationWorkspace.loadProject(project, false)
+            }
+            onAddKeyframe={(trackId, property, timeMs, initialValue) =>
+              animationWorkspace.addTrackPropertyKeyframe(
+                trackId,
+                property,
+                timeMs,
+                initialValue,
+              )
+            }
+            onAddPositionKeyframe={(trackId, timeMs) =>
+              animationWorkspace.addTrackPositionKeyframe(trackId, timeMs)
+            }
+            onSelectTrack={(trackId) => {
+              const track = snapshot.project.tracks.find(
+                (candidate) => candidate.id === trackId,
+              );
+              if (track?.target.type === "camera") {
                 enterCameraPreview();
+              } else {
+                exitCameraPreview();
               }
-              clearCanvasSelectionForPlayback(excalidrawAPI);
-              await animationWorkspace.play();
-            },
-            pause: () => animationWorkspace.pause(),
-            seek: (timeMs) => animationWorkspace.seek(timeMs),
-          }}
-          onProjectChange={(project) =>
-            animationWorkspace.loadProject(project, false)
-          }
-          onAddKeyframe={(trackId, property, timeMs, initialValue) =>
-            animationWorkspace.addTrackPropertyKeyframe(
-              trackId,
-              property,
-              timeMs,
-              initialValue,
-            )
-          }
-          onAddPositionKeyframe={(trackId, timeMs) =>
-            animationWorkspace.addTrackPositionKeyframe(trackId, timeMs)
-          }
-          onSelectTrack={(trackId) => {
-            const track = snapshot.project.tracks.find(
-              (candidate) => candidate.id === trackId,
-            );
-            if (track?.target.type === "camera") {
+              animationWorkspace.setActiveTrack(trackId);
+              selectCanvasElementsForTrack(
+                excalidrawAPI,
+                track,
+                animationWorkspace.getTrackTargetElementIds(trackId),
+              );
+            }}
+            onDeleteObject={(trackId) => {
+              const targetElementIds =
+                animationWorkspace.getTrackTargetElementIds(trackId);
+              deleteCanvasElementsForTrack(excalidrawAPI, targetElementIds);
+              animationWorkspace.removeObjectAndAnimations(trackId);
+            }}
+            getTrackTargetElements={(trackId) => {
+              const targetIds = new Set(
+                animationWorkspace.getTrackTargetElementIds(trackId),
+              );
+              return (
+                excalidrawAPI?.getSceneElements() ?? canvasElements
+              ).filter(
+                (element) =>
+                  element.isDeleted === false && targetIds.has(element.id),
+              );
+            }}
+            getCanvasElementById={(elementId) =>
+              (excalidrawAPI?.getSceneElements() ?? canvasElements).find(
+                (element) =>
+                  element.isDeleted === false && element.id === elementId,
+              )
+            }
+            onCaptureCameraKeyframe={(_trackId, timeMs) => {
+              if (!excalidrawAPI) {
+                return;
+              }
               enterCameraPreview();
-            } else {
-              exitCameraPreview();
-            }
-            animationWorkspace.setActiveTrack(trackId);
-            selectCanvasElementsForTrack(
-              excalidrawAPI,
-              track,
-              animationWorkspace.getTrackTargetElementIds(trackId),
-            );
-          }}
-          onDeleteObject={(trackId) => {
-            const targetElementIds =
-              animationWorkspace.getTrackTargetElementIds(trackId);
-            deleteCanvasElementsForTrack(excalidrawAPI, targetElementIds);
-            animationWorkspace.removeObjectAndAnimations(trackId);
-          }}
-          getTrackTargetElements={(trackId) => {
-            const targetIds = new Set(
-              animationWorkspace.getTrackTargetElementIds(trackId),
-            );
-            return (excalidrawAPI?.getSceneElements() ?? canvasElements).filter(
-              (element) =>
-                element.isDeleted === false && targetIds.has(element.id),
-            );
-          }}
-          getCanvasElementById={(elementId) =>
-            (excalidrawAPI?.getSceneElements() ?? canvasElements).find(
-              (element) =>
-                element.isDeleted === false && element.id === elementId,
-            )
-          }
-          onCaptureCameraKeyframe={(_trackId, timeMs) => {
-            if (!excalidrawAPI) {
-              return;
-            }
-            enterCameraPreview();
-            animationWorkspace.setCameraKeyframe(
-              readCameraViewport(excalidrawAPI),
-              timeMs,
-            );
-          }}
-          onCreateCamera={(timeMs) => {
-            if (!excalidrawAPI) {
-              return;
-            }
-            editorViewportRef.current ??= readCameraViewport(excalidrawAPI);
-            animationWorkspace.setCameraKeyframe(
-              readCameraViewport(excalidrawAPI),
-              timeMs,
-            );
-          }}
-        />
+              animationWorkspace.setCameraKeyframe(
+                readCameraViewport(excalidrawAPI),
+                timeMs,
+              );
+            }}
+            onCreateCamera={(timeMs) => {
+              if (!excalidrawAPI) {
+                return;
+              }
+              editorViewportRef.current ??= readCameraViewport(excalidrawAPI);
+              animationWorkspace.setCameraKeyframe(
+                readCameraViewport(excalidrawAPI),
+                timeMs,
+              );
+            }}
+          />
+        )}
       </div>
     </>
   );

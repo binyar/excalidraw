@@ -12,6 +12,7 @@ describe("workspace editor UI", () => {
   it("keeps core drawing actions and removes local/cloud shortcuts", async () => {
     const onSave = vi.fn();
     const onBackToWorkspace = vi.fn();
+    const onExportVideo = vi.fn();
     const { container } = await render(
       <Excalidraw
         UIOptions={{
@@ -27,7 +28,11 @@ describe("workspace editor UI", () => {
           },
         }}
       >
-        <AppMainMenu onSave={onSave} onBackToWorkspace={onBackToWorkspace} />
+        <AppMainMenu
+          onSave={onSave}
+          onBackToWorkspace={onBackToWorkspace}
+          onExportVideo={onExportVideo}
+        />
       </Excalidraw>,
     );
 
@@ -35,7 +40,8 @@ describe("workspace editor UI", () => {
 
     expect(queryByTestId(container, "workspace-save-button")).not.toBeNull();
     expect(queryByTestId(container, "back-to-workspace-button")).not.toBeNull();
-    expect(queryByTestId(container, "image-export-button")).not.toBeNull();
+    expect(queryByTestId(container, "video-export-button")).not.toBeNull();
+    expect(queryByTestId(container, "image-export-button")).toBeNull();
     expect(queryByTestId(container, "search-menu-button")).toBeNull();
     expect(queryByTestId(container, "clear-canvas-button")).not.toBeNull();
     expect(queryByTestId(container, "load-button")).toBeNull();
@@ -50,6 +56,9 @@ describe("workspace editor UI", () => {
 
     fireEvent.click(queryByTestId(container, "workspace-save-button")!);
     expect(onSave).toHaveBeenCalledTimes(1);
+    fireEvent.click(queryByTestId(container, "main-menu-trigger")!);
+    fireEvent.click(queryByTestId(container, "video-export-button")!);
+    expect(onExportVideo).toHaveBeenCalledTimes(1);
     fireEvent.click(queryByTestId(container, "main-menu-trigger")!);
     fireEvent.click(queryByTestId(container, "back-to-workspace-button")!);
     expect(onBackToWorkspace).toHaveBeenCalledTimes(1);

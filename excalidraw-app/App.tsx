@@ -4,6 +4,7 @@ import {
   ExcalidrawAPIProvider,
   useExcalidrawAPI,
 } from "@excalidraw/excalidraw";
+import { chevronLeftIcon } from "@excalidraw/excalidraw/components/icons";
 import {
   EVENT,
   THEME,
@@ -26,7 +27,7 @@ import {
   restoreElements,
 } from "@excalidraw/excalidraw/data/restore";
 import polyfill from "@excalidraw/excalidraw/polyfill";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { ResolvablePromise } from "@excalidraw/common/utils";
 import type {
@@ -56,6 +57,7 @@ import { AppMainMenu } from "./components/AppMainMenu";
 import { AppSidebar } from "./components/AppSidebar";
 import { CanvasGenerationLoading } from "./components/CanvasGenerationLoading";
 import { TopErrorBoundary } from "./components/TopErrorBoundary";
+import { VideoExportDialog } from "./components/VideoExportDialog";
 import CustomStats from "./CustomStats";
 import { updateStaleImageStatuses } from "./data/FileManager";
 import { FileStatusStore } from "./data/fileStatusStore";
@@ -66,7 +68,10 @@ import {
 } from "./data/LocalData";
 import { importFromLocalStorage } from "./data/localStorage";
 import { useAppLangCode } from "./app-language/language-state";
-import { getWorkspaceFileIdFromPath } from "./workspace/editorRoute";
+import {
+  getWorkspaceFileIdFromPath,
+  isWorkspacePreviewPath,
+} from "./workspace/editorRoute";
 
 import "./index.scss";
 
@@ -132,10 +137,12 @@ const initializeScene = async (): Promise<InitializedScene> => {
 const ExcalidrawWrapper = () => {
   const excalidrawAPI = useExcalidrawAPI();
   const workspaceFileId = getWorkspaceFileIdFromPath();
+  const isPreview = isWorkspacePreviewPath();
   const workspaceSaveTimer = useRef<number | null>(null);
   const pendingWorkspaceContent = useRef<string | null>(null);
   const workspaceSaveInFlight = useRef<Promise<void> | null>(null);
   const [langCode] = useAppLangCode();
+  const [videoExportOpen, setVideoExportOpen] = useState(false);
   const initialStatePromiseRef = useRef<{
     promise: ResolvablePromise<ExcalidrawInitialDataState | null>;
   }>({ promise: null! });
@@ -210,6 +217,9 @@ const ExcalidrawWrapper = () => {
 
   const flushWorkspaceSave = useCallback(
     async ({ force = false, notify = false } = {}) => {
+      if (isPreview) {
+        return;
+      }
       if (!workspaceFileId) {
         if (notify) {
           excalidrawAPI?.setToast({
@@ -268,7 +278,7 @@ const ExcalidrawWrapper = () => {
         excalidrawAPI?.setToast({ message: "保存成功", duration: 3000 });
       }
     },
-    [excalidrawAPI, workspaceFileId],
+    [excalidrawAPI, isPreview, workspaceFileId],
   );
 
   const queueWorkspaceSave = useCallback(
@@ -294,6 +304,9 @@ const ExcalidrawWrapper = () => {
         return;
       }
       previousProject = project;
+      if (isPreview) {
+        return;
+      }
       if (!workspaceFileId) {
         saveLocalAnimationProject(project);
         return;
@@ -313,10 +326,13 @@ const ExcalidrawWrapper = () => {
         ),
       );
     });
-  }, [excalidrawAPI, queueWorkspaceSave, workspaceFileId]);
+  }, [excalidrawAPI, isPreview, queueWorkspaceSave, workspaceFileId]);
 
   useEffect(() => {
     const flushWhenBackgrounded = (event: FocusEvent | Event) => {
+      if (isPreview) {
+        return;
+      }
       if (event.type !== EVENT.BLUR && !document.hidden) {
         return;
       }
@@ -339,10 +355,13 @@ const ExcalidrawWrapper = () => {
         flushWhenBackgrounded,
       );
     };
-  }, [flushWorkspaceSave, workspaceFileId]);
+  }, [flushWorkspaceSave, isPreview, workspaceFileId]);
 
   useEffect(() => {
     const beforeUnload = (event: BeforeUnloadEvent) => {
+      if (isPreview) {
+        return;
+      }
       LocalData.flushSave();
       if (workspaceFileId && pendingWorkspaceContent.current) {
         fetch(`/api/workspace/files/${workspaceFileId}/content`, {
@@ -362,6 +381,16 @@ const ExcalidrawWrapper = () => {
       }
     };
     const saveShortcut = (event: KeyboardEvent) => {
+      if (
+        !isPreview &&
+        (event.ctrlKey || event.metaKey) &&
+        event.shiftKey &&
+        event.key.toLowerCase() === "e"
+      ) {
+        event.preventDefault();
+        setVideoExportOpen(true);
+        return;
+      }
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
         event.preventDefault();
         void flushWorkspaceSave({ force: true, notify: true });
@@ -373,13 +402,16 @@ const ExcalidrawWrapper = () => {
       window.removeEventListener(EVENT.BEFORE_UNLOAD, beforeUnload);
       window.removeEventListener(EVENT.KEYDOWN, saveShortcut, true);
     };
-  }, [excalidrawAPI, flushWorkspaceSave, workspaceFileId]);
+  }, [excalidrawAPI, flushWorkspaceSave, isPreview, workspaceFileId]);
 
   const onChange = (
     elements: readonly OrderedExcalidrawElement[],
     appState: AppState,
     files: BinaryFiles,
   ) => {
+    if (isPreview) {
+      return;
+    }
     if (workspaceFileId) {
       queueWorkspaceSave(
         attachAnimationProjectToSceneJson(
@@ -437,9 +469,14 @@ const ExcalidrawWrapper = () => {
     <div className="powdoo-app editor-shell bg-muted/30">
       <main className="editor-shell__canvas">
         <Excalidraw
-          onChange={onChange}
-          onExport={onExport}
+          onChange={isPreview ? undefined : onChange}
+          onExport={isPreview ? undefined : onExport}
           initialData={initialStatePromiseRef.current.promise}
+          interaction={
+            isPreview ? { enabled: { navigation: true } } : undefined
+          }
+          ui={isPreview ? false : undefined}
+          viewModeEnabled={isPreview || undefined}
           UIOptions={{
             defaultSidebar: false,
             selectedShapeActions: false,
@@ -456,19 +493,23 @@ const ExcalidrawWrapper = () => {
             },
           }}
           langCode={langCode}
-          renderCustomStats={(
-            elements: readonly NonDeletedExcalidrawElement[],
-            appState: UIAppState,
-          ) => (
-            <CustomStats
-              setToast={(message) => excalidrawAPI!.setToast({ message })}
-              appState={appState}
-              elements={elements}
-            />
-          )}
+          renderCustomStats={
+            isPreview
+              ? undefined
+              : (
+                  elements: readonly NonDeletedExcalidrawElement[],
+                  appState: UIAppState,
+                ) => (
+                  <CustomStats
+                    setToast={(message) => excalidrawAPI!.setToast({ message })}
+                    appState={appState}
+                    elements={elements}
+                  />
+                )
+          }
           detectScroll={false}
-          handleKeyboardGlobally
-          autoFocus
+          handleKeyboardGlobally={!isPreview}
+          autoFocus={!isPreview}
           theme={THEME.LIGHT}
           renderTopRightUI={() => null}
           onLinkOpen={(element, event) => {
@@ -482,17 +523,38 @@ const ExcalidrawWrapper = () => {
             }
           }}
         >
-          <AppMainMenu
-            onSave={() =>
-              void flushWorkspaceSave({ force: true, notify: true })
-            }
-            onBackToWorkspace={() => window.location.assign("/")}
-          />
-          {excalidrawAPI && <AppSidebar />}
+          {!isPreview && (
+            <AppMainMenu
+              onSave={() =>
+                void flushWorkspaceSave({ force: true, notify: true })
+              }
+              onBackToWorkspace={() => window.location.assign("/")}
+              onExportVideo={() => setVideoExportOpen(true)}
+            />
+          )}
+          {!isPreview && excalidrawAPI && <AppSidebar />}
         </Excalidraw>
-        <CanvasGenerationLoading />
+        {isPreview && (
+          <button
+            type="button"
+            className="story-preview-back-button"
+            aria-label="返回工作台"
+            onClick={() => window.location.assign("/")}
+          >
+            {chevronLeftIcon}
+            <span>返回工作台</span>
+          </button>
+        )}
+        {!isPreview && <CanvasGenerationLoading />}
+        {!isPreview && excalidrawAPI && (
+          <VideoExportDialog
+            open={videoExportOpen}
+            onOpenChange={setVideoExportOpen}
+            excalidrawAPI={excalidrawAPI}
+          />
+        )}
       </main>
-      <AnimationEditorDock />
+      <AnimationEditorDock previewOnly={isPreview} />
     </div>
   );
 };

@@ -36,6 +36,36 @@
   --editor-selection-fg: #fff;
 }
 
+.story-preview-back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 12;
+  display: inline-flex;
+  height: 36px;
+  padding: 0 12px 0 9px;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border, #e7e7e7);
+  border-radius: 9px;
+  color: var(--text-primary-color, #1b1b1f);
+  background: var(--island-bg-color, #fff);
+  box-shadow: 0 4px 14px rgb(15 23 42 / 10%);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--editor-selection-soft-bg, #eeeeef);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
 .ai-chatbot-layer.ai-chatbot-layer {
   position: fixed;
   inset: 0;
@@ -127,6 +157,25 @@
           stroke-width: 2;
         }
       }
+    }
+  }
+
+  .dropdown-menu.main-menu {
+    border: 1px solid #e7e7e7;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(15 23 42 / 9%);
+
+    > .dropdown-menu-container {
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .color-picker__top-picks {
+      justify-content: flex-start;
+      gap: 0.1875rem;
     }
   }
 

@@ -18,6 +18,7 @@ import {
   RotateCcw,
   Search,
   Send,
+  SquarePen,
   Sparkles,
   Star,
   Sun,
@@ -55,6 +56,7 @@ const icons: Record<string, LucideIcon> = {
   magic: WandSparkles,
   send: Send,
   rename: Pencil,
+  edit: SquarePen,
   sparkle: Sparkles,
 };
 

@@ -353,4 +353,22 @@ describe("AnimationEditorDock", () => {
     expect(progress).toHaveAttribute("min", "0");
     fireEvent.change(progress, { target: { value: "100" } });
   });
+
+  it("renders only the compact playback controls in preview mode", () => {
+    render(<AnimationEditorDock previewOnly />);
+
+    const dock = screen.getByTestId("animation-editor-dock");
+    expect(dock).toHaveAttribute("data-preview-only", "true");
+    expect(dock.querySelector(".animation-panel")).toBeNull();
+    expect(
+      screen.queryByRole("separator", { name: "展开动画面板" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "播放动画" }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("动画时间")).toBeInTheDocument();
+    expect(
+      screen.getByRole("slider", { name: "动画播放进度" }),
+    ).toBeInTheDocument();
+  });
 });
