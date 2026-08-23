@@ -217,6 +217,63 @@ describe("story compiler", () => {
     expect(sanitizeStoryRuntimeId("scene-problem")).toBe("scene-problem");
   });
 
+  it("preserves managed Section layout metadata in story artifacts", () => {
+    const managed = parseStoryArtifact({
+      ...artifact,
+      canvas: {
+        ...artifact.canvas,
+        spaceLayouts: [
+          {
+            spaceId: "page-problem",
+            layout: { mode: "grid", padding: 60 },
+          },
+          {
+            spaceId: "page-solution",
+            layout: { mode: "grid", padding: 60 },
+          },
+        ],
+        sections: [
+          {
+            id: "problem-section",
+            spaceId: "page-problem",
+            layout: { mode: "column" },
+          },
+          {
+            id: "solution-section",
+            spaceId: "page-solution",
+            layout: { mode: "column" },
+          },
+        ],
+        elements: artifact.canvas.elements.map((element) => {
+          const sectionId =
+            element.id === "problem-card"
+              ? "problem-section"
+              : "solution-section";
+          return {
+            ...element,
+            sectionId,
+            layoutFrame: {
+              x: 0,
+              y: 0,
+              width: element.width,
+              height: element.height,
+            },
+          };
+        }),
+      },
+    });
+
+    expect(managed.canvas.spaceLayouts).toHaveLength(2);
+    expect(managed.canvas.sections.map((section) => section.id)).toEqual([
+      "problem-section",
+      "solution-section",
+    ]);
+    expect(managed.canvas.elements[0]).toMatchObject({
+      sectionId: "problem-section",
+      layoutFrame: { x: 0, y: 0, width: 240, height: 100 },
+    });
+  });
+
   it("migrates legacy scene tracks from absolute to scene-local time", () => {
     const migrated = parseStoryArtifact({
       ...artifact,

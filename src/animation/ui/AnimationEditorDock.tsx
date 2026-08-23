@@ -238,7 +238,7 @@ export const AnimationEditorDock = ({
   previewOnly?: boolean;
 }) => {
   const [height, setHeight] = useState(DEFAULT_DOCK_HEIGHT);
-  const [collapsed, setCollapsed] = useState(previewOnly);
+  const [collapsed, setCollapsed] = useState(true);
   const [resizing, setResizing] = useState(false);
   const lastExpandedHeightRef = useRef(DEFAULT_DOCK_HEIGHT);
   const resizeCleanupRef = useRef<(() => void) | null>(null);

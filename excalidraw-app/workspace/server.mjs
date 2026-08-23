@@ -1,18 +1,28 @@
+import { randomUUID } from "node:crypto";
 import { createReadStream, existsSync, mkdirSync, statSync } from "node:fs";
 import { readFile, rename, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
-import { randomUUID } from "node:crypto";
+
 import dotenv from "dotenv";
 
 import { handleAiRequest } from "../ai/server/handler.mjs";
 import {
+  deleteLibraryCatalogPack,
+  deleteLibraryCatalogPackItem,
   getLibraryCatalogPack,
+  getLibraryCatalogPackForAdmin,
   getLibraryCatalogPackItem,
   listLibraryCatalogPacks,
+  listLibraryCatalogPacksForAdmin,
 } from "../ai/server/library-catalog.mjs";
+import {
+  getSkillDefinition,
+  resolveEnabledSkillIds,
+  resolveSkillCatalog,
+} from "../ai/server/skill-catalog.mjs";
 
 const APP_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -81,10 +91,25 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_asset_pack_installations_user
     ON asset_pack_installations(username, installed_at DESC);
+  CREATE TABLE IF NOT EXISTS asset_pack_settings (
+    pack_id TEXT PRIMARY KEY,
+    source TEXT NOT NULL,
+    builtin INTEGER NOT NULL DEFAULT 0,
+    updated_at TEXT NOT NULL,
+    updated_by TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS user_skill_settings (
+    username TEXT NOT NULL,
+    skill_id TEXT NOT NULL,
+    enabled INTEGER NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (username, skill_id)
+  );
 `);
 
 const AUTH_USERNAME = process.env.EXCALIDRAW_USERNAME || "fanmd";
 const AUTH_PASSWORD = process.env.EXCALIDRAW_PASSWORD || "123123";
+const ADMIN_USERNAME = process.env.EXCALIDRAW_ADMIN_USERNAME || AUTH_USERNAME;
 const SESSION_COOKIE = "excalidraw_workspace_session";
 const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
 
@@ -234,10 +259,31 @@ const getFolderRow = (id) =>
 const getInstalledAssetSources = (username) =>
   db
     .prepare(
-      "SELECT source FROM asset_pack_installations WHERE username = ? ORDER BY installed_at DESC",
+      `SELECT source FROM asset_pack_settings WHERE builtin = 1
+       UNION
+       SELECT source FROM asset_pack_installations WHERE username = ?`,
     )
     .all(username)
     .map((row) => row.source);
+const getBuiltinAssetIds = () =>
+  new Set(
+    db
+      .prepare("SELECT pack_id FROM asset_pack_settings WHERE builtin = 1")
+      .all()
+      .map((row) => row.pack_id),
+  );
+const isAdminSession = (session) => session?.username === ADMIN_USERNAME;
+const getSkillSettings = (username) =>
+  new Map(
+    db
+      .prepare(
+        "SELECT skill_id, enabled FROM user_skill_settings WHERE username = ?",
+      )
+      .all(username)
+      .map((row) => [row.skill_id, Boolean(row.enabled)]),
+  );
+const getEnabledSkillIds = (username) =>
+  resolveEnabledSkillIds(getSkillSettings(username));
 
 const folderDescendants = (folderId) => {
   const rows = db
@@ -338,6 +384,7 @@ export const handleWorkspaceRequest = async (req, res) => {
   const url = new URL(req.url, "http://localhost");
   const isAuthRequest = url.pathname.startsWith("/api/auth");
   const isWorkspaceRequest = url.pathname.startsWith("/api/workspace");
+  const isAdminRequest = url.pathname.startsWith("/api/admin");
   const isAiRequest = url.pathname.startsWith("/api/ai");
   if (isAiRequest) {
     return handleAiRequest(req, res, {
@@ -346,9 +393,10 @@ export const handleWorkspaceRequest = async (req, res) => {
       getFileRow,
       now,
       getInstalledAssetSources,
+      getEnabledSkillIds,
     });
   }
-  if (!isAuthRequest && !isWorkspaceRequest) return false;
+  if (!isAuthRequest && !isWorkspaceRequest && !isAdminRequest) return false;
   try {
     if (url.pathname === "/api/auth/login" && req.method === "POST") {
       const body = await readJson(req);
@@ -359,7 +407,11 @@ export const handleWorkspaceRequest = async (req, res) => {
       db.prepare("DELETE FROM sessions WHERE expires_at <= ?").run(now());
       const token = createSession(AUTH_USERNAME);
       res.setHeader("set-cookie", sessionCookie(token));
-      sendJson(res, 200, { authenticated: true, username: AUTH_USERNAME });
+      sendJson(res, 200, {
+        authenticated: true,
+        username: AUTH_USERNAME,
+        isAdmin: AUTH_USERNAME === ADMIN_USERNAME,
+      });
       return true;
     }
     if (url.pathname === "/api/auth/logout" && req.method === "POST") {
@@ -375,7 +427,11 @@ export const handleWorkspaceRequest = async (req, res) => {
         res,
         200,
         session
-          ? { authenticated: true, username: session.username }
+          ? {
+              authenticated: true,
+              username: session.username,
+              isAdmin: isAdminSession(session),
+            }
           : { authenticated: false },
       );
       return true;
@@ -390,10 +446,167 @@ export const handleWorkspaceRequest = async (req, res) => {
       return true;
     }
 
+    if (isAdminRequest && !isAdminSession(workspaceSession)) {
+      sendJson(res, 403, { error: "当前账户没有后台管理权限" });
+      return true;
+    }
+
     const parts = url.pathname.split("/").filter(Boolean).slice(2);
     const [resource, id, action, itemIndex] = parts;
 
+    if (isAdminRequest) {
+      if (resource === "asset-packs" && req.method === "GET" && !id) {
+        const builtinIds = getBuiltinAssetIds();
+        const packs = (await listLibraryCatalogPacksForAdmin()).map((pack) => ({
+          ...pack,
+          builtin: builtinIds.has(pack.id),
+        }));
+        sendJson(res, 200, {
+          packs,
+          totalCount: packs.length,
+          builtinCount: packs.filter((pack) => pack.builtin).length,
+          totalBytes: packs.reduce((total, pack) => total + pack.fileSize, 0),
+        });
+        return true;
+      }
+      if (resource === "asset-packs" && id && req.method === "GET" && !action) {
+        const pack = await getLibraryCatalogPackForAdmin(id);
+        sendJson(res, 200, {
+          ...pack,
+          builtin: getBuiltinAssetIds().has(pack.id),
+        });
+        return true;
+      }
+      if (
+        resource === "asset-packs" &&
+        id &&
+        action === "items" &&
+        itemIndex !== undefined &&
+        req.method === "GET"
+      ) {
+        sendJson(res, 200, await getLibraryCatalogPackItem(id, itemIndex));
+        return true;
+      }
+      if (
+        resource === "asset-packs" &&
+        id &&
+        action === "items" &&
+        itemIndex !== undefined &&
+        req.method === "DELETE"
+      ) {
+        const result = await deleteLibraryCatalogPackItem(id, itemIndex);
+        if (result.packDeleted) {
+          db.exec("BEGIN");
+          try {
+            db.prepare(
+              "DELETE FROM asset_pack_installations WHERE pack_id = ?",
+            ).run(id);
+            db.prepare("DELETE FROM asset_pack_settings WHERE pack_id = ?").run(
+              id,
+            );
+            db.exec("COMMIT");
+          } catch (error) {
+            db.exec("ROLLBACK");
+            throw error;
+          }
+        }
+        sendJson(
+          res,
+          200,
+          result.packDeleted
+            ? result
+            : { ...result, builtin: getBuiltinAssetIds().has(id) },
+        );
+        return true;
+      }
+      if (resource === "asset-packs" && id && req.method === "PATCH") {
+        const pack = await getLibraryCatalogPack(id);
+        const body = await readJson(req);
+        if (typeof body.builtin !== "boolean") {
+          throw Object.assign(new Error("builtin 必须是布尔值"), {
+            status: 400,
+          });
+        }
+        db.prepare(
+          `INSERT INTO asset_pack_settings(pack_id, source, builtin, updated_at, updated_by)
+           VALUES (?, ?, ?, ?, ?)
+           ON CONFLICT(pack_id) DO UPDATE SET source = excluded.source, builtin = excluded.builtin,
+             updated_at = excluded.updated_at, updated_by = excluded.updated_by`,
+        ).run(
+          pack.id,
+          pack.source,
+          body.builtin ? 1 : 0,
+          now(),
+          workspaceSession.username,
+        );
+        sendJson(res, 200, { ...pack, builtin: body.builtin });
+        return true;
+      }
+      if (
+        resource === "asset-packs" &&
+        id &&
+        !action &&
+        req.method === "DELETE"
+      ) {
+        const deleted = await deleteLibraryCatalogPack(id);
+        db.exec("BEGIN");
+        try {
+          db.prepare(
+            "DELETE FROM asset_pack_installations WHERE pack_id = ?",
+          ).run(id);
+          db.prepare("DELETE FROM asset_pack_settings WHERE pack_id = ?").run(
+            id,
+          );
+          db.exec("COMMIT");
+        } catch (error) {
+          db.exec("ROLLBACK");
+          throw error;
+        }
+        sendJson(res, 200, { ...deleted, deleted: true });
+        return true;
+      }
+      sendJson(res, 404, { error: "接口不存在" });
+      return true;
+    }
+
+    if (resource === "skills" && req.method === "GET" && !id) {
+      const skills = resolveSkillCatalog(
+        getSkillSettings(workspaceSession.username),
+      );
+      sendJson(res, 200, {
+        skills,
+        enabledCount: skills.filter((skill) => skill.enabled).length,
+      });
+      return true;
+    }
+    if (
+      resource === "skills" &&
+      id &&
+      action === "install" &&
+      (req.method === "POST" || req.method === "DELETE")
+    ) {
+      const skill = getSkillDefinition(id);
+      if (!skill) {
+        throw Object.assign(new Error("技能不存在"), { status: 404 });
+      }
+      if (skill.locked && req.method === "DELETE") {
+        throw Object.assign(new Error("内置技能不能关闭"), { status: 400 });
+      }
+      const enabled = req.method === "POST" || skill.locked;
+      db.prepare(
+        `INSERT INTO user_skill_settings(username, skill_id, enabled, updated_at)
+         VALUES (?, ?, ?, ?)
+         ON CONFLICT(username, skill_id) DO UPDATE SET enabled = excluded.enabled, updated_at = excluded.updated_at`,
+      ).run(workspaceSession.username, skill.id, enabled ? 1 : 0, now());
+      const resolvedSkill = resolveSkillCatalog(
+        getSkillSettings(workspaceSession.username),
+      ).find((item) => item.id === skill.id);
+      sendJson(res, 200, resolvedSkill);
+      return true;
+    }
+
     if (resource === "asset-packs" && req.method === "GET" && !id) {
+      const builtinIds = getBuiltinAssetIds();
       const installedIds = new Set(
         db
           .prepare(
@@ -404,24 +617,28 @@ export const handleWorkspaceRequest = async (req, res) => {
       );
       const packs = (await listLibraryCatalogPacks()).map((pack) => ({
         ...pack,
-        installed: installedIds.has(pack.id),
+        builtin: builtinIds.has(pack.id),
+        installed: builtinIds.has(pack.id) || installedIds.has(pack.id),
       }));
       sendJson(res, 200, {
         packs,
-        installedCount: installedIds.size,
+        installedCount: packs.filter((pack) => pack.installed).length,
       });
       return true;
     }
     if (resource === "asset-packs" && id && req.method === "GET" && !action) {
       const pack = await getLibraryCatalogPack(id);
-      const installed = Boolean(
-        db
-          .prepare(
-            "SELECT 1 FROM asset_pack_installations WHERE username = ? AND pack_id = ?",
-          )
-          .get(workspaceSession.username, id),
-      );
-      sendJson(res, 200, { ...pack, installed });
+      const builtin = getBuiltinAssetIds().has(id);
+      const installed =
+        builtin ||
+        Boolean(
+          db
+            .prepare(
+              "SELECT 1 FROM asset_pack_installations WHERE username = ? AND pack_id = ?",
+            )
+            .get(workspaceSession.username, id),
+        );
+      sendJson(res, 200, { ...pack, builtin, installed });
       return true;
     }
     if (
@@ -441,6 +658,11 @@ export const handleWorkspaceRequest = async (req, res) => {
       req.method === "POST"
     ) {
       const pack = await getLibraryCatalogPack(id);
+      const builtin = getBuiltinAssetIds().has(id);
+      if (builtin) {
+        sendJson(res, 200, { ...pack, builtin: true, installed: true });
+        return true;
+      }
       db.prepare(
         `INSERT INTO asset_pack_installations(username, pack_id, source, installed_at)
          VALUES (?, ?, ?, ?)
@@ -455,6 +677,11 @@ export const handleWorkspaceRequest = async (req, res) => {
       action === "install" &&
       req.method === "DELETE"
     ) {
+      if (getBuiltinAssetIds().has(id)) {
+        throw Object.assign(new Error("官方内置素材不能从用户素材库移除"), {
+          status: 400,
+        });
+      }
       db.prepare(
         "DELETE FROM asset_pack_installations WHERE username = ? AND pack_id = ?",
       ).run(workspaceSession.username, id);

@@ -11,27 +11,30 @@ import {
 } from "./library-catalog.mjs";
 
 test("bundled library catalog exposes every vendored library item", async () => {
+  const packs = await listLibraryCatalogPacks();
   assert.deepEqual(await getLibraryCatalogSummary(), {
-    libraryCount: 231,
-    itemCount: 4134,
+    libraryCount: packs.length,
+    itemCount: packs.reduce((total, pack) => total + pack.itemCount, 0),
   });
 });
 
-test("library search returns bounded stable refs without raw element JSON", async () => {
+test("library search exposes Chinese metadata and Chinese public refs", async () => {
   const packs = await listLibraryCatalogPacks();
-  const awsPack = packs.find((pack) =>
-    `${pack.name} ${pack.description}`.toLowerCase().includes("aws"),
-  );
-  assert.ok(awsPack);
-  const results = await searchLibraryCatalog("aws", 5, {
-    sources: [awsPack.source],
+  const pack = await getLibraryCatalogPack(packs[0].id);
+  const results = await searchLibraryCatalog(pack.items[0].itemName, 5, {
+    sources: [pack.source],
   });
   assert.ok(results.length > 0 && results.length <= 5);
-  assert.match(results[0].ref, /#\d+$/);
+  assert.match(results[0].ref, /^素材-\d+-\d+$/);
+  assert.doesNotMatch(
+    `${results[0].libraryName}${results[0].description}${results[0].itemName}`,
+    /[A-Za-z]/,
+  );
+  assert.equal("libraryId" in results[0], false);
   assert.equal("elements" in results[0], false);
 
   const item = await getLibraryCatalogItem(results[0].ref, {
-    sources: [awsPack.source],
+    sources: [pack.source],
   });
   assert.ok(item.elements.length > 0);
   assert.ok(item.width > 0);
@@ -42,6 +45,12 @@ test("library packs expose marketplace metadata while an empty install list expo
   const packs = await listLibraryCatalogPacks();
   assert.ok(packs.length > 0);
   assert.ok(packs.every((pack) => pack.itemCount > 0));
+  assert.ok(
+    packs.every(
+      (pack) =>
+        !/[A-Za-z]/.test(`${pack.name}${pack.description}${pack.author}`),
+    ),
+  );
 
   const pack = await getLibraryCatalogPack(packs[0].id);
   assert.equal(pack.source, packs[0].source);

@@ -7,7 +7,8 @@ import { createUIMessageStream, pipeUIMessageStreamToResponse } from "ai";
 
 import { runAnimationAgent } from "./animation-agent.mjs";
 import { createCanvasDraftState, createCanvasTools } from "./canvas-tools.mjs";
-import { STORY_AGENT_SYSTEM_PROMPT } from "./prompt.mjs";
+import { buildStoryAgentSystemPrompt } from "./prompt.mjs";
+import { ASSET_ENHANCEMENT_SKILL_ID } from "./skill-catalog.mjs";
 
 const jsonHeaders = { "content-type": "application/json; charset=utf-8" };
 const sendJson = (res, status, value) => {
@@ -331,6 +332,8 @@ const compactEditContext = (artifact) => {
     title: canvas.title,
     summary: canvas.summary,
     beats: canvas.beats,
+    spaceLayouts: canvas.spaceLayouts || [],
+    sections: canvas.sections || [],
     elements: canvas.elements,
     libraryAssets: (canvas.libraryAssets || []).map((asset) => {
       const compactAsset = { ...asset };
@@ -395,6 +398,7 @@ const buildAgent = ({
   thinkingLevel,
   currentCanvasState,
   assetSources,
+  enabledSkillIds,
   onEvent,
   onAnimationEvent,
 }) => {
@@ -403,18 +407,24 @@ const buildAgent = ({
     latestStoryArtifact(transcript),
     currentCanvasState,
   );
-  const draftState = createCanvasDraftState(existingArtifact?.canvas);
+  const draftState = createCanvasDraftState(existingArtifact?.canvas, {
+    requireManagedLayout: !existingArtifact,
+  });
   const editContext = compactEditContext(existingArtifact);
+  const storyAgentSystemPrompt = buildStoryAgentSystemPrompt({
+    enabledSkillIds,
+  });
   const agent = new Agent({
     initialState: {
       systemPrompt: editContext
-        ? `${STORY_AGENT_SYSTEM_PROMPT}\n\n当前是二次编辑，不是重新创建。以下是当前画布与动画的语义快照：\n${editContext}\n\n必须保留故事 id 和未被用户要求修改的内容、布局、资源与业务关系。修改已有基础元素必须调用 update_canvas_elements 并复用稳定语义 id；删除使用 remove_canvas_items；add_canvas_elements 仅用于用户明确要求的新内容。禁止另起一套平行故事。完成修改后重新冻结画布草稿并委派动画。`
-        : STORY_AGENT_SYSTEM_PROMPT,
+        ? `${storyAgentSystemPrompt}\n\n当前是二次编辑，不是重新创建。以下是当前画布与动画的语义快照：\n${editContext}\n\n必须保留故事 id 和未被用户要求修改的内容、布局、资源与业务关系。修改已有基础元素必须调用 update_canvas_elements 并复用稳定语义 id；删除使用 remove_canvas_items；add_canvas_elements 仅用于用户明确要求的新内容。禁止另起一套平行故事。完成修改后重新冻结画布草稿并委派动画。`
+        : storyAgentSystemPrompt,
       model,
       thinkingLevel,
       tools: createCanvasTools({
         state: draftState,
         assetSources,
+        enabledSkillIds,
         animate: (canvasDraft, brief, signal) =>
           runAnimationAgent({
             canvasDraft,
@@ -440,7 +450,14 @@ const buildAgent = ({
 export const handleAiRequest = async (
   req,
   res,
-  { session, db, getFileRow, now, getInstalledAssetSources = () => [] },
+  {
+    session,
+    db,
+    getFileRow,
+    now,
+    getInstalledAssetSources = () => [],
+    getEnabledSkillIds = () => [ASSET_ENHANCEMENT_SKILL_ID],
+  },
 ) => {
   const url = new URL(req.url, "http://localhost");
   if (!url.pathname.startsWith("/api/ai")) {
@@ -510,6 +527,7 @@ export const handleAiRequest = async (
     }
     const thinkingLevel = body.thinkingEnabled === true ? "high" : "off";
     const assetSources = await getInstalledAssetSources(session.username);
+    const enabledSkillIds = await getEnabledSkillIds(session.username);
 
     const existing = db
       .prepare(
@@ -832,6 +850,7 @@ export const handleAiRequest = async (
           thinkingLevel,
           currentCanvasState: body.currentCanvasState,
           assetSources,
+          enabledSkillIds,
           onAnimationEvent,
           onEvent: (event) => {
             forwardReasoning("main", event);

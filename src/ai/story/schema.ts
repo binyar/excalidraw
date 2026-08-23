@@ -22,6 +22,24 @@ const TRANSITION_EFFECTS = new Set([
 const TRANSITION_DIRECTIONS = new Set(["left", "right", "up", "down"]);
 const TRANSITION_ROLES = new Set(["exit", "bridge", "enter"]);
 const STORY_SPACE_RELATIONS = new Set(["same-space", "new-page"]);
+const SPACE_LAYOUT_MODES = new Set(["row", "column", "grid"]);
+const SECTION_LAYOUT_MODES = new Set([
+  "row",
+  "column",
+  "grid",
+  "overlay",
+  "free",
+]);
+
+const validLayoutIntent = (
+  value: unknown,
+  modes: ReadonlySet<string>,
+): value is Record<string, unknown> =>
+  isRecord(value) &&
+  modes.has(String(value.mode)) &&
+  (value.columns === undefined || finiteNumber(value.columns)) &&
+  (value.gap === undefined || finiteNumber(value.gap)) &&
+  (value.padding === undefined || finiteNumber(value.padding));
 
 const validateAnimationPlan = (value: unknown, durationMs: number) => {
   if (value === undefined) {
@@ -62,6 +80,10 @@ const parseCanvasDraft = (value: unknown): CanvasDraft => {
   const libraryAssets = Array.isArray(value.libraryAssets)
     ? value.libraryAssets
     : [];
+  const spaceLayouts = Array.isArray(value.spaceLayouts)
+    ? value.spaceLayouts
+    : [];
+  const sections = Array.isArray(value.sections) ? value.sections : [];
   if (
     value.elements.length + libraryAssets.length === 0 ||
     value.elements.length + libraryAssets.length > MAX_CANVAS_DRAFT_ITEMS
@@ -206,7 +228,71 @@ const parseCanvasDraft = (value: unknown): CanvasDraft => {
         : "旧故事按独立页面迁移",
     };
   });
-  return { ...value, beats, libraryAssets } as CanvasDraft;
+  const storySpaceIds = new Set(beats.map((beat) => beat.spaceId));
+  const layoutSpaceIds = new Set<string>();
+  for (const spaceLayout of spaceLayouts) {
+    if (
+      !isRecord(spaceLayout) ||
+      !isString(spaceLayout.spaceId) ||
+      !storySpaceIds.has(spaceLayout.spaceId) ||
+      layoutSpaceIds.has(spaceLayout.spaceId) ||
+      !validLayoutIntent(spaceLayout.layout, SPACE_LAYOUT_MODES)
+    ) {
+      throw new Error("Canvas Draft 包含无效页面布局");
+    }
+    layoutSpaceIds.add(spaceLayout.spaceId);
+  }
+  const sectionIds = new Set<string>();
+  for (const section of sections) {
+    if (
+      !isRecord(section) ||
+      !isString(section.id) ||
+      !isString(section.spaceId) ||
+      !storySpaceIds.has(section.spaceId) ||
+      sectionIds.has(section.id) ||
+      !validLayoutIntent(section.layout, SECTION_LAYOUT_MODES)
+    ) {
+      throw new Error("Canvas Draft 包含无效 Section 布局");
+    }
+    sectionIds.add(section.id);
+  }
+  for (const item of [...value.elements, ...libraryAssets]) {
+    if (
+      isRecord(item) &&
+      item.sectionId !== undefined &&
+      (!isString(item.sectionId) || !sectionIds.has(item.sectionId))
+    ) {
+      throw new Error("Canvas Draft 包含无效 Section 引用");
+    }
+    const layoutFrame = isRecord(item) ? item.layoutFrame : undefined;
+    if (
+      layoutFrame !== undefined &&
+      (!isRecord(layoutFrame) ||
+        typeof layoutFrame.x !== "number" ||
+        !Number.isFinite(layoutFrame.x) ||
+        typeof layoutFrame.y !== "number" ||
+        !Number.isFinite(layoutFrame.y) ||
+        typeof layoutFrame.width !== "number" ||
+        !Number.isFinite(layoutFrame.width) ||
+        layoutFrame.width <= 0 ||
+        typeof layoutFrame.height !== "number" ||
+        !Number.isFinite(layoutFrame.height) ||
+        layoutFrame.height <= 0 ||
+        (layoutFrame.fontSize !== undefined &&
+          (typeof layoutFrame.fontSize !== "number" ||
+            !Number.isFinite(layoutFrame.fontSize) ||
+            layoutFrame.fontSize <= 0)))
+    ) {
+      throw new Error("Canvas Draft 包含无效 Section 局部几何");
+    }
+  }
+  return {
+    ...value,
+    beats,
+    libraryAssets,
+    spaceLayouts,
+    sections,
+  } as CanvasDraft;
 };
 
 const parseAnimationDraft = (

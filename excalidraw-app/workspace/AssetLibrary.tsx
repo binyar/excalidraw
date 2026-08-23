@@ -2,16 +2,11 @@ import { exportToSvg } from "@excalidraw/utils/export";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
-  Boxes,
   Check,
-  LayoutGrid,
-  Network,
+  LockKeyhole,
   PackageOpen,
-  PanelsTopLeft,
   Plus,
   Search,
-  Shapes,
-  Users,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -30,40 +25,36 @@ import "./AssetLibrary.css";
 
 const DETAIL_PAGE_SIZE = 24;
 
-const categoryIcon = {
-  architecture: Network,
-  flow: Boxes,
-  ui: PanelsTopLeft,
-  icons: Shapes,
-  characters: Users,
-  general: LayoutGrid,
-} as const;
-
 const categoryLabel = (category: AssetPackCategory) =>
   ASSET_PACK_CATEGORIES.find((candidate) => candidate.id === category)?.label ||
   "通用素材";
 
-const AssetPackArtwork = ({
+export const AssetPackArtwork = ({
   pack,
   large = false,
 }: {
-  pack: AssetPack;
+  pack: Pick<AssetPack, "id" | "previewItems" | "itemCount">;
   large?: boolean;
 }) => {
-  const CategoryIcon = categoryIcon[pack.category];
-  const previews = pack.previewItems.length
-    ? pack.previewItems
-    : [{ ref: pack.id, itemName: pack.name, itemIndex: 0 }];
+  const previews = pack.previewItems.slice(0, 4);
   return (
     <div
       className={cn("asset-pack-artwork", large && "asset-pack-artwork--large")}
     >
-      {previews.slice(0, 4).map((item, index) => (
-        <div key={item.ref || index} className="asset-pack-artwork__tile">
-          <CategoryIcon aria-hidden="true" />
-          <span>{item.itemName.slice(0, 12)}</span>
-        </div>
+      {previews.map((item) => (
+        <AssetItemPreview
+          key={item.ref}
+          packId={pack.id}
+          item={item}
+          compact
+          defer
+        />
       ))}
+      {!previews.length && (
+        <div className="asset-pack-artwork__empty">
+          <PackageOpen aria-hidden="true" />
+        </div>
+      )}
       <small>{pack.itemCount} 项</small>
     </div>
   );
@@ -82,83 +73,126 @@ const InstallButton = ({
     type="button"
     variant={pack.installed ? "outline" : "default"}
     size="sm"
-    disabled={busy}
-    onClick={() => onToggle(pack)}
+    disabled={busy || pack.builtin}
+    onClick={(event) => {
+      event.stopPropagation();
+      onToggle(pack);
+    }}
   >
-    {pack.installed ? <Check /> : <Plus />}
-    {busy ? "处理中" : pack.installed ? "已安装" : "安装"}
+    {pack.builtin ? <LockKeyhole /> : pack.installed ? <Check /> : <Plus />}
+    {busy
+      ? "处理中"
+      : pack.builtin
+      ? "官方内置"
+      : pack.installed
+      ? "已添加"
+      : "添加素材"}
   </Button>
 );
 
-const AssetItemPreview = ({
+export const AssetItemPreview = ({
   packId,
   item,
+  compact = false,
+  defer = false,
 }: {
   packId: string;
   item: AssetPackItem;
+  compact?: boolean;
+  defer?: boolean;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">(
-    "loading",
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">(
+    defer ? "idle" : "loading",
   );
 
   useEffect(() => {
     let cancelled = false;
+    let observer: IntersectionObserver | null = null;
     const container = containerRef.current;
     if (!container) {
       return;
     }
     container.replaceChildren();
-    setStatus("loading");
-    void assetPackApi
-      .getItemPreview(packId, item.itemIndex)
-      .then(async (preview) => {
-        const svg = await exportToSvg({
-          elements: preview.elements as Parameters<
-            typeof exportToSvg
-          >[0]["elements"],
-          appState: {
-            exportBackground: false,
-            viewBackgroundColor: "#ffffff",
-          },
-          files: null,
-          renderEmbeddables: false,
-          skipInliningFonts: true,
+    const renderPreview = () => {
+      setStatus("loading");
+      void assetPackApi
+        .getItemPreview(packId, item.itemIndex)
+        .then(async (preview) => {
+          const svg = await exportToSvg({
+            elements: preview.elements as Parameters<
+              typeof exportToSvg
+            >[0]["elements"],
+            appState: {
+              exportBackground: false,
+              viewBackgroundColor: "#ffffff",
+            },
+            files: null,
+            renderEmbeddables: false,
+            skipInliningFonts: true,
+          });
+          if (cancelled) {
+            return;
+          }
+          svg.querySelector(".style-fonts")?.remove();
+          svg.setAttribute("width", "100%");
+          svg.setAttribute("height", "100%");
+          svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+          container.replaceChildren(svg);
+          setStatus("ready");
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setStatus("error");
+          }
         });
-        if (cancelled) {
-          return;
-        }
-        svg.querySelector(".style-fonts")?.remove();
-        svg.setAttribute("width", "100%");
-        svg.setAttribute("height", "100%");
-        svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-        container.replaceChildren(svg);
-        setStatus("ready");
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setStatus("error");
-        }
-      });
+    };
+
+    if (defer && previewRef.current && "IntersectionObserver" in window) {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry?.isIntersecting) {
+            return;
+          }
+          observer?.disconnect();
+          renderPreview();
+        },
+        { rootMargin: "200px" },
+      );
+      observer.observe(previewRef.current);
+    } else {
+      renderPreview();
+    }
+
     return () => {
       cancelled = true;
+      observer?.disconnect();
       container.replaceChildren();
     };
-  }, [item.itemIndex, packId]);
+  }, [defer, item.itemIndex, packId]);
 
   return (
     <div
+      ref={previewRef}
       className={cn(
-        "asset-item-card__preview",
-        status === "loading" && "is-loading",
+        compact ? "asset-pack-artwork__tile" : "asset-item-card__preview",
+        (status === "idle" || status === "loading") && "is-loading",
         status === "error" && "is-error",
       )}
       role="img"
       aria-label={`${item.itemName} 素材预览`}
     >
-      <div ref={containerRef} className="asset-item-card__preview-host" />
-      {status === "loading" && <span>正在生成预览</span>}
-      {status === "error" && <span>预览不可用</span>}
+      <div
+        ref={containerRef}
+        className={
+          compact
+            ? "asset-pack-artwork__preview-host"
+            : "asset-item-card__preview-host"
+        }
+      />
+      {!compact && status === "loading" && <span>正在生成预览</span>}
+      {!compact && status === "error" && <span>预览不可用</span>}
     </div>
   );
 };
@@ -301,7 +335,7 @@ export const AssetLibrary = ({
           <div className="asset-library__section-title">
             <div>
               <h2>素材内容</h2>
-              <p>安装后，Agent 才能通过素材工具检索并读取以下内容。</p>
+              <p>安装后，智能体才能通过素材工具检索并读取以下内容。</p>
             </div>
             <span>{detail.items.length} 项</span>
           </div>
@@ -350,12 +384,12 @@ export const AssetLibrary = ({
   }
 
   return (
-    <div className="asset-library">
+    <div className="asset-library asset-library--catalog">
       <header className="asset-library__header">
         <div>
-          <span className="asset-library__eyebrow">ASSET LIBRARY</span>
+          <span className="asset-library__eyebrow">素材库</span>
           <h1>素材包</h1>
-          <p>按需安装素材包。只有已安装内容会进入 Agent 的素材检索范围。</p>
+          <p>按需安装素材包。只有已安装内容会进入智能体的素材检索范围。</p>
         </div>
         <div className="asset-library__installed-summary">
           <strong>{packs.filter((pack) => pack.installed).length}</strong>
@@ -413,7 +447,18 @@ export const AssetLibrary = ({
           </div>
           <div className="asset-pack-list">
             {filteredPacks.map((pack) => (
-              <article key={pack.id} className="asset-pack-row">
+              <article
+                key={pack.id}
+                className="asset-pack-row"
+                role="link"
+                tabIndex={0}
+                onClick={() => onOpenPack(pack.id)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    onOpenPack(pack.id);
+                  }
+                }}
+              >
                 <AssetPackArtwork pack={pack} />
                 <div className="asset-pack-row__body">
                   <div className="asset-pack-row__title">
@@ -426,14 +471,6 @@ export const AssetLibrary = ({
                   </small>
                 </div>
                 <div className="asset-pack-row__actions">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onOpenPack(pack.id)}
-                  >
-                    查看详情
-                  </Button>
                   <InstallButton
                     pack={pack}
                     busy={busyId === pack.id}

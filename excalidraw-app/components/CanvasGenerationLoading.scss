@@ -1,6 +1,8 @@
 .canvas-generation-loading {
   position: absolute;
-  z-index: 3;
+  // The editor shell is isolated. Keep story creation above all editor chrome
+  // and the animation dock, while the body-level AI chatbot remains at 500.
+  z-index: 400;
   inset: 0;
   display: grid;
   place-items: center;

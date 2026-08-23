@@ -245,9 +245,23 @@ describe("AnimationEditorDock", () => {
     expect(deleteElements).toHaveBeenCalledWith(["card", "card-label"]);
   });
 
+  it("starts collapsed in editor mode", () => {
+    render(<AnimationEditorDock />);
+
+    const dock = screen.getByTestId("animation-editor-dock");
+    expect(dock).toHaveAttribute("data-collapsed", "true");
+    expect(dock).toHaveStyle({ height: "36px" });
+    expect(
+      screen.getByRole("separator", { name: "展开动画面板" }),
+    ).toBeInTheDocument();
+  });
+
   it("resizes vertically and clamps the compact panel between 160px and 560px", () => {
     render(<AnimationEditorDock />);
     const dock = screen.getByTestId("animation-editor-dock");
+    fireEvent.pointerDown(
+      screen.getByRole("separator", { name: "展开动画面板" }),
+    );
     const handle = screen.getByRole("separator", {
       name: "调整动画面板高度",
     });
@@ -282,6 +296,9 @@ describe("AnimationEditorDock", () => {
   it("collapses on a handle click and restores the last dragged height", () => {
     render(<AnimationEditorDock />);
     const dock = screen.getByTestId("animation-editor-dock");
+    fireEvent.pointerDown(
+      screen.getByRole("separator", { name: "展开动画面板" }),
+    );
     const handle = screen.getByRole("separator", {
       name: "调整动画面板高度",
     });
@@ -319,25 +336,20 @@ describe("AnimationEditorDock", () => {
   it("supports keyboard collapse and expand", () => {
     render(<AnimationEditorDock />);
     const dock = screen.getByTestId("animation-editor-dock");
-    const handle = screen.getByRole("separator", {
-      name: "调整动画面板高度",
-    });
-
-    fireEvent.keyDown(handle, { key: "Enter" });
-    expect(dock).toHaveStyle({ height: "36px" });
-
     fireEvent.keyDown(screen.getByRole("separator", { name: "展开动画面板" }), {
       key: " ",
     });
     expect(dock).toHaveStyle({ height: "320px" });
-  });
 
-  it("shows compact playback controls while collapsed", () => {
-    render(<AnimationEditorDock />);
     fireEvent.keyDown(
       screen.getByRole("separator", { name: "调整动画面板高度" }),
       { key: "Enter" },
     );
+    expect(dock).toHaveStyle({ height: "36px" });
+  });
+
+  it("shows compact playback controls while collapsed", () => {
+    render(<AnimationEditorDock />);
 
     expect(
       screen.getByRole("button", {

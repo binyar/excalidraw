@@ -230,6 +230,9 @@ const storyLayer = (element: ExcalidrawElementSkeleton) => {
     aiStory?.role === "lane-band" ||
     aiStory?.role === "background" ||
     aiStory?.role === "canvas-background" ||
+    aiStory?.role === "section-background" ||
+    aiStory?.role === "section-frame" ||
+    aiStory?.role === "group-outline" ||
     aiStory?.role === "swimlane-background"
   ) {
     return 0;

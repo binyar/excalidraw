@@ -157,6 +157,9 @@ export type CanvasDraftElement = {
   type: "rectangle" | "ellipse" | "diamond" | "text";
   role?: string;
   label?: string;
+  sectionId?: string;
+  /** Stable local/preferred geometry used when a Section is re-materialized. */
+  layoutFrame?: CanvasLayoutFrame;
   parentId?: string;
   layout?: CanvasChildLayout;
   x: number;
@@ -196,6 +199,8 @@ export type CanvasDraftLibraryAsset = {
   storyScope?: "scene" | "master";
   ref: string;
   role?: string;
+  sectionId?: string;
+  layoutFrame?: CanvasLayoutFrame;
   parentId?: string;
   layout?: CanvasChildLayout;
   x: number;
@@ -209,12 +214,47 @@ export type CanvasDraftLibraryAsset = {
   elements: Exclude<ExcalidrawElement, ExcalidrawSelectionElement>[];
 };
 
+export type CanvasLayoutFrame = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fontSize?: number;
+};
+
+export type CanvasLayoutMode = "row" | "column" | "grid" | "overlay" | "free";
+
+export type CanvasLayoutIntent = {
+  mode: CanvasLayoutMode;
+  columns?: number;
+  gap?: number;
+  padding?: number;
+};
+
+export type CanvasSpaceLayout = {
+  spaceId: string;
+  layout: Omit<CanvasLayoutIntent, "mode"> & {
+    mode: "row" | "column" | "grid";
+  };
+};
+
+export type CanvasLayoutSection = {
+  id: string;
+  spaceId: string;
+  role?: string;
+  order?: number;
+  weight?: number;
+  layout: CanvasLayoutIntent;
+};
+
 export type CanvasDraft = {
   schemaVersion: "1.0";
   id: string;
   title: string;
   summary: string;
   beats: StoryBeat[];
+  spaceLayouts: CanvasSpaceLayout[];
+  sections: CanvasLayoutSection[];
   elements: CanvasDraftElement[];
   libraryAssets: CanvasDraftLibraryAsset[];
   connectors: CanvasDraftConnector[];

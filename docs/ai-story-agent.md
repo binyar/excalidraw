@@ -8,9 +8,17 @@ AI 创建采用“主 Agent 完成画布，动画子 Agent 完成时间轴”的
 用户需求
   -> 主 Agent 规划故事
   -> define_story
+  -> define_story_spaces
+  -> define_canvas_sections
   -> search_library_assets / add_library_assets
   -> add_canvas_elements / update_element_styles
-  -> layout_canvas_elements / connect_canvas_elements
+  -> Section Layout Compiler
+      -> 测量托管内容期望尺寸
+      -> 排列 Section 内部元素
+      -> 排列页面 Section
+      -> 派生 Section 背景与边框
+      -> 物化 1280×720 舞台绝对坐标
+  -> connect_canvas_elements
   -> finalize_canvas_draft
   -> delegate_animation
       -> Animation Planner 子 Agent
@@ -31,6 +39,8 @@ AI 创建采用“主 Agent 完成画布，动画子 Agent 完成时间轴”的
 主 Agent 负责故事目标、节拍、画布内容、布局、连接关系和视觉样式。它拥有多个通用画布工具，而不是一个面向特定图形的生成工具：
 
 - `define_story`
+- `define_story_spaces`
+- `define_canvas_sections`
 - `search_library_assets`
 - `add_library_assets`
 - `add_canvas_elements`
@@ -40,7 +50,9 @@ AI 创建采用“主 Agent 完成画布，动画子 Agent 完成时间轴”的
 - `finalize_canvas_draft`
 - `delegate_animation`
 
-Canvas Draft 必须先经过引用、唯一 id、元素数量和连接关系校验并冻结。冻结之后所有画布工具拒绝修改，动画子 Agent 只能读取该不可变快照。
+新 Story 的常规页面内容不再由模型逐个猜测最终 `x/y`。主 Agent 先建立 `Space -> Section -> Element` 归属，并从有限布局类型中选择意图：页面 Section 使用 `row / column / grid`，Section 内部使用 `row / column / grid / overlay / free`。前三种布局确定性分配互不重叠的单元；`overlay` 是显式叠加能力；`free` 仅用于地图、拓扑、路线或必须保留精确相对坐标的自由构图。
+
+`finalize_canvas_draft` 会先运行 Section Layout Compiler，把托管布局物化为普通绝对坐标，再执行引用、唯一 id、元素数量和连接关系校验并冻结。Section 背景和边框由分配区域派生，页面内容被限制在独立的 1280×720 安全舞台中。旧 Story、跨页 master 元素和明确的 `free` Section 继续兼容绝对坐标。冻结之后所有画布工具拒绝修改，动画子 Agent 只能读取该不可变快照。
 
 ## 内置资源库
 

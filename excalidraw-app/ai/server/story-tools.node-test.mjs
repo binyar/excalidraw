@@ -2,8 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { createCanvasDraftState, createCanvasTools } from "./canvas-tools.mjs";
+import { materializeCanvasLayout } from "./canvas-layout.mjs";
 import { listLibraryCatalogPacks } from "./library-catalog.mjs";
-import { STORY_AGENT_SYSTEM_PROMPT } from "./prompt.mjs";
+import {
+  buildStoryAgentSystemPrompt,
+  STORY_AGENT_SYSTEM_PROMPT,
+} from "./prompt.mjs";
 
 const installedAssetSources = (await listLibraryCatalogPacks()).map(
   (pack) => pack.source,
@@ -32,6 +36,30 @@ test("main Agent requires Chinese output and exposes Chinese tool descriptions",
   for (const candidate of tools) {
     assert.match(candidate.description, /[\u3400-\u9fff]/, candidate.name);
   }
+});
+
+test("asset enhancement can be removed from both prompt and tools", () => {
+  const systemPrompt = buildStoryAgentSystemPrompt({ enabledSkillIds: [] });
+  assert.doesNotMatch(systemPrompt, /素材增强技能/);
+  assert.doesNotMatch(systemPrompt, /search_library_assets/);
+
+  const tools = createCanvasTools({
+    state: createCanvasDraftState(),
+    animate: async () => ({}),
+    enabledSkillIds: [],
+  });
+  assert.equal(
+    tools.some((candidate) => candidate.name === "search_library_assets"),
+    false,
+  );
+  assert.equal(
+    tools.some((candidate) => candidate.name === "add_library_assets"),
+    false,
+  );
+  assert.equal(
+    tools.some((candidate) => candidate.name === "delegate_animation"),
+    true,
+  );
 });
 
 test("canvas draft accepts up to 250 elements and rejects item 251", async () => {
@@ -376,6 +404,391 @@ test("story spaces reject a same-space chapter with a different space id", async
   );
 });
 
+test("managed canvas sections materialize separate page regions and non-overlapping rows", async () => {
+  const state = createCanvasDraftState();
+  const tools = createCanvasTools({ state, animate: async () => ({}) });
+  await tool(tools, "define_story").execute("story", {
+    id: "section-story",
+    title: "分区故事",
+    summary: "标题、主体和结尾使用独立空间",
+    beats: [
+      {
+        id: "page",
+        title: "完整页面",
+        elementIds: ["title", "card-a", "card-b", "card-c", "footer"],
+      },
+    ],
+  });
+  await tool(tools, "define_story_spaces").execute("spaces", {
+    chapters: [
+      {
+        beatId: "page",
+        spaceId: "space-page",
+        relationFromPrevious: "new-page",
+        reason: "首章建立独立页面",
+      },
+    ],
+  });
+  await tool(tools, "define_canvas_sections").execute("sections", {
+    spaces: [
+      {
+        spaceId: "space-page",
+        layout: { mode: "column", padding: 60, gap: 24 },
+        sections: [
+          {
+            id: "section-title",
+            order: 0,
+            weight: 1,
+            layout: { mode: "overlay", padding: 12 },
+          },
+          {
+            id: "section-cards",
+            order: 1,
+            weight: 4,
+            layout: { mode: "row", padding: 20, gap: 24 },
+          },
+          {
+            id: "section-footer",
+            order: 2,
+            weight: 2,
+            layout: { mode: "overlay", padding: 12 },
+          },
+        ],
+      },
+    ],
+  });
+  await tool(tools, "add_canvas_elements").execute("elements", {
+    elements: [
+      {
+        id: "title-bg",
+        type: "rectangle",
+        role: "section-background",
+        sectionId: "section-title",
+      },
+      {
+        id: "title",
+        type: "text",
+        label: "山谷里的成长故事",
+        sectionId: "section-title",
+        style: { fontSize: 40 },
+      },
+      {
+        id: "cards-bg",
+        type: "rectangle",
+        role: "section-background",
+        sectionId: "section-cards",
+      },
+      ...["card-a", "card-b", "card-c"].map((id) => ({
+        id,
+        type: "rectangle",
+        label: id,
+        sectionId: "section-cards",
+        width: 300,
+        height: 220,
+      })),
+      {
+        id: "footer-bg",
+        type: "rectangle",
+        role: "section-background",
+        sectionId: "section-footer",
+      },
+      {
+        id: "footer",
+        type: "rectangle",
+        label: "故事结尾",
+        sectionId: "section-footer",
+        width: 640,
+        height: 100,
+      },
+    ],
+  });
+
+  const result = await tool(tools, "finalize_canvas_draft").execute("freeze", {
+    animationBrief: { intent: "依次讲述三个页面区域" },
+  });
+  const byId = new Map(state.elements.map((element) => [element.id, element]));
+  const titleBackground = byId.get("title-bg");
+  const cardsBackground = byId.get("cards-bg");
+  const footerBackground = byId.get("footer-bg");
+  const cards = ["card-a", "card-b", "card-c"].map((id) => byId.get(id));
+
+  assert.equal(result.details.repairs.canvasLayout.materialized, true);
+  assert.ok(titleBackground.y + titleBackground.height < cardsBackground.y);
+  assert.ok(cardsBackground.y + cardsBackground.height < footerBackground.y);
+  assert.ok(cards[0].x + cards[0].width < cards[1].x);
+  assert.ok(cards[1].x + cards[1].width < cards[2].x);
+  for (const background of [
+    titleBackground,
+    cardsBackground,
+    footerBackground,
+  ]) {
+    assert.ok(background.x >= 0 && background.y >= 0);
+    assert.ok(background.x + background.width <= 1280);
+    assert.ok(background.y + background.height <= 720);
+  }
+  assert.equal(result.details.draft.sections.length, 3);
+  assert.equal(result.details.draft.spaceLayouts.length, 1);
+});
+
+test("managed overlay is the explicit overlap escape hatch", async () => {
+  const state = createCanvasDraftState();
+  const tools = createCanvasTools({ state, animate: async () => ({}) });
+  await tool(tools, "define_story").execute("story", {
+    id: "overlay-story",
+    title: "叠加故事",
+    summary: "明确允许两个视觉对象叠加",
+    beats: [
+      {
+        id: "page",
+        title: "叠加页",
+        elementIds: ["halo", "portrait"],
+      },
+    ],
+  });
+  await tool(tools, "define_story_spaces").execute("spaces", {
+    chapters: [
+      {
+        beatId: "page",
+        spaceId: "space-overlay",
+        relationFromPrevious: "new-page",
+        reason: "首章建立独立页面",
+      },
+    ],
+  });
+  await tool(tools, "define_canvas_sections").execute("sections", {
+    spaces: [
+      {
+        spaceId: "space-overlay",
+        layout: { mode: "grid", padding: 60, gap: 24 },
+        sections: [
+          {
+            id: "hero",
+            layout: { mode: "overlay", padding: 24 },
+          },
+        ],
+      },
+    ],
+  });
+  await tool(tools, "add_canvas_elements").execute("elements", {
+    elements: [
+      {
+        id: "halo",
+        type: "ellipse",
+        sectionId: "hero",
+        width: 500,
+        height: 500,
+      },
+      {
+        id: "portrait",
+        type: "rectangle",
+        sectionId: "hero",
+        width: 280,
+        height: 360,
+      },
+    ],
+  });
+  await tool(tools, "finalize_canvas_draft").execute("freeze", {
+    animationBrief: { intent: "展示明确叠加的主视觉" },
+  });
+  const halo = state.elements.find((element) => element.id === "halo");
+  const portrait = state.elements.find((element) => element.id === "portrait");
+
+  assert.equal(halo.x + halo.width / 2, portrait.x + portrait.width / 2);
+  assert.equal(halo.y + halo.height / 2, portrait.y + portrait.height / 2);
+});
+
+test("managed free sections preserve local relative coordinates", async () => {
+  const state = createCanvasDraftState();
+  const tools = createCanvasTools({ state, animate: async () => ({}) });
+  await tool(tools, "define_story").execute("story", {
+    id: "free-story",
+    title: "自由构图",
+    summary: "地图节点保留局部相对坐标",
+    beats: [
+      {
+        id: "page",
+        title: "地图页",
+        elementIds: ["point-a", "point-b"],
+      },
+    ],
+  });
+  await tool(tools, "define_story_spaces").execute("spaces", {
+    chapters: [
+      {
+        beatId: "page",
+        spaceId: "space-free",
+        relationFromPrevious: "new-page",
+        reason: "首章建立独立页面",
+      },
+    ],
+  });
+  await tool(tools, "define_canvas_sections").execute("sections", {
+    spaces: [
+      {
+        spaceId: "space-free",
+        layout: { mode: "grid", padding: 60 },
+        sections: [
+          {
+            id: "map",
+            layout: { mode: "free", padding: 20 },
+          },
+        ],
+      },
+    ],
+  });
+  await tool(tools, "add_canvas_elements").execute("elements", {
+    elements: [
+      {
+        id: "point-a",
+        type: "ellipse",
+        sectionId: "map",
+        x: 30,
+        y: 40,
+        width: 40,
+        height: 40,
+      },
+      {
+        id: "point-b",
+        type: "ellipse",
+        sectionId: "map",
+        x: 230,
+        y: 140,
+        width: 40,
+        height: 40,
+      },
+    ],
+  });
+  await tool(tools, "finalize_canvas_draft").execute("freeze", {
+    animationBrief: { intent: "沿地图节点讲述" },
+  });
+  const first = state.elements.find((element) => element.id === "point-a");
+  const second = state.elements.find((element) => element.id === "point-b");
+
+  assert.equal(second.x - first.x, 200);
+  assert.equal(second.y - first.y, 100);
+  assert.deepEqual(first.layoutFrame, {
+    x: 30,
+    y: 40,
+    width: 40,
+    height: 40,
+  });
+  assert.deepEqual(second.layoutFrame, {
+    x: 230,
+    y: 140,
+    width: 40,
+    height: 40,
+  });
+});
+
+test("managed layout materialization is stable across repeated edits", () => {
+  const state = {
+    elements: [
+      {
+        id: "headline",
+        type: "text",
+        label: "重复编辑后仍保持稳定",
+        sectionId: "hero",
+        x: 0,
+        y: 0,
+        width: 500,
+        height: 120,
+        style: { fontSize: 100 },
+        layoutFrame: { x: 0, y: 0, width: 500, height: 120, fontSize: 100 },
+      },
+    ],
+    libraryAssets: [],
+    sections: [
+      {
+        id: "hero",
+        spaceId: "space-page",
+        layout: { mode: "overlay", padding: 50 },
+      },
+    ],
+    spaceLayouts: [
+      {
+        spaceId: "space-page",
+        layout: { mode: "grid", padding: 300 },
+      },
+    ],
+    layoutNeedsMaterialization: true,
+  };
+
+  materializeCanvasLayout(state);
+  const first = structuredClone(state.elements[0]);
+  state.layoutNeedsMaterialization = true;
+  materializeCanvasLayout(state);
+
+  assert.deepEqual(state.elements[0], first);
+  assert.ok(state.elements[0].style.fontSize < 100);
+  assert.equal(state.elements[0].layoutFrame.fontSize, 100);
+});
+
+test("production story creation cannot bypass managed Section layout", async () => {
+  const state = createCanvasDraftState(null, { requireManagedLayout: true });
+  const tools = createCanvasTools({ state, animate: async () => ({}) });
+  await tool(tools, "define_story").execute("story", {
+    id: "required-layout",
+    title: "必须布局",
+    summary: "生产创建不能退回猜测绝对坐标",
+    beats: [{ id: "page", title: "页面", elementIds: ["content", "legacy"] }],
+  });
+  await tool(tools, "add_canvas_elements").execute("legacy", {
+    elements: [
+      {
+        id: "legacy",
+        type: "rectangle",
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 100,
+      },
+    ],
+  });
+  await assert.rejects(
+    () =>
+      tool(tools, "finalize_canvas_draft").execute("freeze-without-layout", {
+        animationBrief: { intent: "展示页面" },
+      }),
+    /必须先调用 define_canvas_sections/,
+  );
+
+  await tool(tools, "define_story_spaces").execute("spaces", {
+    chapters: [
+      {
+        beatId: "page",
+        spaceId: "space-page",
+        relationFromPrevious: "new-page",
+        reason: "首章建立独立页面",
+      },
+    ],
+  });
+  await tool(tools, "define_canvas_sections").execute("sections", {
+    spaces: [
+      {
+        spaceId: "space-page",
+        layout: { mode: "grid" },
+        sections: [{ id: "content", layout: { mode: "column" } }],
+      },
+    ],
+  });
+  await tool(tools, "add_canvas_elements").execute("managed", {
+    elements: [
+      {
+        id: "content",
+        type: "rectangle",
+        sectionId: "content",
+      },
+    ],
+  });
+  await assert.rejects(
+    () =>
+      tool(tools, "finalize_canvas_draft").execute("freeze-unmanaged", {
+        animationBrief: { intent: "展示页面" },
+      }),
+    /页面内容必须托管到 Section：legacy/,
+  );
+});
+
 test("canvas connectors keep a short arrow and return a layout warning", async () => {
   const state = createCanvasDraftState();
   const tools = createCanvasTools({ state, animate: async () => ({}) });
@@ -620,6 +1033,109 @@ test("canvas element schema accepts small presentation text and decorations", ()
   assert.equal(elementProperties.height.minimum, 1);
 });
 
+test("canvas frame deterministically fits arranged content with padding", async () => {
+  const state = createCanvasDraftState();
+  const tools = createCanvasTools({ state, animate: async () => ({}) });
+  await tool(tools, "add_canvas_elements").execute("elements", {
+    elements: [
+      {
+        id: "pain-frame",
+        type: "rectangle",
+        role: "background",
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 100,
+      },
+      ...["pain-card1", "pain-card2", "pain-card3"].map((id) => ({
+        id,
+        type: "rectangle",
+        x: 0,
+        y: 0,
+        width: 300,
+        height: 240,
+      })),
+    ],
+  });
+  await tool(tools, "layout_canvas_elements").execute("layout", {
+    elementIds: ["pain-card1", "pain-card2", "pain-card3"],
+    direction: "horizontal",
+    originX: 150,
+    originY: 280,
+    gapX: 40,
+    gapY: 0,
+  });
+
+  const result = await tool(tools, "fit_canvas_element_to_content").execute(
+    "fit",
+    {
+      elementId: "pain-frame",
+      targetIds: ["pain-card1", "pain-card2", "pain-card3"],
+      padding: 24,
+    },
+  );
+
+  const frame = state.elements.find((element) => element.id === "pain-frame");
+  assert.deepEqual(
+    { x: frame.x, y: frame.y, width: frame.width, height: frame.height },
+    { x: 126, y: 256, width: 1028, height: 288 },
+  );
+  assert.deepEqual(result.details.bounds, {
+    x: 126,
+    y: 256,
+    width: 1028,
+    height: 288,
+  });
+  assert.deepEqual(
+    state.elements
+      .filter((element) => element.id.startsWith("pain-card"))
+      .map(({ x, y, width, height }) => ({ x, y, width, height })),
+    [
+      { x: 150, y: 280, width: 300, height: 240 },
+      { x: 490, y: 280, width: 300, height: 240 },
+      { x: 830, y: 280, width: 300, height: 240 },
+    ],
+  );
+});
+
+test("canvas frame fit rejects self and missing targets before mutation", async () => {
+  const state = createCanvasDraftState();
+  const tools = createCanvasTools({ state, animate: async () => ({}) });
+  await tool(tools, "add_canvas_elements").execute("elements", {
+    elements: [
+      {
+        id: "frame",
+        type: "rectangle",
+        x: 10,
+        y: 20,
+        width: 30,
+        height: 40,
+      },
+    ],
+  });
+  const original = structuredClone(state.elements[0]);
+
+  await assert.rejects(
+    () =>
+      tool(tools, "fit_canvas_element_to_content").execute("self", {
+        elementId: "frame",
+        targetIds: ["frame"],
+        padding: 10,
+      }),
+    /不能包含自身/,
+  );
+  await assert.rejects(
+    () =>
+      tool(tools, "fit_canvas_element_to_content").execute("missing", {
+        elementId: "frame",
+        targetIds: ["missing"],
+        padding: 10,
+      }),
+    /找不到要包围的目标元素：missing/,
+  );
+  assert.deepEqual(state.elements[0], original);
+});
+
 test("canvas cards use native labels and reject separate child text", async () => {
   const state = createCanvasDraftState();
   const tools = createCanvasTools({ state, animate: async () => ({}) });
@@ -743,7 +1259,7 @@ test("canvas tools search and freeze selected library assets", async () => {
     beats: [{ id: "one", title: "One", elementIds: ["cloud-icon"] }],
   });
   const search = await tool(tools, "search_library_assets").execute("search", {
-    query: "cloud",
+    query: "云",
     limit: 3,
   });
   const ref = search.details.results[0].ref;
@@ -770,14 +1286,14 @@ test("canvas library tool resolves an accidental search query used as ref", asyn
     assetSources: installedAssetSources,
   });
   await tool(tools, "search_library_assets").execute("search", {
-    query: "chart",
+    query: "图表",
     limit: 5,
   });
   const result = await tool(tools, "add_library_assets").execute("assets", {
-    assets: [{ id: "chart", ref: "chart", x: 0, y: 0 }],
+    assets: [{ id: "chart", ref: "图表", x: 0, y: 0 }],
   });
   assert.equal(state.libraryAssets.length, 1);
-  assert.match(state.libraryAssets[0].ref, /#\d+$/);
+  assert.match(state.libraryAssets[0].ref, /^素材-\d+-\d+$/);
   assert.match(result.content[0].text, /已自动选择/);
 });
 
@@ -814,7 +1330,7 @@ test("canvas keeps asset tools available but exposes no catalog content before i
   const state = createCanvasDraftState();
   const tools = createCanvasTools({ state, animate: async () => ({}) });
   const search = await tool(tools, "search_library_assets").execute("search", {
-    query: "cloud",
+    query: "云",
     limit: 5,
   });
   assert.deepEqual(search.details.results, []);

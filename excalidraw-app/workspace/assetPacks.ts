@@ -27,6 +27,7 @@ export type AssetPack = {
   category: Exclude<AssetPackCategory, "all">;
   previewItems: AssetPackItem[];
   installed: boolean;
+  builtin: boolean;
 };
 
 export type AssetPackDetail = AssetPack & {

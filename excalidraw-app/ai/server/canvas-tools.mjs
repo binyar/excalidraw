@@ -7,6 +7,8 @@ import {
   isLibraryCatalogRef,
   searchLibraryCatalog,
 } from "./library-catalog.mjs";
+import { materializeCanvasLayout, STORY_STAGE } from "./canvas-layout.mjs";
+import { ASSET_ENHANCEMENT_SKILL_ID } from "./skill-catalog.mjs";
 
 const MAX_CANVAS_DRAFT_ITEMS = 250;
 
@@ -74,6 +76,30 @@ const childLayoutSchema = Type.Object({
   gap: Type.Optional(Type.Number({ minimum: 0, maximum: 120 })),
 });
 
+const sectionContentLayoutSchema = Type.Object({
+  mode: Type.Union([
+    Type.Literal("row"),
+    Type.Literal("column"),
+    Type.Literal("grid"),
+    Type.Literal("overlay"),
+    Type.Literal("free"),
+  ]),
+  columns: Type.Optional(Type.Number({ minimum: 1, maximum: 12 })),
+  gap: Type.Optional(Type.Number({ minimum: 0, maximum: 240 })),
+  padding: Type.Optional(Type.Number({ minimum: 0, maximum: 240 })),
+});
+
+const spaceLayoutSchema = Type.Object({
+  mode: Type.Union([
+    Type.Literal("row"),
+    Type.Literal("column"),
+    Type.Literal("grid"),
+  ]),
+  columns: Type.Optional(Type.Number({ minimum: 1, maximum: 12 })),
+  gap: Type.Optional(Type.Number({ minimum: 0, maximum: 240 })),
+  padding: Type.Optional(Type.Number({ minimum: 0, maximum: 240 })),
+});
+
 const elementSchema = Type.Object({
   id: Type.String({ minLength: 1, maxLength: 64 }),
   type: Type.Union([
@@ -84,6 +110,7 @@ const elementSchema = Type.Object({
   ]),
   role: Type.Optional(Type.String({ maxLength: 64 })),
   label: Type.Optional(Type.String({ maxLength: 500 })),
+  sectionId: Type.Optional(Type.String({ minLength: 1, maxLength: 64 })),
   parentId: Type.Optional(Type.String({ minLength: 1, maxLength: 64 })),
   layout: Type.Optional(childLayoutSchema),
   x: Type.Optional(Type.Number({ minimum: -20_000, maximum: 20_000 })),
@@ -102,7 +129,6 @@ const assertMutable = (state) => {
   }
 };
 
-const STORY_STAGE = Object.freeze({ width: 1280, height: 720 });
 const DEFAULT_SPACE_REASON = "章节之间没有必须保留的空间位置关系";
 
 const withDefaultStorySpaces = (beats, previousBeats = []) => {
@@ -174,6 +200,15 @@ const normalizeStorySpaceCoordinates = (state) => {
   state.story.beats.forEach((beat) =>
     beat.elementIds.forEach((itemId) => assignSpace(itemId, beat.spaceId)),
   );
+  const sectionSpaceById = new Map(
+    state.sections.map((section) => [section.id, section.spaceId]),
+  );
+  allItems.forEach((item) => {
+    const sectionSpaceId = sectionSpaceById.get(item.sectionId);
+    if (sectionSpaceId) {
+      assignSpace(item.id, sectionSpaceId);
+    }
+  });
   // Attach unlisted decoration to the nearest semantic item. This keeps page
   // accents with their chapter without forcing the Agent to pollute beat
   // narration with every divider or badge id.
@@ -446,8 +481,37 @@ const validateAndRepairDraft = (state) => {
   if (state.elements.length + state.libraryAssets.length === 0) {
     throw new Error("画布草稿至少需要一个元素");
   }
+  if (state.requireManagedLayout) {
+    if (state.sections.length === 0 || state.spaceLayouts.length === 0) {
+      throw new Error(
+        "新 Story 必须先调用 define_canvas_sections 定义托管 Section 布局",
+      );
+    }
+    const spacesByItemId = new Map();
+    state.story.beats.forEach((beat) =>
+      beat.elementIds.forEach((itemId) => {
+        const spaces = spacesByItemId.get(itemId) || new Set();
+        spaces.add(beat.spaceId);
+        spacesByItemId.set(itemId, spaces);
+      }),
+    );
+    const unmanaged = [...state.elements, ...state.libraryAssets].filter(
+      (item) =>
+        !item.parentId &&
+        !item.sectionId &&
+        (spacesByItemId.get(item.id)?.size || 0) <= 1,
+    );
+    if (unmanaged.length > 0) {
+      throw new Error(
+        `新 Story 的页面内容必须托管到 Section：${unmanaged
+          .map((item) => item.id)
+          .join("、")}`,
+      );
+    }
+  }
   assertCanvasDraftCapacity(state);
   const mergedCardText = mergeLegacyCardTextIntoLabels(state);
+  const canvasLayout = materializeCanvasLayout(state);
   resolveCardChildren(state);
   const ids = new Set();
   for (const item of [
@@ -480,7 +544,12 @@ const validateAndRepairDraft = (state) => {
     });
   }
   const storySpaces = normalizeStorySpaceCoordinates(state);
-  return { removedBeatReferences, mergedCardText, storySpaces };
+  return {
+    removedBeatReferences,
+    mergedCardText,
+    canvasLayout,
+    storySpaces,
+  };
 };
 
 const snapshot = (state) => ({
@@ -489,6 +558,8 @@ const snapshot = (state) => ({
   title: state.story.title,
   summary: state.story.summary,
   beats: structuredClone(state.story.beats),
+  spaceLayouts: structuredClone(state.spaceLayouts),
+  sections: structuredClone(state.sections),
   elements: structuredClone(state.elements),
   libraryAssets: structuredClone(state.libraryAssets),
   connectors: structuredClone(state.connectors),
@@ -554,13 +625,22 @@ const getConnectorSpacingWarning = (connector, from, to) => {
   return null;
 };
 
-export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
+export const createCanvasTools = ({
+  state,
+  animate,
+  assetSources = [],
+  enabledSkillIds = [ASSET_ENHANCEMENT_SKILL_ID],
+}) => {
+  const enabledSkillIdSet = new Set(enabledSkillIds);
   const installedAssetSources = [...new Set(assetSources.map(String))];
   const installedAssetSourceSet = new Set(installedAssetSources);
   const recentLibrarySearches = new Map();
   const resolveLibraryRef = async (candidate) => {
     if (isLibraryCatalogRef(candidate)) {
       const ref = String(candidate);
+      if (/^素材-\d+-\d+$/.test(ref)) {
+        return { ref, resolvedFromQuery: null };
+      }
       const source = ref.slice(0, ref.lastIndexOf("#"));
       if (!installedAssetSourceSet.has(source)) {
         return null;
@@ -580,7 +660,7 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
     return { ref: results[0].ref, resolvedFromQuery: query };
   };
 
-  return [
+  const tools = [
     {
       name: "define_story",
       label: "规划画布故事",
@@ -615,6 +695,7 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
           ...structuredClone(params),
           beats: withDefaultStorySpaces(params.beats, previousBeats),
         };
+        state.storySpacesDefined = false;
         return resultText(
           `故事“${params.title}”已规划为 ${params.beats.length} 个节拍；当前使用安全的独立页面默认值，请继续调用 define_story_spaces 判断章节空间关系。`,
         );
@@ -665,6 +746,7 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
         });
         validateStorySpaces(beats);
         state.story.beats = beats;
+        state.storySpacesDefined = true;
         return resultText(
           `已规划 ${beats.length} 个章节空间：${
             new Set(beats.map((beat) => beat.spaceId)).size
@@ -680,6 +762,93 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
               relationFromPrevious: beat.relationFromPrevious,
               reason: beat.relationReason,
             })),
+          },
+        );
+      },
+    },
+    {
+      name: "define_canvas_sections",
+      label: "规划页面与 Section 布局",
+      description:
+        "在章节空间确定后、创建元素前，为每个 spaceId 定义页面中的 Section 排列，以及每个 Section 内部的有限布局意图。row、column、grid 默认不允许兄弟内容重叠；只有明确选择 overlay 或 free 时才允许重叠。",
+      parameters: Type.Object({
+        spaces: Type.Array(
+          Type.Object({
+            spaceId: Type.String({ minLength: 1, maxLength: 64 }),
+            layout: spaceLayoutSchema,
+            sections: Type.Array(
+              Type.Object({
+                id: Type.String({ minLength: 1, maxLength: 64 }),
+                role: Type.Optional(Type.String({ maxLength: 80 })),
+                order: Type.Optional(Type.Number({ minimum: 0, maximum: 50 })),
+                weight: Type.Optional(
+                  Type.Number({ minimum: 0.1, maximum: 10 }),
+                ),
+                layout: sectionContentLayoutSchema,
+              }),
+              { minItems: 1, maxItems: 16 },
+            ),
+          }),
+          { minItems: 1, maxItems: 30 },
+        ),
+      }),
+      executionMode: "sequential",
+      async execute(_id, params) {
+        assertMutable(state);
+        if (!state.story) {
+          throw new Error("必须先调用 define_story 和 define_story_spaces");
+        }
+        if (!state.storySpacesDefined) {
+          throw new Error(
+            "必须先调用 define_story_spaces 确认章节空间，再定义 Section",
+          );
+        }
+        const expectedSpaceIds = new Set(
+          state.story.beats.map((beat) => beat.spaceId),
+        );
+        const receivedSpaceIds = new Set(
+          params.spaces.map((space) => space.spaceId),
+        );
+        if (
+          receivedSpaceIds.size !== params.spaces.length ||
+          receivedSpaceIds.size !== expectedSpaceIds.size ||
+          [...expectedSpaceIds].some(
+            (spaceId) => !receivedSpaceIds.has(spaceId),
+          )
+        ) {
+          throw new Error(
+            "define_canvas_sections 必须覆盖全部故事 spaceId 且不能重复",
+          );
+        }
+        const sectionIds = new Set();
+        const sections = [];
+        for (const space of params.spaces) {
+          if (!expectedSpaceIds.has(space.spaceId)) {
+            throw new Error(`Section 布局引用了未知 spaceId：${space.spaceId}`);
+          }
+          for (const section of space.sections) {
+            if (sectionIds.has(section.id)) {
+              throw new Error(`Section id 重复：${section.id}`);
+            }
+            sectionIds.add(section.id);
+            sections.push({
+              ...structuredClone(section),
+              spaceId: space.spaceId,
+            });
+          }
+        }
+        state.spaceLayouts = params.spaces.map(({ spaceId, layout }) => ({
+          spaceId,
+          layout: structuredClone(layout),
+        }));
+        state.sections = sections;
+        state.layoutNeedsMaterialization = true;
+        return resultText(
+          `已为 ${params.spaces.length} 个页面空间定义 ${sections.length} 个 Section；托管布局将在画布冻结前确定性生成绝对坐标。`,
+          {
+            kind: "canvas-section-layout",
+            spaceLayouts: structuredClone(state.spaceLayouts),
+            sections: structuredClone(state.sections),
           },
         );
       },
@@ -720,6 +889,9 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
             id: Type.String({ minLength: 1, maxLength: 64 }),
             ref: Type.String({ minLength: 3, maxLength: 240 }),
             role: Type.Optional(Type.String({ maxLength: 64 })),
+            sectionId: Type.Optional(
+              Type.String({ minLength: 1, maxLength: 64 }),
+            ),
             parentId: Type.Optional(
               Type.String({ minLength: 1, maxLength: 64 }),
             ),
@@ -755,10 +927,21 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
             throw new Error(`资源 ${asset.id} 必须同时提供 parentId 和 layout`);
           }
           if (
+            asset.sectionId &&
+            !state.sections.some((section) => section.id === asset.sectionId)
+          ) {
+            throw new Error(
+              `资源 ${asset.id} 引用了不存在的 Section ${asset.sectionId}`,
+            );
+          }
+          if (
             !asset.parentId &&
+            !asset.sectionId &&
             (asset.x === undefined || asset.y === undefined)
           ) {
-            throw new Error(`顶层资源 ${asset.id} 必须提供 x 和 y`);
+            throw new Error(
+              `未托管到 Section 的顶层资源 ${asset.id} 必须提供 x 和 y`,
+            );
           }
           const resolved = await resolveLibraryRef(asset.ref);
           if (!resolved) {
@@ -790,6 +973,16 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
             libraryName: item.libraryName,
             itemName: item.itemName,
             elements: item.elements,
+            ...(asset.sectionId
+              ? {
+                  layoutFrame: {
+                    x: asset.x ?? 0,
+                    y: asset.y ?? 0,
+                    width: requestedWidth,
+                    height: requestedHeight,
+                  },
+                }
+              : {}),
           });
           if (resolvedFromQuery) {
             resolvedQueries.push(`“${resolvedFromQuery}”→“${item.itemName}”`);
@@ -798,6 +991,9 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
         }
         assertCanvasDraftCapacity(state, pendingAssets.length);
         state.libraryAssets.push(...pendingAssets);
+        if (pendingAssets.some((asset) => asset.sectionId)) {
+          state.layoutNeedsMaterialization = true;
+        }
         return resultText(
           `已添加 ${pendingAssets.length} 个资源库条目。${
             resolvedQueries.length > 0
@@ -820,7 +1016,7 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
       name: "add_canvas_elements",
       label: "添加画布元素",
       description:
-        "添加可编辑图形或独立文字。卡片全部文案必须直接写入父图形的 label，并使用 style.textAlign/style.verticalAlign 控制对齐，禁止创建子文字。只有资源库图标使用 parentId 和 layout。顶层元素必须提供明确的几何信息，用户可见文案必须使用中文。",
+        "添加可编辑图形或独立文字。新故事的顶层内容应提供 sectionId，由 Section 布局在冻结前确定性计算坐标；此时 x/y 可以省略，width/height 只是期望尺寸。只有 free Section 或未托管的兼容内容才直接填写左上角 x/y。卡片全部文案必须直接写入父图形的 label，并使用 style.textAlign/style.verticalAlign 控制对齐，禁止创建子文字。",
       parameters: Type.Object({
         elements: Type.Array(elementSchema, { minItems: 1, maxItems: 80 }),
       }),
@@ -847,14 +1043,23 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
             );
           }
           if (
+            element.sectionId &&
+            !state.sections.some((section) => section.id === element.sectionId)
+          ) {
+            throw new Error(
+              `元素 ${element.id} 引用了不存在的 Section ${element.sectionId}`,
+            );
+          }
+          if (
             !element.parentId &&
+            !element.sectionId &&
             (element.x === undefined ||
               element.y === undefined ||
               element.width === undefined ||
               element.height === undefined)
           ) {
             throw new Error(
-              `顶层元素 ${element.id} 必须提供 x、y、width 和 height`,
+              `未托管到 Section 的顶层元素 ${element.id} 必须提供 x、y、width 和 height`,
             );
           }
           const nextElement = {
@@ -863,12 +1068,30 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
             y: element.y ?? 0,
             width: element.width ?? (element.type === "text" ? 240 : 200),
             height: element.height ?? (element.type === "text" ? 48 : 120),
+            ...(element.sectionId
+              ? {
+                  layoutFrame: {
+                    x: element.x ?? 0,
+                    y: element.y ?? 0,
+                    width:
+                      element.width ?? (element.type === "text" ? 240 : 200),
+                    height:
+                      element.height ?? (element.type === "text" ? 48 : 120),
+                    ...(element.style?.fontSize
+                      ? { fontSize: element.style.fontSize }
+                      : {}),
+                  },
+                }
+              : {}),
           };
           existingIds.add(element.id);
           pendingElements.push(nextElement);
         }
         assertCanvasDraftCapacity(state, pendingElements.length);
         state.elements.push(...pendingElements);
+        if (pendingElements.some((element) => element.sectionId)) {
+          state.layoutNeedsMaterialization = true;
+        }
         return resultText(`已添加 ${params.elements.length} 个画布元素。`);
       },
     },
@@ -883,6 +1106,9 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
             elementId: Type.String({ minLength: 1, maxLength: 64 }),
             label: Type.Optional(Type.String({ maxLength: 500 })),
             role: Type.Optional(Type.String({ maxLength: 64 })),
+            sectionId: Type.Optional(
+              Type.String({ minLength: 1, maxLength: 64 }),
+            ),
             x: Type.Optional(
               Type.Number({ minimum: -20_000, maximum: 20_000 }),
             ),
@@ -906,9 +1132,34 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
           if (!element) {
             throw new Error(`找不到元素：${update.elementId}`);
           }
+          if (
+            update.sectionId &&
+            !state.sections.some((section) => section.id === update.sectionId)
+          ) {
+            throw new Error(
+              `元素 ${element.id} 引用了不存在的 Section ${update.sectionId}`,
+            );
+          }
           return { element, update };
         });
         resolved.forEach(({ element, update }) => {
+          const nextSectionId = update.sectionId ?? element.sectionId;
+          if (nextSectionId) {
+            element.layoutFrame = {
+              x: update.x ?? element.layoutFrame?.x ?? element.x,
+              y: update.y ?? element.layoutFrame?.y ?? element.y,
+              width:
+                update.width ?? element.layoutFrame?.width ?? element.width,
+              height:
+                update.height ?? element.layoutFrame?.height ?? element.height,
+              ...(update.style?.fontSize || element.layoutFrame?.fontSize
+                ? {
+                    fontSize:
+                      update.style?.fontSize ?? element.layoutFrame?.fontSize,
+                  }
+                : {}),
+            };
+          }
           const fields = { ...update };
           delete fields.elementId;
           const style = fields.style;
@@ -916,6 +1167,9 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
           Object.assign(element, fields);
           if (style) {
             element.style = { ...element.style, ...style };
+          }
+          if (nextSectionId) {
+            state.layoutNeedsMaterialization = true;
           }
         });
         return resultText(`已原位修改 ${resolved.length} 个现有画布元素。`);
@@ -937,6 +1191,11 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
         assertMutable(state);
         const requested = new Set(params.ids);
         const removed = new Set();
+        const managedItemIds = new Set(
+          [...state.elements, ...state.libraryAssets]
+            .filter((item) => item.sectionId)
+            .map((item) => item.id),
+        );
         const removeMatching = (items) =>
           items.filter((item) => {
             const shouldRemove =
@@ -949,6 +1208,9 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
           });
         state.elements = removeMatching(state.elements);
         state.libraryAssets = removeMatching(state.libraryAssets);
+        if ([...removed].some((id) => managedItemIds.has(id))) {
+          state.layoutNeedsMaterialization = true;
+        }
         state.connectors = state.connectors.filter((connector) => {
           const shouldRemove =
             requested.has(connector.id) ||
@@ -1064,6 +1326,80 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
           }
         });
         return resultText(`已完成 ${params.elementIds.length} 个元素的布局。`);
+      },
+    },
+    {
+      name: "fit_canvas_element_to_content",
+      label: "按内容调整包围元素",
+      description:
+        "在目标内容完成创建和布局后，根据目标元素的共同包围盒与统一内边距，确定性调整一个现有顶层图形的位置和尺寸。适用于背景、章节边框和分组轮廓；不会移动或缩放目标内容。",
+      parameters: Type.Object({
+        elementId: Type.String({ minLength: 1, maxLength: 64 }),
+        targetIds: Type.Array(Type.String({ minLength: 1, maxLength: 64 }), {
+          minItems: 1,
+          maxItems: 80,
+        }),
+        padding: Type.Number({ minimum: 0, maximum: 1000 }),
+      }),
+      executionMode: "sequential",
+      async execute(_id, params) {
+        assertMutable(state);
+        const element = state.elements.find(
+          (candidate) => candidate.id === params.elementId,
+        );
+        if (!element) {
+          throw new Error(`找不到要调整的元素：${params.elementId}`);
+        }
+        if (element.type === "text" || element.parentId) {
+          throw new Error(
+            `元素 ${params.elementId} 必须是可作为背景或边框的顶层图形`,
+          );
+        }
+        if (element.sectionId) {
+          throw new Error(
+            `托管到 Section 的背景 ${params.elementId} 会由布局编译器自动调整，无需调用 fit_canvas_element_to_content`,
+          );
+        }
+        if (params.targetIds.includes(params.elementId)) {
+          throw new Error(`包围元素 ${params.elementId} 不能包含自身`);
+        }
+        const allItems = [...state.elements, ...state.libraryAssets];
+        const targets = [...new Set(params.targetIds)].map((targetId) => {
+          const target = allItems.find(
+            (candidate) => candidate.id === targetId,
+          );
+          if (!target) {
+            throw new Error(`找不到要包围的目标元素：${targetId}`);
+          }
+          return target;
+        });
+        const left = Math.min(...targets.map((target) => target.x));
+        const top = Math.min(...targets.map((target) => target.y));
+        const right = Math.max(
+          ...targets.map((target) => target.x + target.width),
+        );
+        const bottom = Math.max(
+          ...targets.map((target) => target.y + target.height),
+        );
+        element.x = left - params.padding;
+        element.y = top - params.padding;
+        element.width = right - left + params.padding * 2;
+        element.height = bottom - top + params.padding * 2;
+        return resultText(
+          `已按 ${targets.length} 个目标元素调整 ${params.elementId} 的包围尺寸。`,
+          {
+            kind: "fitted-canvas-element",
+            elementId: params.elementId,
+            targetIds: targets.map((target) => target.id),
+            padding: params.padding,
+            bounds: {
+              x: element.x,
+              y: element.y,
+              width: element.width,
+              height: element.height,
+            },
+          },
+        );
       },
     },
     {
@@ -1208,9 +1544,20 @@ export const createCanvasTools = ({ state, animate, assetSources = [] }) => {
       },
     },
   ];
+
+  return enabledSkillIdSet.has(ASSET_ENHANCEMENT_SKILL_ID)
+    ? tools
+    : tools.filter(
+        (tool) =>
+          tool.name !== "search_library_assets" &&
+          tool.name !== "add_library_assets",
+      );
 };
 
-export const createCanvasDraftState = (existingCanvas = null) => ({
+export const createCanvasDraftState = (
+  existingCanvas = null,
+  { requireManagedLayout = false } = {},
+) => ({
   story: existingCanvas
     ? {
         id: existingCanvas.id,
@@ -1222,6 +1569,11 @@ export const createCanvasDraftState = (existingCanvas = null) => ({
   elements: structuredClone(existingCanvas?.elements || []),
   libraryAssets: structuredClone(existingCanvas?.libraryAssets || []),
   connectors: structuredClone(existingCanvas?.connectors || []),
+  spaceLayouts: structuredClone(existingCanvas?.spaceLayouts || []),
+  sections: structuredClone(existingCanvas?.sections || []),
+  layoutNeedsMaterialization: false,
+  requireManagedLayout: requireManagedLayout && !existingCanvas,
+  storySpacesDefined: Boolean(existingCanvas),
   frozen: false,
   animationBrief: null,
   editing: Boolean(existingCanvas),

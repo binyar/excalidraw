@@ -1,21 +1,5 @@
 [
   {
-    "name": "R Icons",
-    "description": "R and RStudio icons.",
-    "authors": [
-      {
-        "name": "Jumping Rivers",
-        "url": "https://www.jumpingrivers.com"
-      }
-    ],
-    "source": "jumpingrivers/r.excalidrawlib",
-    "preview": "jumpingrivers/r.png",
-    "created": "2021-08-22",
-    "updated": "2021-08-22",
-    "version": 1,
-    "id": "6TGNPXCpuVy"
-  },
-  {
     "name": "Snowflake datawarehousing Icons",
     "description": "Collection of Snowflake datawarehouse icons.",
     "authors": [
@@ -191,7 +175,17 @@
     "created": "2020-12-18",
     "updated": "2022-08-07",
     "version": 2,
-    "itemNames": ["Stick man", "Moustache man", "Girl", "Guy", "Grandma", "Child", "Shrug", "Happy", "Sad"],
+    "itemNames": [
+      "Stick man",
+      "Moustache man",
+      "Girl",
+      "Guy",
+      "Grandma",
+      "Child",
+      "Shrug",
+      "Happy",
+      "Sad"
+    ],
     "id": "832Zp5zaukx"
   },
   {
@@ -1289,7 +1283,16 @@
     "created": "2021-10-27",
     "updated": "2021-11-23",
     "version": 2,
-    "itemNames": ["Android", "Windows", "Linux", "Kong", "Let's Encrypt", "Keycloak", "Azure", "Salesforce"],
+    "itemNames": [
+      "Android",
+      "Windows",
+      "Linux",
+      "Kong",
+      "Let's Encrypt",
+      "Keycloak",
+      "Azure",
+      "Salesforce"
+    ],
     "id": "7cd9XpoAKF2"
   },
   {
@@ -1308,7 +1311,11 @@
     "created": "2021-11-22",
     "updated": "2021-11-22",
     "version": 2,
-    "itemNames": ["Wall clock", "Wristwatch", "Alarm clock"],
+    "itemNames": [
+      "Wall clock",
+      "Wristwatch",
+      "Alarm clock"
+    ],
     "id": "ADNAhIv1n5C"
   },
   {
@@ -1343,7 +1350,11 @@
     "created": "2021-11-23",
     "updated": "2021-11-23",
     "version": 2,
-    "itemNames": ["MapReduce", "ServiceCluster", "cacheLayer"],
+    "itemNames": [
+      "MapReduce",
+      "ServiceCluster",
+      "cacheLayer"
+    ],
     "id": "2hG8F63Sj56"
   },
   {
@@ -1362,7 +1373,12 @@
     "created": "2021-11-22",
     "updated": "2021-11-22",
     "version": 2,
-    "itemNames": ["Baby Yoda - No Colors", "Baby Yoda - With Color", "Baby Groot - No Colors", "Baby Groot - With Color"],
+    "itemNames": [
+      "Baby Yoda - No Colors",
+      "Baby Yoda - With Color",
+      "Baby Groot - No Colors",
+      "Baby Groot - With Color"
+    ],
     "id": "7Azx5uvdE5"
   },
   {
@@ -1381,7 +1397,23 @@
     "created": "2021-11-21",
     "updated": "2021-11-21",
     "version": 2,
-    "itemNames": ["MailChimp", "GoDaddy", "Zapier", "Monday.com", "Facebook", "Instagram", "TikTok", "Stripe", "NetSuite", "WooCommerce", "WordPress", "ActiveCampaign", "Office 365", "Canva", "Hootsuite"],
+    "itemNames": [
+      "MailChimp",
+      "GoDaddy",
+      "Zapier",
+      "Monday.com",
+      "Facebook",
+      "Instagram",
+      "TikTok",
+      "Stripe",
+      "NetSuite",
+      "WooCommerce",
+      "WordPress",
+      "ActiveCampaign",
+      "Office 365",
+      "Canva",
+      "Hootsuite"
+    ],
     "id": "5uywSw6EeMo"
   },
   {
@@ -1400,7 +1432,12 @@
     "created": "2022-01-14",
     "updated": "2022-01-14",
     "version": 2,
-    "itemNames": ["Lambda", "ELB", "EC2", "Lambda"],
+    "itemNames": [
+      "Lambda",
+      "ELB",
+      "EC2",
+      "Lambda"
+    ],
     "id": "2ZWlTmLYsLv"
   },
   {
@@ -1419,7 +1456,18 @@
     "created": "2021-12-02",
     "updated": "2022-01-19",
     "version": 2,
-    "itemNames": ["Computer w/ keyboard (3D)", "Computer w/ keyboard and mouse (3D)", "Computer (3D)", "VPN", "Firewall", "Server", "Switch", "Hub", "Router", "Client"],
+    "itemNames": [
+      "Computer w/ keyboard (3D)",
+      "Computer w/ keyboard and mouse (3D)",
+      "Computer (3D)",
+      "VPN",
+      "Firewall",
+      "Server",
+      "Switch",
+      "Hub",
+      "Router",
+      "Client"
+    ],
     "id": "5AFQOIRuFn5"
   },
   {
@@ -1438,7 +1486,14 @@
     "created": "2022-01-14",
     "updated": "2022-01-14",
     "version": 2,
-    "itemNames": ["Cloud Infra Starter Kit", "Cloud", "Stream", "Servers", "DB", "db"],
+    "itemNames": [
+      "Cloud Infra Starter Kit",
+      "Cloud",
+      "Stream",
+      "Servers",
+      "DB",
+      "db"
+    ],
     "id": "3GwjHmP9xwL"
   },
   {
@@ -1457,7 +1512,12 @@
     "created": "2022-01-14",
     "updated": "2022-01-14",
     "version": 2,
-    "itemNames": ["Lung", "Brain", "Heart", "Atom"],
+    "itemNames": [
+      "Lung",
+      "Brain",
+      "Heart",
+      "Atom"
+    ],
     "id": "et3B18PrgU"
   },
   {
@@ -1476,7 +1536,10 @@
     "created": "2022-01-14",
     "updated": "2022-01-14",
     "version": 2,
-    "itemNames": ["cylinder", "cube"],
+    "itemNames": [
+      "cylinder",
+      "cube"
+    ],
     "id": "5iCv1ZDpXRs"
   },
   {
@@ -1530,7 +1593,16 @@
     "created": "2022-01-10",
     "updated": "2022-01-10",
     "version": 2,
-    "itemNames": ["Divide", "Gain", "Storage", "Shift-Left", "Shift-Right", "Subtract", "Multiply", "Add"],
+    "itemNames": [
+      "Divide",
+      "Gain",
+      "Storage",
+      "Shift-Left",
+      "Shift-Right",
+      "Subtract",
+      "Multiply",
+      "Add"
+    ],
     "id": "3ck4U41MtiV"
   },
   {
@@ -1735,7 +1807,11 @@
     "created": "2022-01-14",
     "updated": "2022-01-14",
     "version": 2,
-    "itemNames": ["Red Hat logo", "Red Hat OpenShift", "Red Hat Ansible"],
+    "itemNames": [
+      "Red Hat logo",
+      "Red Hat OpenShift",
+      "Red Hat Ansible"
+    ],
     "id": "20f8CtsxQXU"
   },
   {
@@ -1754,7 +1830,15 @@
     "created": "2022-01-16",
     "updated": "2022-01-16",
     "version": 2,
-    "itemNames": ["MySQL", "PHP", "Jenkins", "Tomcat", "Bower", "npm", "Red Hat"],
+    "itemNames": [
+      "MySQL",
+      "PHP",
+      "Jenkins",
+      "Tomcat",
+      "Bower",
+      "npm",
+      "Red Hat"
+    ],
     "id": "4cJzhNHWXYO"
   },
   {
@@ -1773,7 +1857,18 @@
     "created": "2022-01-18",
     "updated": "2022-01-18",
     "version": 2,
-    "itemNames": ["Blue Widget", "Red Widget", " Yellow Widget", "Green Widget", "Overall structure diagram", "Blue Widget (light)", "Red Widget (light)", "Overall structure diagram (light)", " Yellow Widget (light)", "Green Widget (light)"],
+    "itemNames": [
+      "Blue Widget",
+      "Red Widget",
+      " Yellow Widget",
+      "Green Widget",
+      "Overall structure diagram",
+      "Blue Widget (light)",
+      "Red Widget (light)",
+      "Overall structure diagram (light)",
+      " Yellow Widget (light)",
+      "Green Widget (light)"
+    ],
     "id": "7UYcWMYC4Pg"
   },
   {
@@ -1792,7 +1887,9 @@
     "created": "2022-01-20",
     "updated": "2022-01-20",
     "version": 2,
-    "itemNames": ["Excali-GANTT"],
+    "itemNames": [
+      "Excali-GANTT"
+    ],
     "id": "7avRrPAc2yJ"
   },
   {
@@ -1811,7 +1908,13 @@
     "created": "2022-01-19",
     "updated": "2022-01-19",
     "version": 2,
-    "itemNames": ["Switch", "Edge", "Load Balancer", "Firewall", "Router"],
+    "itemNames": [
+      "Switch",
+      "Edge",
+      "Load Balancer",
+      "Firewall",
+      "Router"
+    ],
     "id": "19VTGHFdd8d"
   },
   {
@@ -1830,7 +1933,14 @@
     "created": "2022-01-20",
     "updated": "2022-01-20",
     "version": 2,
-    "itemNames": ["Message", "Channel", "Topic", "Subscriber", "Queue", "Queue Manager"],
+    "itemNames": [
+      "Message",
+      "Channel",
+      "Topic",
+      "Subscriber",
+      "Queue",
+      "Queue Manager"
+    ],
     "id": "7l1SFTaDhqc"
   },
   {
@@ -1884,7 +1994,11 @@
     "created": "2022-01-28",
     "updated": "2022-01-28",
     "version": 2,
-    "itemNames": ["Payment terminal", "Barcode scanner", "Receipt printer"],
+    "itemNames": [
+      "Payment terminal",
+      "Barcode scanner",
+      "Receipt printer"
+    ],
     "id": "2I6QONo5wTA"
   },
   {
@@ -1903,7 +2017,11 @@
     "created": "2022-02-03",
     "updated": "2022-02-03",
     "version": 2,
-    "itemNames": ["C6", "B6", "FIST"],
+    "itemNames": [
+      "C6",
+      "B6",
+      "FIST"
+    ],
     "id": "14YYbMMoFJ9"
   },
   {
@@ -1922,7 +2040,12 @@
     "created": "2022-02-27",
     "updated": "2022-02-27",
     "version": 2,
-    "itemNames": ["Virus", "Bacteria", "Brain", "Cell"],
+    "itemNames": [
+      "Virus",
+      "Bacteria",
+      "Brain",
+      "Cell"
+    ],
     "id": "8RedWu7wMJw"
   },
   {
@@ -1941,7 +2064,15 @@
     "created": "2022-02-14",
     "updated": "2022-02-14",
     "version": 2,
-    "itemNames": ["Hearts", "Heart", "Rose", "Heart box (container)", "Heart Bear", "Valentine's Day Card", "Valentine's Day Hearts"],
+    "itemNames": [
+      "Hearts",
+      "Heart",
+      "Rose",
+      "Heart box (container)",
+      "Heart Bear",
+      "Valentine's Day Card",
+      "Valentine's Day Hearts"
+    ],
     "id": "2ukFtSyl2i0"
   },
   {
@@ -1960,7 +2091,16 @@
     "created": "2022-02-20",
     "updated": "2022-02-20",
     "version": 2,
-    "itemNames": ["mouse", "hard disk", "chip", "cpu", "headphones", "keyboard", "display", "ram"],
+    "itemNames": [
+      "mouse",
+      "hard disk",
+      "chip",
+      "cpu",
+      "headphones",
+      "keyboard",
+      "display",
+      "ram"
+    ],
     "id": "AZ5kJtfhxg6"
   },
   {
@@ -1979,7 +2119,11 @@
     "created": "2022-02-21",
     "updated": "2022-02-21",
     "version": 2,
-    "itemNames": ["ssh", "sftp", "scp"],
+    "itemNames": [
+      "ssh",
+      "sftp",
+      "scp"
+    ],
     "id": "7daDbPjRkBM"
   },
   {
@@ -1998,7 +2142,14 @@
     "created": "2022-02-27",
     "updated": "2022-02-27",
     "version": 2,
-    "itemNames": ["GraphQL", "Kafka", "Data sources", "USB", "Email", "FTP"],
+    "itemNames": [
+      "GraphQL",
+      "Kafka",
+      "Data sources",
+      "USB",
+      "Email",
+      "FTP"
+    ],
     "id": "8AE3nxbNJzj"
   },
   {
@@ -2106,7 +2257,10 @@
     "created": "2022-03-26",
     "updated": "2022-03-26",
     "version": 2,
-    "itemNames": ["Bias & Variance", "standard deflection"],
+    "itemNames": [
+      "Bias & Variance",
+      "standard deflection"
+    ],
     "id": "68p7TXFqEpk"
   },
   {
@@ -2125,7 +2279,13 @@
     "created": "2022-03-26",
     "updated": "2022-03-26",
     "version": 2,
-    "itemNames": ["8U Rack", "16U Rack", "4U Server", "2U Server / Component", "1U Server / Component"],
+    "itemNames": [
+      "8U Rack",
+      "16U Rack",
+      "4U Server",
+      "2U Server / Component",
+      "1U Server / Component"
+    ],
     "id": "5yBptTxQ1J8"
   },
   {
@@ -2144,7 +2304,25 @@
     "created": "2022-03-26",
     "updated": "2022-03-26",
     "version": 2,
-    "itemNames": ["Parcel", "Mail", "Letter", "Colour Pen", "Pencil", "Screen", "Microphone", "Headphone + Mic", "Headphone", "USB-Stick", "CD", "Stamp", "Folder", "Paper Clip", "Eraser", "Disc", "Folder"],
+    "itemNames": [
+      "Parcel",
+      "Mail",
+      "Letter",
+      "Colour Pen",
+      "Pencil",
+      "Screen",
+      "Microphone",
+      "Headphone + Mic",
+      "Headphone",
+      "USB-Stick",
+      "CD",
+      "Stamp",
+      "Folder",
+      "Paper Clip",
+      "Eraser",
+      "Disc",
+      "Folder"
+    ],
     "id": "3KltQF0KuFn"
   },
   {
@@ -2163,7 +2341,18 @@
     "created": "2022-03-26",
     "updated": "2022-03-26",
     "version": 2,
-    "itemNames": ["Meeple", "Dice result 1", "Dice result 2", "Dice result 3", "Dice result 4", "Dice result 5", "Dice result 6", "Resource cube", "Resource cylinder", "Resource disc"],
+    "itemNames": [
+      "Meeple",
+      "Dice result 1",
+      "Dice result 2",
+      "Dice result 3",
+      "Dice result 4",
+      "Dice result 5",
+      "Dice result 6",
+      "Resource cube",
+      "Resource cylinder",
+      "Resource disc"
+    ],
     "id": "5fzmbZmAn8i"
   },
   {
@@ -2226,7 +2415,16 @@
     "created": "2022-03-22",
     "updated": "2022-03-22",
     "version": 2,
-    "itemNames": ["button", "number", "date", "chekbox", "toggle", "switch", "select", "action button"],
+    "itemNames": [
+      "button",
+      "number",
+      "date",
+      "chekbox",
+      "toggle",
+      "switch",
+      "select",
+      "action button"
+    ],
     "id": "9EEQWk95mxL"
   },
   {
@@ -2348,7 +2546,14 @@
     "created": "2022-03-30",
     "updated": "2022-03-30",
     "version": 2,
-    "itemNames": ["Container Registires", "Batch Accounts", "Service Fabric Clusters", "App Services", "Container Instances", "Kubernetes Services"],
+    "itemNames": [
+      "Container Registires",
+      "Batch Accounts",
+      "Service Fabric Clusters",
+      "App Services",
+      "Container Instances",
+      "Kubernetes Services"
+    ],
     "id": "2ISqXJctblR"
   },
   {
@@ -2476,7 +2681,10 @@
     "created": "2022-03-30",
     "updated": "2022-03-30",
     "version": 2,
-    "itemNames": ["Dart", "Flutter"],
+    "itemNames": [
+      "Dart",
+      "Flutter"
+    ],
     "id": "5f7y7LF72JK"
   },
   {
@@ -2495,7 +2703,20 @@
     "created": "2022-04-08",
     "updated": "2022-04-08",
     "version": 2,
-    "itemNames": ["GNN", "CNN", "RNN", "MLP", "LSTM", "M-attention", "Attention", "Encoder-Decoder", "Attention-QKV", "QKV", "Transformer", "Mask"],
+    "itemNames": [
+      "GNN",
+      "CNN",
+      "RNN",
+      "MLP",
+      "LSTM",
+      "M-attention",
+      "Attention",
+      "Encoder-Decoder",
+      "Attention-QKV",
+      "QKV",
+      "Transformer",
+      "Mask"
+    ],
     "id": "4GD51Vf1naO"
   },
   {
@@ -2514,7 +2735,18 @@
     "created": "2022-04-11",
     "updated": "2022-04-11",
     "version": 2,
-    "itemNames": ["Poof", "Knee hug", "Isaac", "Kneeling", "Sobbing", "Sobbing eyes", "Sobbing eyes alt", "Sobbing bloodshot eyes", "Nuclear explosion", "Nuclear explosion alt"],
+    "itemNames": [
+      "Poof",
+      "Knee hug",
+      "Isaac",
+      "Kneeling",
+      "Sobbing",
+      "Sobbing eyes",
+      "Sobbing eyes alt",
+      "Sobbing bloodshot eyes",
+      "Nuclear explosion",
+      "Nuclear explosion alt"
+    ],
     "id": "8xokWUSGVyY"
   },
   {
@@ -2533,7 +2765,12 @@
     "created": "2022-04-12",
     "updated": "2022-04-12",
     "version": 2,
-    "itemNames": ["Forst Quadrant", "Polar", "Axis", "Four Quadrants"],
+    "itemNames": [
+      "Forst Quadrant",
+      "Polar",
+      "Axis",
+      "Four Quadrants"
+    ],
     "id": "6vyOZpzpQ0d"
   },
   {
@@ -2870,7 +3107,13 @@
     "created": "2022-04-21",
     "updated": "2022-04-21",
     "version": 2,
-    "itemNames": ["Corporate Office / Headquarterts", "Office", "City", "House", "Datacenter"],
+    "itemNames": [
+      "Corporate Office / Headquarterts",
+      "Office",
+      "City",
+      "House",
+      "Datacenter"
+    ],
     "id": "1O2hCC0BCYH"
   },
   {
@@ -2917,7 +3160,15 @@
     "created": "2022-04-21",
     "updated": "2022-04-21",
     "version": 2,
-    "itemNames": ["BT", "Airtel", "Singtel", "Verizon", "At&t", "T-Mobile ", "TataCommunications"],
+    "itemNames": [
+      "BT",
+      "Airtel",
+      "Singtel",
+      "Verizon",
+      "At&t",
+      "T-Mobile ",
+      "TataCommunications"
+    ],
     "id": "38eeGnAnLIn"
   },
   {
@@ -2936,7 +3187,15 @@
     "created": "2022-04-29",
     "updated": "2022-04-29",
     "version": 2,
-    "itemNames": ["Messy Banner", "Large Bookmark", "Right Side Banner", "Arrow Banner", "Double Banner", "Stylised Banner", "Classic Banner"],
+    "itemNames": [
+      "Messy Banner",
+      "Large Bookmark",
+      "Right Side Banner",
+      "Arrow Banner",
+      "Double Banner",
+      "Stylised Banner",
+      "Classic Banner"
+    ],
     "id": "5kxWYOKDon2"
   },
   {
@@ -2955,7 +3214,18 @@
     "created": "2022-05-24",
     "updated": "2022-05-24",
     "version": 2,
-    "itemNames": ["C4 elements", "Person", "Web App", "Mobile App", "Component", "System", "Existing System", "Database", "Group", "Relation"],
+    "itemNames": [
+      "C4 elements",
+      "Person",
+      "Web App",
+      "Mobile App",
+      "Component",
+      "System",
+      "Existing System",
+      "Database",
+      "Group",
+      "Relation"
+    ],
     "id": "3R8mpAUUZqi"
   },
   {
@@ -2974,7 +3244,13 @@
     "created": "2022-05-19",
     "updated": "2022-05-19",
     "version": 2,
-    "itemNames": ["Steampipe", "Obsidian", "Terragrunt", "Great Expectations", "Atlantis"],
+    "itemNames": [
+      "Steampipe",
+      "Obsidian",
+      "Terragrunt",
+      "Great Expectations",
+      "Atlantis"
+    ],
     "id": "7xMkSn36Hnv"
   },
   {
@@ -2993,7 +3269,19 @@
     "created": "2022-05-26",
     "updated": "2022-05-27",
     "version": 2,
-    "itemNames": ["Slack", "Docker", "GitHub", "VPC", "Private subnet", "Public subnet", "User", "Users", "Device", "Server", "Email"],
+    "itemNames": [
+      "Slack",
+      "Docker",
+      "GitHub",
+      "VPC",
+      "Private subnet",
+      "Public subnet",
+      "User",
+      "Users",
+      "Device",
+      "Server",
+      "Email"
+    ],
     "id": "3eRknTpFfyN"
   },
   {
@@ -3012,7 +3300,14 @@
     "created": "2022-05-29",
     "updated": "2022-05-29",
     "version": 2,
-    "itemNames": ["Email", "Email (box)", "Slack (box)", "Discord (box)", "Slack", "Discord"],
+    "itemNames": [
+      "Email",
+      "Email (box)",
+      "Slack (box)",
+      "Discord (box)",
+      "Slack",
+      "Discord"
+    ],
     "id": "7XWzPc8v4w"
   },
   {
@@ -3031,7 +3326,11 @@
     "created": "2022-06-13",
     "updated": "2022-06-13",
     "version": 2,
-    "itemNames": ["BIG Printer", "SMOL Printer", "HP"],
+    "itemNames": [
+      "BIG Printer",
+      "SMOL Printer",
+      "HP"
+    ],
     "id": "7efpxlFpHuE"
   },
   {
@@ -3050,7 +3349,16 @@
     "created": "2022-07-26",
     "updated": "2022-07-26",
     "version": 2,
-    "itemNames": ["Dataverse", "VS Code", "SharePoint", "Power BI", "Outlook", "Power Automate", "Power Apps", "Virtual Agents"],
+    "itemNames": [
+      "Dataverse",
+      "VS Code",
+      "SharePoint",
+      "Power BI",
+      "Outlook",
+      "Power Automate",
+      "Power Apps",
+      "Virtual Agents"
+    ],
     "id": "2Vwt2PPqmtT"
   },
   {
@@ -3069,7 +3377,9 @@
     "created": "2022-07-27",
     "updated": "2022-07-27",
     "version": 2,
-    "itemNames": ["microcontroller"],
+    "itemNames": [
+      "microcontroller"
+    ],
     "id": "4vm0UqoyjGh"
   },
   {
@@ -3088,7 +3398,13 @@
     "created": "2022-08-06",
     "updated": "2022-08-06",
     "version": 2,
-    "itemNames": ["Ace of spades", "Four of a kind", "Ace of diamonds", "Ace of clubs", "Ace of hearts"],
+    "itemNames": [
+      "Ace of spades",
+      "Four of a kind",
+      "Ace of diamonds",
+      "Ace of clubs",
+      "Ace of hearts"
+    ],
     "id": "25gFO5JZX1e"
   },
   {
@@ -3107,7 +3423,10 @@
     "created": "2022-08-11",
     "updated": "2022-08-11",
     "version": 2,
-    "itemNames": ["cross", "check"],
+    "itemNames": [
+      "cross",
+      "check"
+    ],
     "id": "fPC31YYF7J"
   },
   {
@@ -3163,7 +3482,16 @@
     "updated": "2022-10-02",
     "version": 2,
     "id": "2XHXJKbYOvs",
-    "itemNames": ["Card: \"What to test?\"", "Card: \"Risk mitigation\"", "Card: \"Question\"", "Card: \"Risk\"", "7 Product Dimensions", "Risk based Test Strategy (sm)", "Risk based Test Strategy", "Risk based Test Strategy (template)"]
+    "itemNames": [
+      "Card: \"What to test?\"",
+      "Card: \"Risk mitigation\"",
+      "Card: \"Question\"",
+      "Card: \"Risk\"",
+      "7 Product Dimensions",
+      "Risk based Test Strategy (sm)",
+      "Risk based Test Strategy",
+      "Risk based Test Strategy (template)"
+    ]
   },
   {
     "name": "Data Flow",
@@ -3181,7 +3509,12 @@
     "created": "2022-10-02",
     "updated": "2022-10-02",
     "version": 2,
-    "itemNames": ["Process", "Process with number", "Data storage", "External Entity"],
+    "itemNames": [
+      "Process",
+      "Process with number",
+      "Data storage",
+      "External Entity"
+    ],
     "id": "73c4J61D8Ke"
   },
   {
@@ -3200,7 +3533,17 @@
     "created": "2022-10-02",
     "updated": "2022-10-02",
     "version": 2,
-    "itemNames": ["Position", "Team White", "Team HIghlight", "Team Highlight Border", "Team White Border", "Area Person Highlight", "Area Person White", "Manager Role", "Executive Role"],
+    "itemNames": [
+      "Position",
+      "Team White",
+      "Team HIghlight",
+      "Team Highlight Border",
+      "Team White Border",
+      "Area Person Highlight",
+      "Area Person White",
+      "Manager Role",
+      "Executive Role"
+    ],
     "id": "AYUqzBpMxaZ"
   },
   {
@@ -3308,7 +3651,11 @@
     "created": "2022-10-02",
     "updated": "2022-10-02",
     "version": 2,
-    "itemNames": ["loading webpage", "viewable webpage", "interactive webpage"],
+    "itemNames": [
+      "loading webpage",
+      "viewable webpage",
+      "interactive webpage"
+    ],
     "id": "ZXIjdyxpVT"
   },
   {
@@ -3375,7 +3722,12 @@
     "updated": "2022-10-02",
     "version": 2,
     "id": "82746Jdxyjp",
-    "itemNames": ["AD change to the left", "AD change to the right", "Macroeconomics equilibrium", "Basic graph base"]
+    "itemNames": [
+      "AD change to the left",
+      "AD change to the right",
+      "Macroeconomics equilibrium",
+      "Basic graph base"
+    ]
   },
   {
     "name": "Common Home Network Basics",
@@ -3394,7 +3746,16 @@
     "updated": "2022-10-03",
     "version": 2,
     "id": "1xGkhp21IgN",
-    "itemNames": ["Wireless Router", "Security Camera", "Network Switch", "File Folder", "Server", "Access Point", "Cloud", "Wifi Symbol"]
+    "itemNames": [
+      "Wireless Router",
+      "Security Camera",
+      "Network Switch",
+      "File Folder",
+      "Server",
+      "Access Point",
+      "Cloud",
+      "Wifi Symbol"
+    ]
   },
   {
     "name": "Domain-Driven Design",
@@ -3412,7 +3773,24 @@
     "created": "2022-10-03",
     "updated": "2022-10-03",
     "version": 2,
-    "itemNames": ["System", "Entity", "Question", "Input/Output", "Command", "Event", "System", "Right", "Down", "Left", "Up", "UpRight", "DownLeft", "RightDown", "UpLeft", "Time"],
+    "itemNames": [
+      "System",
+      "Entity",
+      "Question",
+      "Input/Output",
+      "Command",
+      "Event",
+      "System",
+      "Right",
+      "Down",
+      "Left",
+      "Up",
+      "UpRight",
+      "DownLeft",
+      "RightDown",
+      "UpLeft",
+      "Time"
+    ],
     "id": "5ZUGabBU2zb"
   },
   {
@@ -3431,7 +3809,17 @@
     "created": "2022-10-03",
     "updated": "2022-10-03",
     "version": 2,
-    "itemNames": ["Direction", "Speed limit 1", "All vehicles forbidden", "Speed limit 2", "Speed limit 3", "One way 1", "One way 2", "One way 3", "One way 4"],
+    "itemNames": [
+      "Direction",
+      "Speed limit 1",
+      "All vehicles forbidden",
+      "Speed limit 2",
+      "Speed limit 3",
+      "One way 1",
+      "One way 2",
+      "One way 3",
+      "One way 4"
+    ],
     "id": "7GDcS44drHF"
   },
   {
@@ -3451,7 +3839,17 @@
     "updated": "2022-10-03",
     "version": 2,
     "id": "1L3h5WS87ky",
-    "itemNames": ["bull", "dachshound", "camel", "flamingo", "kangaroo", "dissolving faces", "falcon", "pinguine", "signature"]
+    "itemNames": [
+      "bull",
+      "dachshound",
+      "camel",
+      "flamingo",
+      "kangaroo",
+      "dissolving faces",
+      "falcon",
+      "pinguine",
+      "signature"
+    ]
   },
   {
     "name": "Go Icons",
@@ -3470,7 +3868,10 @@
     "updated": "2022-10-03",
     "version": 2,
     "id": "8Vlt8pZCdRb",
-    "itemNames": ["Golang logo", "Gopher"]
+    "itemNames": [
+      "Golang logo",
+      "Gopher"
+    ]
   },
   {
     "name": "Snowflake Iconography",
@@ -3563,7 +3964,10 @@
     "updated": "2022-10-03",
     "version": 2,
     "id": "60OcGozDKVu",
-    "itemNames": ["long code block", "short code block"]
+    "itemNames": [
+      "long code block",
+      "short code block"
+    ]
   },
   {
     "name": "Data Vault",
@@ -3632,7 +4036,15 @@
     "updated": "2022-10-03",
     "version": 2,
     "id": "AnADVZNFw14",
-    "itemNames": ["App Service Environment", "API App", "Web App", "Azure Repos", "Azure Boards", "Azure Pipelines", "Private Endpoint"]
+    "itemNames": [
+      "App Service Environment",
+      "API App",
+      "Web App",
+      "Azure Repos",
+      "Azure Boards",
+      "Azure Pipelines",
+      "Private Endpoint"
+    ]
   },
   {
     "name": "Synths and FX",
@@ -3650,7 +4062,14 @@
     "created": "2022-10-11",
     "updated": "2022-10-11",
     "version": 2,
-    "itemNames": ["Bluebox", "Organelle", "Microcosm", "Grandmother", "Zoia", "Deluge"],
+    "itemNames": [
+      "Bluebox",
+      "Organelle",
+      "Microcosm",
+      "Grandmother",
+      "Zoia",
+      "Deluge"
+    ],
     "id": "3VobPnuetTF"
   },
   {
@@ -3767,7 +4186,12 @@
     "created": "2022-10-19",
     "updated": "2022-10-19",
     "version": 2,
-    "itemNames": ["isotopes", "protons, electrons, neutrons", "atom structure", "element, compound, mix"],
+    "itemNames": [
+      "isotopes",
+      "protons, electrons, neutrons",
+      "atom structure",
+      "element, compound, mix"
+    ],
     "id": "8jmiKCZzGfF"
   },
   {
@@ -3786,7 +4210,20 @@
     "created": "2022-12-11",
     "updated": "2022-12-11",
     "version": 2,
-    "itemNames": ["Relations Legend", "In Love", "Clos", "Heart Disease", "Neglect", "Neglect Arrow", "Focused On", "Co-habitation", "Co-habitation Symbol", "Harmony", "Living Together", "Heart Disease"],
+    "itemNames": [
+      "Relations Legend",
+      "In Love",
+      "Clos",
+      "Heart Disease",
+      "Neglect",
+      "Neglect Arrow",
+      "Focused On",
+      "Co-habitation",
+      "Co-habitation Symbol",
+      "Harmony",
+      "Living Together",
+      "Heart Disease"
+    ],
     "id": "5azM0SApmvP"
   },
   {
@@ -3805,7 +4242,18 @@
     "created": "2022-12-11",
     "updated": "2022-12-11",
     "version": 2,
-    "itemNames": ["Wallet", "Community", "Certificate", "Tier Vote Proposal", "Utility Proposal", "Delegate Proposal", "Governance Proposal", "NFT", "DAO", "Smart Contract"],
+    "itemNames": [
+      "Wallet",
+      "Community",
+      "Certificate",
+      "Tier Vote Proposal",
+      "Utility Proposal",
+      "Delegate Proposal",
+      "Governance Proposal",
+      "NFT",
+      "DAO",
+      "Smart Contract"
+    ],
     "id": "7FUlDh1BcpY"
   },
   {
@@ -3886,7 +4334,23 @@
     "created": "2022-12-04",
     "updated": "2022-12-04",
     "version": 2,
-    "itemNames": ["Example 1", "Example 2", "Example 3", "Example 4", "Contour Female 1", "Body Female 1", "Body Male 1", "Contour Male 1", "Pants 1", "Pants 2", "Pants 3", "Pants 4", "Top 1", "Top 2", "Top 3"],
+    "itemNames": [
+      "Example 1",
+      "Example 2",
+      "Example 3",
+      "Example 4",
+      "Contour Female 1",
+      "Body Female 1",
+      "Body Male 1",
+      "Contour Male 1",
+      "Pants 1",
+      "Pants 2",
+      "Pants 3",
+      "Pants 4",
+      "Top 1",
+      "Top 2",
+      "Top 3"
+    ],
     "id": "AwqD8ILJhx0"
   },
   {
@@ -3905,7 +4369,10 @@
     "created": "2022-12-12",
     "updated": "2022-12-12",
     "version": 2,
-    "itemNames": ["Spiderman", "Zombie"],
+    "itemNames": [
+      "Spiderman",
+      "Zombie"
+    ],
     "id": "A24niJAMzu0"
   },
   {
@@ -3924,7 +4391,16 @@
     "created": "2022-12-12",
     "updated": "2022-12-12",
     "version": 2,
-    "itemNames": ["Female Alien", "Female Zombie", "Female African", "Female European", "Female Latino", "Female Indian", "Female Asian", "Female Elderly"],
+    "itemNames": [
+      "Female Alien",
+      "Female Zombie",
+      "Female African",
+      "Female European",
+      "Female Latino",
+      "Female Indian",
+      "Female Asian",
+      "Female Elderly"
+    ],
     "id": "Ap3cw233FMk"
   },
   {
@@ -4012,7 +4488,20 @@
     "created": "2022-12-12",
     "updated": "2022-12-12",
     "version": 2,
-    "itemNames": ["Male 1", "Male Magician 1", "Male Musician 1", "Male Soldier 1", "Male Trucker 1", "Male Alien", "Male Gangster 1", "Abraham Lincoln 1", "Male Elderly 1", "Male 2", "Male Punk 1", "Male Zombie 1"],
+    "itemNames": [
+      "Male 1",
+      "Male Magician 1",
+      "Male Musician 1",
+      "Male Soldier 1",
+      "Male Trucker 1",
+      "Male Alien",
+      "Male Gangster 1",
+      "Abraham Lincoln 1",
+      "Male Elderly 1",
+      "Male 2",
+      "Male Punk 1",
+      "Male Zombie 1"
+    ],
     "id": "4lxOxjrp6dJ"
   },
   {
@@ -4074,7 +4563,14 @@
     "created": "2022-11-07",
     "updated": "2022-11-07",
     "version": 2,
-    "itemNames": ["gopher front", "gopher up", "gopher right", "gopher angle", "gopher left", "gopher down"],
+    "itemNames": [
+      "gopher front",
+      "gopher up",
+      "gopher right",
+      "gopher angle",
+      "gopher left",
+      "gopher down"
+    ],
     "id": "ELlz3jyk9"
   },
   {
@@ -4146,7 +4642,15 @@
     "created": "2022-12-04",
     "updated": "2022-12-04",
     "version": 2,
-    "itemNames": ["nand", "and", "nor", "or", "nxor", "xor", "not"],
+    "itemNames": [
+      "nand",
+      "and",
+      "nor",
+      "or",
+      "nxor",
+      "xor",
+      "not"
+    ],
     "id": "2wQVNF9w4bO"
   },
   {
@@ -4165,7 +4669,17 @@
     "created": "2022-12-04",
     "updated": "2022-12-04",
     "version": 2,
-    "itemNames": ["Screws", "Nails", "Screw", "Nail", "Screwdriver", "Hammer", "Drill", "Saw", "Folding rule"],
+    "itemNames": [
+      "Screws",
+      "Nails",
+      "Screw",
+      "Nail",
+      "Screwdriver",
+      "Hammer",
+      "Drill",
+      "Saw",
+      "Folding rule"
+    ],
     "id": "57YPwLW3NgY"
   },
   {
@@ -4226,7 +4740,15 @@
     "created": "2022-12-06",
     "updated": "2022-12-06",
     "version": 2,
-    "itemNames": ["Aggregate", "External System", "Business Process", "Read Model", "Actor", "Command", "Domain Event"],
+    "itemNames": [
+      "Aggregate",
+      "External System",
+      "Business Process",
+      "Read Model",
+      "Actor",
+      "Command",
+      "Domain Event"
+    ],
     "id": "7KgcOtwIkHu"
   },
   {
@@ -4287,7 +4809,12 @@
     "created": "2022-12-11",
     "updated": "2022-12-11",
     "version": 2,
-    "itemNames": ["Red_Player1", "Blue_Player1", "Disc", "Field"],
+    "itemNames": [
+      "Red_Player1",
+      "Blue_Player1",
+      "Disc",
+      "Field"
+    ],
     "id": "3Z83CfR5wYA"
   },
   {
@@ -4367,7 +4894,27 @@
     "created": "2022-12-15",
     "updated": "2022-12-15",
     "version": 2,
-    "itemNames": ["rolebinding", "user", "serviceaccount", "volume", "pv", "pvc", "namespace", "job", "cronjob", "crd", "clusterrolebinding", "secret", "service", "ingress", "hpa", "configmap", "deployment", "replicaset", "pod"]
+    "itemNames": [
+      "rolebinding",
+      "user",
+      "serviceaccount",
+      "volume",
+      "pv",
+      "pvc",
+      "namespace",
+      "job",
+      "cronjob",
+      "crd",
+      "clusterrolebinding",
+      "secret",
+      "service",
+      "ingress",
+      "hpa",
+      "configmap",
+      "deployment",
+      "replicaset",
+      "pod"
+    ]
   },
   {
     "name": "Wardley Mapping Canvas",
@@ -4385,7 +4932,20 @@
     "created": "2022-12-27",
     "updated": "2022-12-27",
     "version": 2,
-    "itemNames": ["Activity", "Scope Block", "Purpose Block", "Users Block", "User Needs Block", "Map Block", "Value Chain Block", "Value Chain Map Only", "Map", "User Need", "User", "Wardley Mapping Canvas"]
+    "itemNames": [
+      "Activity",
+      "Scope Block",
+      "Purpose Block",
+      "Users Block",
+      "User Needs Block",
+      "Map Block",
+      "Value Chain Block",
+      "Value Chain Map Only",
+      "Map",
+      "User Need",
+      "User",
+      "Wardley Mapping Canvas"
+    ]
   },
   {
     "name": "Stick people",
@@ -4403,7 +4963,15 @@
     "created": "2023-01-07",
     "updated": "2023-01-07",
     "version": 2,
-    "itemNames": ["Stick man standard looking left", "Stick man talking", "Stick woman standard", "Stick woman thinking", "Stick man thinking", "Stick man standard", "Stick man with a hat "]
+    "itemNames": [
+      "Stick man standard looking left",
+      "Stick man talking",
+      "Stick woman standard",
+      "Stick woman thinking",
+      "Stick man thinking",
+      "Stick man standard",
+      "Stick man with a hat "
+    ]
   },
   {
     "name": "Simple Sticky Notes",
@@ -4421,7 +4989,15 @@
     "created": "2023-02-02",
     "updated": "2023-02-02",
     "version": 2,
-    "itemNames": ["sticky-green", "sticky-blue", "sticky-purple", "sticky-grey", "sticky-red", "sticky-orange", "sticky-yellow"]
+    "itemNames": [
+      "sticky-green",
+      "sticky-blue",
+      "sticky-purple",
+      "sticky-grey",
+      "sticky-red",
+      "sticky-orange",
+      "sticky-yellow"
+    ]
   },
   {
     "name": "Types and Values in JavaScript",
@@ -4439,7 +5015,19 @@
     "created": "2023-04-08",
     "updated": "2023-04-08",
     "version": 2,
-    "itemNames": ["Number", "Variable", "Null", "Object", "Function", "Undefined", "Booleans", "True", "False", "Symbol", "String"]
+    "itemNames": [
+      "Number",
+      "Variable",
+      "Null",
+      "Object",
+      "Function",
+      "Undefined",
+      "Booleans",
+      "True",
+      "False",
+      "Symbol",
+      "String"
+    ]
   },
   {
     "name": "Clouds",
@@ -4457,7 +5045,12 @@
     "created": "2023-02-03",
     "updated": "2023-02-03",
     "version": 2,
-    "itemNames": ["Cloud 1", "Cloud 2", "Cloud 3", "Cloud 4"]
+    "itemNames": [
+      "Cloud 1",
+      "Cloud 2",
+      "Cloud 3",
+      "Cloud 4"
+    ]
   },
   {
     "name": "Piping and instrumentation diagram P&ID",
@@ -4522,7 +5115,13 @@
     "created": "2023-03-30",
     "updated": "2023-03-30",
     "version": 2,
-    "itemNames": ["elastic-general", "kibana", "beats", "elasticsearch", "logstash"]
+    "itemNames": [
+      "elastic-general",
+      "kibana",
+      "beats",
+      "elasticsearch",
+      "logstash"
+    ]
   },
   {
     "name": "VMware Architecture Design",
@@ -4700,7 +5299,13 @@
     "created": "2023-04-08",
     "updated": "2023-04-08",
     "version": 2,
-    "itemNames": ["coordinates to 5", "coordinates to 8", "graph 12", "graph 18", "graph 6"]
+    "itemNames": [
+      "coordinates to 5",
+      "coordinates to 8",
+      "graph 12",
+      "graph 18",
+      "graph 6"
+    ]
   },
   {
     "name": "Data processing",
@@ -4718,7 +5323,16 @@
     "created": "2023-04-08",
     "updated": "2023-04-08",
     "version": 2,
-    "itemNames": ["Data collection", "Data cleansing/transformation", "Data storage", "Data analysis", "Data reconciliation", "Data reconciliation 2", "Data visualization", "Data visualization 2"]
+    "itemNames": [
+      "Data collection",
+      "Data cleansing/transformation",
+      "Data storage",
+      "Data analysis",
+      "Data reconciliation",
+      "Data reconciliation 2",
+      "Data visualization",
+      "Data visualization 2"
+    ]
   },
   {
     "name": "Stick Figures Collaboration",
@@ -4742,7 +5356,14 @@
     "created": "2023-04-19",
     "updated": "2023-04-19",
     "version": 2,
-    "itemNames": ["Communication", "Problem solving", "Active listening", "Presentation", "Ideation", "Conversation"]
+    "itemNames": [
+      "Communication",
+      "Problem solving",
+      "Active listening",
+      "Presentation",
+      "Ideation",
+      "Conversation"
+    ]
   },
   {
     "name": "AWS Serverless Icons v2",
@@ -4803,7 +5424,18 @@
     ],
     "source": "alluvion/montessori-basic-grammar-symbols.excalidrawlib",
     "preview": "alluvion/montessori-basic-grammar-symbols.jpg",
-    "itemNames": ["Pronoun", "Noun", "Adjective", "Article", "Noun", "Adverb", "Preposition", "Conjunction", "Interjection", "All Symbols"]
+    "itemNames": [
+      "Pronoun",
+      "Noun",
+      "Adjective",
+      "Article",
+      "Noun",
+      "Adverb",
+      "Preposition",
+      "Conjunction",
+      "Interjection",
+      "All Symbols"
+    ]
   },
   {
     "name": "TTRPG Clocks",
@@ -4861,7 +5493,14 @@
     "created": "2023-04-21",
     "updated": "2023-04-21",
     "version": 2,
-    "itemNames": ["Trophy", "Football Boot", "Scarf", "Footballer", "Football", "Whistle"]
+    "itemNames": [
+      "Trophy",
+      "Football Boot",
+      "Scarf",
+      "Footballer",
+      "Football",
+      "Whistle"
+    ]
   },
   {
     "name": "Microsoft 365 icons",
@@ -5075,7 +5714,14 @@
     "created": "2023-08-29",
     "updated": "2023-08-29",
     "version": 2,
-    "itemNames": ["Elixir", "Phoenix", "Concuerror", "Beam", "Ecto", "Nix"]
+    "itemNames": [
+      "Elixir",
+      "Phoenix",
+      "Concuerror",
+      "Beam",
+      "Ecto",
+      "Nix"
+    ]
   },
   {
     "name": "IT icons",
@@ -5160,7 +5806,11 @@
     "created": "2023-08-18",
     "updated": "2023-08-18",
     "version": 2,
-    "itemNames": ["Custom Arrow Help", "Custom Arrow Example", "Custom Arrow"]
+    "itemNames": [
+      "Custom Arrow Help",
+      "Custom Arrow Example",
+      "Custom Arrow"
+    ]
   },
   {
     "name": "Presentation bundle",
@@ -5217,7 +5867,15 @@
     "created": "2023-08-29",
     "updated": "2023-08-29",
     "version": 2,
-    "itemNames": ["information", "phone", "documents", "mail", "group", "person", "system"]
+    "itemNames": [
+      "information",
+      "phone",
+      "documents",
+      "mail",
+      "group",
+      "person",
+      "system"
+    ]
   },
   {
     "name": "Basic system design",
@@ -5235,7 +5893,15 @@
     "created": "2023-08-29",
     "updated": "2023-08-29",
     "version": 2,
-    "itemNames": ["MediaService", "NotificationService", "APIGateway", "Analytics", "Database", "SearchService", "LBWithDbNRepicas"]
+    "itemNames": [
+      "MediaService",
+      "NotificationService",
+      "APIGateway",
+      "Analytics",
+      "Database",
+      "SearchService",
+      "LBWithDbNRepicas"
+    ]
   },
   {
     "name": "FAIR web icons",
@@ -5253,7 +5919,12 @@
     "created": "2023-08-29",
     "updated": "2023-08-29",
     "version": 2,
-    "itemNames": ["Accessible", "Reusable", "Interoperable", "Findable"]
+    "itemNames": [
+      "Accessible",
+      "Reusable",
+      "Interoperable",
+      "Findable"
+    ]
   },
   {
     "name": "Bullet Journal Trackers",
@@ -5271,7 +5942,10 @@
     "created": "2023-08-31",
     "updated": "2023-08-31",
     "version": 2,
-    "itemNames": ["Year In Pixels (Mood Tracker)", "Habit Tracker"]
+    "itemNames": [
+      "Year In Pixels (Mood Tracker)",
+      "Habit Tracker"
+    ]
   },
   {
     "name": "Camunda Platform Icons",
@@ -5289,7 +5963,20 @@
     "created": "2023-10-12",
     "updated": "2023-10-12",
     "version": 2,
-    "itemNames": ["Camunda black", "Camunda orange", "Camunda white", "Modeler", "Forms", "Connectors", "Integration Framework", "Workflow Engine", "Decision Engine", "Tasklist", "Operate", "Optimize"]
+    "itemNames": [
+      "Camunda black",
+      "Camunda orange",
+      "Camunda white",
+      "Modeler",
+      "Forms",
+      "Connectors",
+      "Integration Framework",
+      "Workflow Engine",
+      "Decision Engine",
+      "Tasklist",
+      "Operate",
+      "Optimize"
+    ]
   },
   {
     "name": "Christmas essentials",
@@ -5421,7 +6108,23 @@
     "created": "2024-10-11",
     "updated": "2024-10-11",
     "version": 2,
-    "itemNames": ["Off-page Connector", "Connector", "Delay", "Preparation / Initialization", "Database", "Or", "And", "Input / Output", "Predefined Process", "Manaual Input", "Multiple Document", "Document", "Decision", "Process", "Start / End"]
+    "itemNames": [
+      "Off-page Connector",
+      "Connector",
+      "Delay",
+      "Preparation / Initialization",
+      "Database",
+      "Or",
+      "And",
+      "Input / Output",
+      "Predefined Process",
+      "Manaual Input",
+      "Multiple Document",
+      "Document",
+      "Decision",
+      "Process",
+      "Start / End"
+    ]
   },
   {
     "name": "DnD/TTRPG battle map creature tokens",
@@ -5439,7 +6142,9 @@
     "created": "2024-06-29",
     "updated": "2024-06-29",
     "version": 2,
-    "itemNames": ["All tokens"]
+    "itemNames": [
+      "All tokens"
+    ]
   },
   {
     "name": "Oracle Cloud Infrastructure Icons",
@@ -5602,7 +6307,22 @@
     "created": "2024-09-18",
     "updated": "2024-09-18",
     "version": 2,
-    "itemNames": ["Stations - 3", "Stations - 2", "VCF - multiple", "BAM - multiple", "FastQ - multiple", "VCF file", "BAM file", "FastQ file", "nf-core logo", "Fusion logo", "Wave logo", "Seqera logo", "MultiQC logo", "Nextflow logo"]
+    "itemNames": [
+      "Stations - 3",
+      "Stations - 2",
+      "VCF - multiple",
+      "BAM - multiple",
+      "FastQ - multiple",
+      "VCF file",
+      "BAM file",
+      "FastQ file",
+      "nf-core logo",
+      "Fusion logo",
+      "Wave logo",
+      "Seqera logo",
+      "MultiQC logo",
+      "Nextflow logo"
+    ]
   },
   {
     "name": "AWS Architecture Icons",
@@ -6042,7 +6762,16 @@
     "created": "2025-03-02",
     "updated": "2025-03-02",
     "version": 2,
-    "itemNames": ["reduce scatter", "all to all", "all gather", "all reduce", "gather", "reduce", "broadcast", "scatter"]
+    "itemNames": [
+      "reduce scatter",
+      "all to all",
+      "all gather",
+      "all reduce",
+      "gather",
+      "reduce",
+      "broadcast",
+      "scatter"
+    ]
   },
   {
     "name": "Fortinet",
@@ -6112,7 +6841,16 @@
     "created": "2025-03-09",
     "updated": "2025-03-09",
     "version": 2,
-    "itemNames": ["Vagrant", "Packer", "Waypoint", "Nomad", "Consul", "Boundary", "Vault", "Terraform"]
+    "itemNames": [
+      "Vagrant",
+      "Packer",
+      "Waypoint",
+      "Nomad",
+      "Consul",
+      "Boundary",
+      "Vault",
+      "Terraform"
+    ]
   },
   {
     "name": " GitHub Actions",
@@ -6130,7 +6868,12 @@
     "created": "2025-02-07",
     "updated": "2025-02-07",
     "version": 2,
-    "itemNames": ["Metrics", "Cache", "GitHub Actions", "GitHub"]
+    "itemNames": [
+      "Metrics",
+      "Cache",
+      "GitHub Actions",
+      "GitHub"
+    ]
   },
   {
     "name": "Japanese Pitch Accent Graphs Template Collection・日本語の高低アクセントのグラフテンプレートのコレクション",
@@ -6294,7 +7037,12 @@
     "created": "2025-03-05",
     "updated": "2025-03-05",
     "version": 2,
-    "itemNames": ["Exclamation", "Nope", "What", "Yes"]
+    "itemNames": [
+      "Exclamation",
+      "Nope",
+      "What",
+      "Yes"
+    ]
   },
   {
     "name": "Chickens",
@@ -6312,7 +7060,11 @@
     "created": "2025-02-06",
     "updated": "2025-02-06",
     "version": 2,
-    "itemNames": ["Big Chicken", "Little Chicken", "Medium Chicken"]
+    "itemNames": [
+      "Big Chicken",
+      "Little Chicken",
+      "Medium Chicken"
+    ]
   },
   {
     "name": "UML Deployment diagram",
@@ -6330,7 +7082,16 @@
     "created": "2025-03-18",
     "updated": "2025-03-18",
     "version": 2,
-    "itemNames": ["Deployment pane", "Scheme icon", "Artifact icon", "Scheme icon", "Artifact icon", "Operating system", "Execution environment", "Exposed interface"]
+    "itemNames": [
+      "Deployment pane",
+      "Scheme icon",
+      "Artifact icon",
+      "Scheme icon",
+      "Artifact icon",
+      "Operating system",
+      "Execution environment",
+      "Exposed interface"
+    ]
   },
   {
     "name": "UML Component Diagram",
@@ -6348,7 +7109,14 @@
     "created": "2025-03-17",
     "updated": "2025-03-17",
     "version": 2,
-    "itemNames": ["Dependency", "Port", "Provided interface", "Required interface", "Subsystem", "Component"]
+    "itemNames": [
+      "Dependency",
+      "Port",
+      "Provided interface",
+      "Required interface",
+      "Subsystem",
+      "Component"
+    ]
   },
   {
     "name": "CyberArk",
@@ -6533,7 +7301,12 @@
     "created": "2026-06-18",
     "updated": "2026-06-18",
     "version": 2,
-    "itemNames": ["TomorrowX Composable Agentic Platform (CAP)", "TomorrowX Programmable Data Agent", "TomorrowX Console", "TomorrowX Editor"]
+    "itemNames": [
+      "TomorrowX Composable Agentic Platform (CAP)",
+      "TomorrowX Programmable Data Agent",
+      "TomorrowX Console",
+      "TomorrowX Editor"
+    ]
   },
   {
     "name": "Databricks Architecture Icons",
@@ -6594,6 +7367,14 @@
     "created": "2025-12-29",
     "updated": "2025-12-29",
     "version": 2,
-    "itemNames": ["Atlassian", "Jira", "Jira Service Management", "Trello", "Rovo", "Jira Software", "Bitbucket"]
+    "itemNames": [
+      "Atlassian",
+      "Jira",
+      "Jira Service Management",
+      "Trello",
+      "Rovo",
+      "Jira Software",
+      "Bitbucket"
+    ]
   }
 ]

@@ -545,7 +545,6 @@ const ExcalidrawWrapper = () => {
             <span>返回工作台</span>
           </button>
         )}
-        {!isPreview && <CanvasGenerationLoading />}
         {!isPreview && excalidrawAPI && (
           <VideoExportDialog
             open={videoExportOpen}
@@ -554,6 +553,7 @@ const ExcalidrawWrapper = () => {
           />
         )}
       </main>
+      {!isPreview && <CanvasGenerationLoading />}
       <AnimationEditorDock previewOnly={isPreview} />
     </div>
   );

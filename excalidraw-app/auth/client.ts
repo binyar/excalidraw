@@ -1,5 +1,5 @@
 export type AuthSession =
-  | { authenticated: true; username: string }
+  | { authenticated: true; username: string; isAdmin: boolean }
   | { authenticated: false };
 
 const authRequest = async <T>(path: string, options?: RequestInit) => {
@@ -14,11 +14,14 @@ const authRequest = async <T>(path: string, options?: RequestInit) => {
 export const authApi = {
   session: () => authRequest<AuthSession>("/session"),
   login: (username: string, password: string) =>
-    authRequest<{ authenticated: true; username: string }>("/login", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    }),
+    authRequest<{ authenticated: true; username: string; isAdmin: boolean }>(
+      "/login",
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      },
+    ),
   logout: () =>
     authRequest<{ authenticated: false }>("/logout", { method: "POST" }),
 };

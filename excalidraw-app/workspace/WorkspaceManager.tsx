@@ -26,6 +26,8 @@ import { AssetLibrary } from "./AssetLibrary";
 import { getAssetPackIdFromPath, isAssetLibraryPath } from "./assetPacks";
 import { getWorkspaceEditorPath } from "./editorRoute";
 import { Icon } from "./icons";
+import { SkillLibrary } from "./SkillLibrary";
+import { isSkillLibraryPath } from "./skills";
 import "./WorkspaceManager.css";
 import { WorkspaceProjectList } from "./WorkspaceProjectList";
 
@@ -302,12 +304,19 @@ const FolderNameDialog = ({
 
 export const WorkspaceManager = () => {
   const [workspaceMode, setWorkspaceMode] = useState<
-    "create" | "projects" | "assets"
-  >(isAssetLibraryPath() ? "assets" : "create");
+    "create" | "projects" | "assets" | "skills"
+  >(
+    isSkillLibraryPath()
+      ? "skills"
+      : isAssetLibraryPath()
+      ? "assets"
+      : "create",
+  );
   const [assetPackId, setAssetPackId] = useState<string | null>(() =>
     getAssetPackIdFromPath(),
   );
   const [installedAssetCount, setInstalledAssetCount] = useState(0);
+  const [enabledSkillCount, setEnabledSkillCount] = useState(0);
   const [allFolders, setAllFolders] = useState<WorkspaceFolder[]>([]);
   const [stats, setStats] = useState(emptyStats);
   const [folderId, setFolderId] = useState<string | null>(null);
@@ -350,7 +359,10 @@ export const WorkspaceManager = () => {
 
   useEffect(() => {
     const handlePopState = () => {
-      if (isAssetLibraryPath()) {
+      if (isSkillLibraryPath()) {
+        setWorkspaceMode("skills");
+        setAssetPackId(null);
+      } else if (isAssetLibraryPath()) {
         setWorkspaceMode("assets");
         setAssetPackId(getAssetPackIdFromPath());
       } else {
@@ -363,7 +375,7 @@ export const WorkspaceManager = () => {
   }, []);
 
   const navigateWorkspace = (
-    mode: "create" | "projects" | "assets",
+    mode: "create" | "projects" | "assets" | "skills",
     path: string,
     nextPackId: string | null = null,
   ) => {
@@ -608,7 +620,12 @@ export const WorkspaceManager = () => {
             <Lightbulb className="size-4" />
             灵感
           </Button>
-          <Button variant="ghost" className="justify-start" disabled>
+          <Button
+            variant={workspaceMode === "skills" ? "default" : "ghost"}
+            className="justify-start"
+            aria-current={workspaceMode === "skills" ? "page" : undefined}
+            onClick={() => navigateWorkspace("skills", "/skills")}
+          >
             <Sparkles className="size-4" />
             技能
           </Button>
@@ -638,6 +655,32 @@ export const WorkspaceManager = () => {
                 <div className="flex items-center justify-between px-3 py-2 text-xs text-muted-foreground">
                   <span>已安装</span>
                   <span>{installedAssetCount}</span>
+                </div>
+              </div>
+            </>
+          ) : workspaceMode === "skills" ? (
+            <>
+              <div className="mb-2 px-2">
+                <h2 className="text-xs font-medium text-muted-foreground">
+                  技能库
+                </h2>
+                <p className="mt-0.5 text-[11px] text-muted-foreground/70">
+                  管理 Agent 可使用的技能
+                </p>
+              </div>
+              <div className="space-y-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-9 w-full justify-start bg-sidebar-accent text-sm font-medium"
+                  onClick={() => navigateWorkspace("skills", "/skills")}
+                >
+                  <Sparkles className="size-4" />
+                  全部技能
+                </Button>
+                <div className="flex items-center justify-between px-3 py-2 text-xs text-muted-foreground">
+                  <span>已安装</span>
+                  <span>{enabledSkillCount}</span>
                 </div>
               </div>
             </>
@@ -1039,6 +1082,8 @@ export const WorkspaceManager = () => {
               onWorkspaceChanged={() => void loadWorkspace()}
             />
           </div>
+        ) : workspaceMode === "skills" ? (
+          <SkillLibrary onEnabledChange={setEnabledSkillCount} />
         ) : (
           <AssetLibrary
             packId={assetPackId}
