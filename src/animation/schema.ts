@@ -885,6 +885,7 @@ const validateTarget: ValueValidator = (value, path, issues) => {
         "toSceneId",
         "effect",
         "direction",
+        "origin",
         "role",
       ],
       path,
@@ -919,6 +920,19 @@ const validateTarget: ValueValidator = (value, path, issues) => {
       value,
       "direction",
       new Set(["left", "right", "up", "down"]),
+      path,
+      issues,
+    );
+    validateOptionalEnum(
+      value,
+      "origin",
+      new Set([
+        "center",
+        "top-left",
+        "top-right",
+        "bottom-left",
+        "bottom-right",
+      ]),
       path,
       issues,
     );

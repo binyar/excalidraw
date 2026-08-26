@@ -1,17 +1,20 @@
+// @ts-nocheck
 import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
   compileStoryAnimationPlan,
   createEmptyAnimationPlan,
+  deriveSceneLifecycles,
   sanitizeAnimationId,
+  validateSceneLifecycleCueCoverage,
   validateStoryAnimationPlan,
-} from "./animation-plan.mjs";
+} from "./animation-plan.ts";
 import {
   createAnimationPlannerTools,
   STYLE_PROPERTIES_BY_TARGET_TYPE,
-} from "./animation-planner-tools.mjs";
-import { ANIMATION_AGENT_SYSTEM_PROMPT } from "./prompt.mjs";
+} from "./animation-planner-tools.ts";
+import { ANIMATION_AGENT_SYSTEM_PROMPT } from "./prompt.ts";
 
 const tool = (tools, name) => {
   const found = tools.find((candidate) => candidate.name === name);
@@ -233,6 +236,78 @@ const plan = () => ({
   ],
 });
 
+test("locked story lifecycle requires animated exits before terminal hiding", () => {
+  const lockedPlan = plan();
+  assert.deepEqual(deriveSceneLifecycles(lockedPlan.scenes, canvasDraft), [
+    {
+      sceneId: "opening-scene",
+      enterTargetIds: [],
+      persistentTargetIds: [],
+      exitTargetIds: ["hero"],
+    },
+    {
+      sceneId: "detail-scene",
+      enterTargetIds: ["detail", "hero-detail"],
+      persistentTargetIds: [],
+      exitTargetIds: [],
+    },
+  ]);
+  lockedPlan.scenes[0].cues.push({
+    id: "hero-emphasis",
+    type: "emphasize",
+    targets: ["hero"],
+    atMs: 1200,
+    durationMs: 400,
+    effect: "pulse",
+  });
+  assert.throws(
+    () => validateSceneLifecycleCueCoverage(lockedPlan, canvasDraft),
+    /缺少离场元素的退场动画：hero/,
+  );
+
+  lockedPlan.scenes[0].cues.push({
+    id: "hero-exit",
+    type: "exit",
+    targets: ["hero"],
+    atMs: 2100,
+    durationMs: 500,
+    effect: "slide",
+    direction: "down",
+    motion: "gentle",
+  });
+  validateSceneLifecycleCueCoverage(lockedPlan, canvasDraft);
+  const draft = compileStoryAnimationPlan(lockedPlan, canvasDraft, {
+    repair: false,
+  });
+  const exitTrack = draft.tracks.find(
+    (track) =>
+      track.targetId === "hero" &&
+      track.presets?.some((preset) => preset.category === "exit"),
+  );
+  assert.ok(exitTrack);
+  assert.ok(
+    exitTrack.properties?.some(
+      (property) =>
+        property.property === "element.visibility" &&
+        property.keyframes.at(-1)?.value === "hidden",
+    ),
+  );
+});
+
+test("locked animation Agent can only plan cues and finalize", () => {
+  const tools = createAnimationPlannerTools(
+    canvasDraft,
+    createEmptyAnimationPlan(),
+    {
+      lockStoryPlan: true,
+    },
+  );
+  assert.deepEqual(
+    tools.map((candidate) => candidate.name),
+    ["define_scene_cues", "finalize_animation_plan"],
+  );
+});
+
 test("planner DSL compiles semantic scenes and cues into Motion tracks", () => {
   const draft = compileStoryAnimationPlan(plan(), canvasDraft);
 
@@ -405,6 +480,29 @@ test("planner materializes a color chapter transition into editable tracks", () 
       track.properties.some(
         (property) => property.property === "transition.progress",
       ),
+    ),
+  );
+});
+
+test("planner persists an iris corner origin and breathing scale", () => {
+  const withTransition = plan();
+  delete withTransition.scenes[1].camera;
+  withTransition.scenes[1].transition = {
+    effect: "iris",
+    durationMs: 1200,
+    origin: "bottom-right",
+  };
+
+  const draft = compileStoryAnimationPlan(withTransition, canvasDraft);
+  const transition = draft.tracks.find(
+    (track) => track.targetType === "transition",
+  );
+
+  assert.equal(transition.effect, "iris");
+  assert.equal(transition.origin, "bottom-right");
+  assert.ok(
+    transition.properties.some(
+      (property) => property.property === "transition.scale",
     ),
   );
 });
@@ -887,12 +985,15 @@ test("planner deterministically maps story space relations to Camera or page tra
 
   assert.equal(state.scenes[0].camera, undefined);
   assert.equal(state.scenes[1].camera.transition, "reframe");
+  assert.equal(state.scenes[1].camera.transitionDurationMs, 1600);
   assert.equal(state.scenes[1].transition.effect, "camera");
+  assert.equal(state.scenes[1].transition.durationMs, 1600);
   assert.equal(state.scenes[2].camera, undefined);
   assert.equal(state.scenes[2].transition.effect, "directional-wipe");
   const draft = compileStoryAnimationPlan(state, spatialCanvas);
   assert.match(draft.scenes[1].description, /镜头漫游/);
   assert.match(draft.scenes[2].description, /独立页面/);
+  assert.equal(state.scenes[2].transition.durationMs, 2000);
   const camera = draft.tracks.find((track) => track.targetType === "camera");
   assert.ok(camera);
   const centerX = camera.properties.find(
@@ -919,8 +1020,8 @@ test("planner deterministically maps story space relations to Camera or page tra
     value: 1,
     label: "scene-result",
   });
-  assert.equal(centerX.keyframes.at(-2).atMs, 6800);
-  assert.equal(zoom.keyframes.at(-2).atMs, 6800);
+  assert.equal(centerX.keyframes.at(-2).atMs, 6000);
+  assert.equal(zoom.keyframes.at(-2).atMs, 6000);
   assert.ok(centerX.keyframes.at(-2).easing);
   assert.ok(zoom.keyframes.at(-2).easing);
 });
@@ -1027,6 +1128,8 @@ test("scene cue tool filters style properties by element capability", async () =
     width: 200,
     height: 80,
   });
+  textCanvas.elements.find((element) => element.id === "detail").label =
+    "带文字的详情卡片";
   const tools = createAnimationPlannerTools(textCanvas, state);
   await tool(tools, "define_animation_style").execute("style", {
     durationMs: 8000,
@@ -1094,6 +1197,16 @@ test("scene cue tool filters style properties by element capability", async () =
         styleProperty: "visual.strokeWidth",
         styleValue: 0,
       },
+      {
+        id: "unsafe-labeled-background",
+        type: "style",
+        targets: ["detail"],
+        atMs: 1800,
+        durationMs: 300,
+        effect: "style",
+        styleProperty: "visual.backgroundColor",
+        styleValue: "#111827FF",
+      },
     ],
   });
 
@@ -1109,6 +1222,11 @@ test("scene cue tool filters style properties by element capability", async () =
   assert.ok(
     result.details.repairs.some((repair) =>
       repair.includes("不支持 visual.backgroundColor"),
+    ),
+  );
+  assert.ok(
+    result.details.repairs.some((repair) =>
+      repair.includes("带文字的背景色动画目标 detail"),
     ),
   );
 });

@@ -43,6 +43,96 @@ const artifact = parseStoryArtifact({
   kind: "story-artifact",
   artifactId: "run-1",
   summary: "产品发布故事完成",
+  directorPlan: {
+    schemaVersion: "2.0",
+    id: "launch-story",
+    title: "产品发布",
+    summary: "从问题到成果",
+    durationMs: 8600,
+    rationale: "两个完整场景需要清晰的阅读和镜头时间",
+    directionSummary: "两个场景依次呈现问题与方案",
+    style: {
+      tone: "restrained",
+      pace: "normal",
+      reducedMotionFallback: true,
+    },
+    beats: [
+      {
+        id: "problem",
+        title: "问题",
+        elementIds: ["problem-card"],
+        spaceId: "page-problem",
+        relationFromPrevious: "new-page",
+        relationReason: "故事首章建立初始页面",
+      },
+      {
+        id: "solution",
+        title: "方案",
+        elementIds: ["solution-card"],
+        spaceId: "page-solution",
+        relationFromPrevious: "new-page",
+        relationReason: "旧故事按独立页面迁移",
+      },
+    ],
+    spaceLayouts: [],
+    sections: [],
+    content: [
+      {
+        id: "problem-card",
+        kind: "shape",
+        role: "problem",
+        label: "用户问题",
+      },
+      {
+        id: "solution-card",
+        kind: "shape",
+        role: "solution",
+        label: "解决方案",
+      },
+      {
+        id: "problem-to-solution",
+        kind: "connector",
+        role: "conversion",
+        label: "转化",
+        from: "problem-card",
+        to: "solution-card",
+      },
+    ],
+    scenes: [
+      {
+        id: "problem",
+        beatId: "problem",
+        startMs: 0,
+        durationMs: 4000,
+        focusTargets: ["problem-card"],
+        camera: { framing: "fit", transition: "hold" },
+        cues: [],
+      },
+      {
+        id: "solution",
+        beatId: "solution",
+        startMs: 4600,
+        durationMs: 4000,
+        focusTargets: ["solution-card"],
+        camera: { framing: "medium", transition: "reframe" },
+        cues: [],
+      },
+    ],
+    lifecycles: [
+      {
+        sceneId: "problem",
+        enterTargetIds: [],
+        persistentTargetIds: [],
+        exitTargetIds: ["problem-card"],
+      },
+      {
+        sceneId: "solution",
+        enterTargetIds: ["solution-card"],
+        persistentTargetIds: [],
+        exitTargetIds: [],
+      },
+    ],
+  },
   canvas: {
     schemaVersion: "1.0",
     id: "launch-story",
@@ -62,6 +152,11 @@ const artifact = parseStoryArtifact({
         y: 160,
         width: 240,
         height: 100,
+        style: {
+          backgroundColor: "#1F2937",
+          strokeColor: "#212529",
+          textColor: "#F8FAFC",
+        },
       },
       {
         id: "solution-card",
@@ -81,6 +176,7 @@ const artifact = parseStoryArtifact({
         from: "problem-card",
         to: "solution-card",
         label: "转化",
+        role: "conversion",
       },
     ],
   },
@@ -89,13 +185,13 @@ const artifact = parseStoryArtifact({
     id: "animation-launch-story",
     durationMs: 8600,
     frameRate: 60,
-    rationale: "two readable beats and a conclusion",
-    summary: "8.6 second animation",
+    rationale: "两个完整场景需要清晰的阅读和镜头时间",
+    summary: "两个场景依次呈现问题与方案",
     plan: {
       schemaVersion: "1.0",
       durationMs: 8600,
-      rationale: "two readable beats and a conclusion",
-      summary: "8.6 second animation",
+      rationale: "两个完整场景需要清晰的阅读和镜头时间",
+      summary: "两个场景依次呈现问题与方案",
       style: {
         tone: "restrained",
         pace: "normal",
@@ -109,7 +205,16 @@ const artifact = parseStoryArtifact({
           durationMs: 4000,
           focusTargets: ["problem-card"],
           camera: { framing: "fit", transition: "hold" },
-          cues: [],
+          cues: [
+            {
+              id: "problem-exit",
+              type: "exit",
+              targets: ["problem-card"],
+              atMs: 3200,
+              durationMs: 500,
+              effect: "fade",
+            },
+          ],
         },
         {
           id: "solution",
@@ -118,7 +223,16 @@ const artifact = parseStoryArtifact({
           durationMs: 4000,
           focusTargets: ["solution-card"],
           camera: { framing: "medium", transition: "reframe" },
-          cues: [],
+          cues: [
+            {
+              id: "solution-enter",
+              type: "enter",
+              targets: ["solution-card"],
+              atMs: 200,
+              durationMs: 500,
+              effect: "slide",
+            },
+          ],
         },
       ],
     },
@@ -210,6 +324,23 @@ const artifact = parseStoryArtifact({
 });
 
 describe("story compiler", () => {
+  it("rejects animation plans that diverge from the frozen Director DSL", () => {
+    expect(() =>
+      parseStoryArtifact({
+        ...artifact,
+        animation: {
+          ...artifact.animation,
+          plan: {
+            ...artifact.animation.plan,
+            scenes: artifact.animation.plan.scenes.map((scene, index) =>
+              index === 0 ? { ...scene, durationMs: 3900 } : scene,
+            ),
+          },
+        },
+      }),
+    ).toThrow("改变了 Story Director Plan 的冻结结构");
+  });
+
   it("keeps lossy Chinese runtime ids stable and distinct", () => {
     expect(sanitizeStoryRuntimeId("场景-问题")).not.toBe(
       sanitizeStoryRuntimeId("场景-方案"),
@@ -220,6 +351,31 @@ describe("story compiler", () => {
   it("preserves managed Section layout metadata in story artifacts", () => {
     const managed = parseStoryArtifact({
       ...artifact,
+      directorPlan: {
+        ...artifact.directorPlan,
+        spaceLayouts: [
+          {
+            spaceId: "page-problem",
+            layout: { mode: "grid", padding: 60 },
+          },
+          {
+            spaceId: "page-solution",
+            layout: { mode: "grid", padding: 60 },
+          },
+        ],
+        sections: [
+          {
+            id: "problem-section",
+            spaceId: "page-problem",
+            layout: { mode: "column" },
+          },
+          {
+            id: "solution-section",
+            spaceId: "page-solution",
+            layout: { mode: "column" },
+          },
+        ],
+      },
       canvas: {
         ...artifact.canvas,
         spaceLayouts: [
@@ -343,6 +499,15 @@ describe("story compiler", () => {
       spaceIds: ["page-solution"],
       spaceId: "page-solution",
       storyScope: "scene",
+    });
+    expect(
+      result.elements.find(
+        (element) => element.id === "ai-run-1-element-problem-card",
+      ),
+    ).toMatchObject({
+      strokeColor: "#212529",
+      backgroundColor: "#1F2937",
+      label: { strokeColor: "#F8FAFC" },
     });
     expect(
       result.animation.tracks.filter(
@@ -494,9 +659,67 @@ describe("story compiler", () => {
     ).toBe(true);
   });
 
+  it("converts a centered Canvas text box to Excalidraw center anchors", () => {
+    const centeredTextArtifact: typeof artifact = {
+      ...artifact,
+      canvas: {
+        ...artifact.canvas,
+        elements: [
+          ...artifact.canvas.elements,
+          {
+            id: "page-title",
+            type: "text",
+            role: "page-title",
+            label: "下一步行动计划",
+            x: 60,
+            y: 380,
+            width: 1160,
+            height: 280,
+            style: {
+              fontSize: 42,
+              textAlign: "center",
+            },
+          },
+        ],
+      },
+    };
+    const result = compileStoryArtifact(centeredTextArtifact);
+    const skeleton = result.elements.find(
+      (element) => element.id === "ai-run-1-element-page-title",
+    );
+
+    expect(skeleton).toMatchObject({ x: 640, y: 520 });
+
+    const converted = convertToExcalidrawElements(result.elements, {
+      regenerateIds: false,
+      snapBindingsToOutline: true,
+    });
+    const title = converted.find(
+      (element) => element.id === "ai-run-1-element-page-title",
+    );
+    expect(title).toBeDefined();
+    if (!title) {
+      throw new Error("Expected centered page title");
+    }
+    expect(title.x + title.width / 2).toBeCloseTo(640);
+    expect(title.y + title.height / 2).toBeCloseTo(520);
+  });
+
   it("reflows semantic card children instead of trusting stale coordinates", () => {
     const cardArtifact = parseStoryArtifact({
       ...artifact,
+      directorPlan: {
+        ...artifact.directorPlan,
+        content: [
+          ...artifact.directorPlan.content,
+          {
+            id: "problem-caption",
+            kind: "text",
+            role: "caption",
+            label: "与问题卡片对应的说明",
+          },
+        ],
+      },
       canvas: {
         ...artifact.canvas,
         elements: [
@@ -605,6 +828,28 @@ describe("story compiler", () => {
   it("compiles a selected library item as one semantic animation target", () => {
     const libraryArtifact = parseStoryArtifact({
       ...artifact,
+      directorPlan: {
+        ...artifact.directorPlan,
+        beats: [
+          ...artifact.directorPlan.beats,
+          {
+            id: "asset",
+            title: "Asset",
+            elementIds: ["cloud-icon"],
+            spaceId: "page-asset",
+            relationFromPrevious: "new-page",
+            relationReason: "旧故事按独立页面迁移",
+          },
+        ],
+        content: [
+          ...artifact.directorPlan.content,
+          {
+            id: "cloud-icon",
+            kind: "visual",
+            role: "illustration",
+          },
+        ],
+      },
       canvas: {
         ...artifact.canvas,
         beats: [
@@ -839,6 +1084,7 @@ describe("story compiler", () => {
       ...Array.from({ length: 248 }, (_, index) => ({
         id: `extra-${index}`,
         type: "rectangle" as const,
+        role: "decoration",
         x: index * 10,
         y: 500,
         width: 8,
@@ -848,6 +1094,17 @@ describe("story compiler", () => {
     expect(() =>
       parseStoryArtifact({
         ...artifact,
+        directorPlan: {
+          ...artifact.directorPlan,
+          content: [
+            ...artifact.directorPlan.content,
+            ...Array.from({ length: 248 }, (_, index) => ({
+              id: `extra-${index}`,
+              kind: "shape",
+              role: "decoration",
+            })),
+          ],
+        },
         canvas: { ...artifact.canvas, elements },
       }),
     ).not.toThrow();

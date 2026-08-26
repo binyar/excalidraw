@@ -33,7 +33,7 @@ pnpm dev
 pnpm start:production
 ```
 
-该命令先构建前端，再启动 `excalidraw-app/workspace/server.mjs`。
+该命令先构建前端，再启动 `excalidraw-app/workspace/server.ts`。
 
 ## 验证
 

@@ -1,3 +1,66 @@
+import type {
+  CanvasDraft,
+  CanvasDraftConnector,
+  CanvasDraftElement,
+  CanvasDraftLibraryAsset,
+  CanvasElementStyle,
+  StoryAnimationCue,
+  StoryAnimationCameraPlan,
+  StoryAnimationDraft,
+  StoryAnimationPlan,
+  StoryAnimationPlanScene,
+  StoryAnimationTrack,
+  StoryCameraAnimationTrack,
+  StoryChapterTransitionPlan,
+  StoryElementAnimationTrack,
+  StoryMotionCharacter,
+  StoryMotionPace,
+  StoryMotionTone,
+  StorySceneLifecycle,
+  StoryTransitionAnimationTrack,
+} from "../../../src/ai/story/types";
+import type {
+  AnimationEasing,
+  AnimationKeyframe,
+  AnimationPreset,
+  AnimationProperty,
+  AnimationPropertyName,
+} from "../../../src/animation/types";
+
+type ObjectWindow = { cueId: string; startMs: number; endMs: number };
+type DrawableTarget = CanvasDraftElement | CanvasDraftLibraryAsset;
+type CanvasTarget = DrawableTarget | CanvasDraftConnector;
+type CanvasDraftTargetIndex = {
+  beats: CanvasDraft["beats"];
+  elements: Array<Pick<CanvasDraftElement, "id">>;
+  libraryAssets: Array<Pick<CanvasDraftLibraryAsset, "id">>;
+  connectors: Array<Pick<CanvasDraftConnector, "id">>;
+};
+type StyleProperty = NonNullable<StoryAnimationCue["styleProperty"]>;
+type DraftKeyframe = AnimationKeyframe<unknown> & { label?: string };
+type CameraField = "centerX" | "centerY" | "zoom";
+type CompiledCameraPlan = Omit<
+  Partial<StoryAnimationCameraPlan>,
+  "transition"
+> & {
+  transition: StoryAnimationCameraPlan["transition"] | "return-to-page";
+};
+type CameraValue = Record<CameraField, number> & {
+  scene: StoryAnimationPlanScene;
+  camera: CompiledCameraPlan;
+  kind: "focus" | "page";
+};
+type EmptyAnimationPlan = {
+  schemaVersion: "1.0";
+  durationMs: number | null;
+  rationale: string;
+  summary: string;
+  style: StoryAnimationPlan["style"] | null;
+  scenes: StoryAnimationPlanScene[];
+  finalized: boolean;
+  compiledDraft: StoryAnimationDraft | null;
+};
+
 const CAMERA_VIEWPORT = { width: 1280, height: 720 };
 const PAGE_CAMERA = {
   centerX: CAMERA_VIEWPORT.width / 2,
@@ -5,8 +68,9 @@ const PAGE_CAMERA = {
   zoom: 1,
 };
 
-const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-const stableIdHash = (value) => {
+const clamp = (value: number, min: number, max: number): number =>
+  Math.min(max, Math.max(min, value));
+const stableIdHash = (value: string): string => {
   let hash = 2166136261;
   for (let index = 0; index < value.length; index += 1) {
     hash ^= value.charCodeAt(index);
@@ -14,7 +78,7 @@ const stableIdHash = (value) => {
   }
   return (hash >>> 0).toString(36);
 };
-export const sanitizeAnimationId = (value) => {
+export const sanitizeAnimationId = (value: unknown): string => {
   const normalized = String(value).normalize("NFKC");
   const slug = normalized
     .replace(/[^a-zA-Z0-9_-]+/g, "-")
@@ -28,8 +92,8 @@ export const sanitizeAnimationId = (value) => {
 };
 const sanitizeId = sanitizeAnimationId;
 
-const uniquifyDraftTrackIds = (tracks) => {
-  const used = new Set();
+const uniquifyDraftTrackIds = <T extends { id: string }>(tracks: T[]): T[] => {
+  const used = new Set<string>();
   return tracks.map((track) => {
     const base = sanitizeId(track.id);
     let id = base;
@@ -43,7 +107,7 @@ const uniquifyDraftTrackIds = (tracks) => {
   });
 };
 
-const MOTION_CHARACTER_EASING = {
+const MOTION_CHARACTER_EASING: Record<StoryMotionCharacter, AnimationEasing> = {
   precise: { type: "cubic-bezier", x1: 0.22, y1: 1, x2: 0.36, y2: 1 },
   gentle: { type: "cubic-bezier", x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 },
   snappy: { type: "spring", stiffness: 180, damping: 24, mass: 1 },
@@ -52,21 +116,21 @@ const MOTION_CHARACTER_EASING = {
   dramatic: { type: "cubic-bezier", x1: 0.16, y1: 1, x2: 0.3, y2: 1 },
 };
 
-const DEFAULT_MOTION_BY_TONE = {
+const DEFAULT_MOTION_BY_TONE: Record<StoryMotionTone, StoryMotionCharacter> = {
   restrained: "precise",
   natural: "gentle",
   energetic: "snappy",
   playful: "elastic",
 };
 
-const DEFAULT_DURATION_BY_PACE = {
+const DEFAULT_DURATION_BY_PACE: Record<StoryMotionPace, number> = {
   slow: 700,
   normal: 500,
   fast: 320,
 };
 
 const DEFAULT_HIGHLIGHT_COLOR = "#FFD43B88";
-const DISCRETE_STYLE_PROPERTIES = new Set([
+const DISCRETE_STYLE_PROPERTIES = new Set<StyleProperty>([
   "visual.fillStyle",
   "visual.strokeStyle",
   "visual.roughness",
@@ -75,7 +139,7 @@ const DISCRETE_STYLE_PROPERTIES = new Set([
   "text.verticalAlign",
 ]);
 
-const DEFAULT_STYLE_VALUES = {
+const DEFAULT_STYLE_VALUES: Record<StyleProperty, string | number> = {
   "visual.opacity": 1,
   "visual.strokeColor": "#1E1E1EFF",
   "visual.backgroundColor": "#00000000",
@@ -90,7 +154,10 @@ const DEFAULT_STYLE_VALUES = {
   "text.verticalAlign": "top",
 };
 
-const CANVAS_STYLE_KEY_BY_ANIMATION_PROPERTY = {
+const CANVAS_STYLE_KEY_BY_ANIMATION_PROPERTY: Record<
+  StyleProperty,
+  keyof CanvasElementStyle
+> = {
   "visual.opacity": "opacity",
   "visual.strokeColor": "strokeColor",
   "visual.backgroundColor": "backgroundColor",
@@ -105,33 +172,42 @@ const CANVAS_STYLE_KEY_BY_ANIMATION_PROPERTY = {
   "text.verticalAlign": "verticalAlign",
 };
 
-const supportsDistance = (cue) =>
+const supportsDistance = (cue: StoryAnimationCue): boolean =>
   cue.effect === "slide" || cue.effect === "shake" || cue.effect === "bounce";
 
-const supportsCount = (cue) =>
+const supportsCount = (cue: StoryAnimationCue): boolean =>
   cue.type === "emphasize" &&
   new Set(["pulse", "highlight", "shake", "bounce"]).has(cue.effect);
 
-const easingFor = (motion, style) =>
+const easingFor = (
+  motion: StoryMotionCharacter | undefined,
+  style: StoryAnimationPlan["style"],
+): AnimationEasing =>
   structuredClone(
     MOTION_CHARACTER_EASING[
       motion || DEFAULT_MOTION_BY_TONE[style.tone] || "gentle"
     ],
   );
 
-const getTargetIds = (canvasDraft) =>
+const getTargetIds = (canvasDraft: CanvasDraftTargetIndex): Set<string> =>
   new Set([
     ...canvasDraft.elements.map((element) => element.id),
     ...(canvasDraft.libraryAssets || []).map((asset) => asset.id),
     ...canvasDraft.connectors.map((connector) => connector.id),
   ]);
 
-const cueEndMs = (cue, pace = "normal") =>
+const cueEndMs = (
+  cue: StoryAnimationCue,
+  pace: StoryMotionPace = "normal",
+): number =>
   cue.atMs +
   (cue.durationMs ?? DEFAULT_DURATION_BY_PACE[pace] ?? 500) +
   Math.max(0, cue.targets.length - 1) * (cue.staggerMs || 0);
 
-const uniqueCueId = (scene, requestedId) => {
+const uniqueCueId = (
+  scene: StoryAnimationPlanScene,
+  requestedId: string,
+): string => {
   const used = new Set((scene.cues || []).map((cue) => cue.id));
   let id = requestedId;
   let suffix = 2;
@@ -141,7 +217,10 @@ const uniqueCueId = (scene, requestedId) => {
   return id;
 };
 
-const appendCoverageCue = (scene, cue) => {
+const appendCoverageCue = (
+  scene: StoryAnimationPlanScene,
+  cue: StoryAnimationCue,
+): void => {
   scene.cues ||= [];
   scene.cues.push({
     ...cue,
@@ -149,7 +228,11 @@ const appendCoverageCue = (scene, cue) => {
   });
 };
 
-const beatTargetIds = (scene, canvasDraft, validTargetIds) => {
+const beatTargetIds = (
+  scene: StoryAnimationPlanScene,
+  canvasDraft: CanvasDraftTargetIndex,
+  validTargetIds: Set<string>,
+): string[] => {
   const beat = (canvasDraft.beats || []).find(
     (candidate) => candidate.id === scene.beatId,
   );
@@ -158,12 +241,98 @@ const beatTargetIds = (scene, canvasDraft, validTargetIds) => {
   );
 };
 
+export const deriveSceneLifecycles = (
+  scenes: StoryAnimationPlanScene[],
+  canvasDraft: CanvasDraftTargetIndex,
+): StorySceneLifecycle[] => {
+  const validTargetIds = getTargetIds(canvasDraft);
+  const targetsByScene = scenes.map((scene) =>
+    beatTargetIds(scene, canvasDraft, validTargetIds),
+  );
+
+  return scenes.map((scene, sceneIndex) => {
+    const currentTargets = targetsByScene[sceneIndex];
+    const previousTargets = new Set(targetsByScene[sceneIndex - 1] || []);
+    const nextTargets = new Set(targetsByScene[sceneIndex + 1] || []);
+    return {
+      sceneId: scene.id,
+      enterTargetIds:
+        sceneIndex === 0
+          ? []
+          : currentTargets.filter((targetId) => !previousTargets.has(targetId)),
+      persistentTargetIds:
+        sceneIndex === scenes.length - 1
+          ? []
+          : currentTargets.filter((targetId) => nextTargets.has(targetId)),
+      exitTargetIds:
+        sceneIndex === scenes.length - 1
+          ? []
+          : currentTargets.filter((targetId) => !nextTargets.has(targetId)),
+    };
+  });
+};
+
+export const validateSceneLifecycleCueCoverage = (
+  plan: StoryAnimationPlan,
+  canvasDraft: CanvasDraft,
+): StorySceneLifecycle[] => {
+  const lifecycles = deriveSceneLifecycles(plan.scenes, canvasDraft);
+  for (const [sceneIndex, scene] of plan.scenes.entries()) {
+    if (!scene.cues?.length) {
+      throw new Error(`场景 ${scene.id} 缺少动画 Agent 规划的对象动作`);
+    }
+    const lifecycle = lifecycles[sceneIndex];
+    const enteredTargetIds = new Set(
+      scene.cues
+        .filter((cue) => cue.type === "enter" || cue.type === "draw")
+        .flatMap((cue) => cue.targets),
+    );
+    const exitedTargetIds = new Set(
+      scene.cues
+        .filter((cue) => cue.type === "exit")
+        .flatMap((cue) => cue.targets),
+    );
+    const missingEntrances = lifecycle.enterTargetIds.filter(
+      (targetId) => !enteredTargetIds.has(targetId),
+    );
+    const missingExits = lifecycle.exitTargetIds.filter(
+      (targetId) => !exitedTargetIds.has(targetId),
+    );
+    const invalidPersistentExits = lifecycle.persistentTargetIds.filter(
+      (targetId) => exitedTargetIds.has(targetId),
+    );
+    if (missingEntrances.length > 0) {
+      throw new Error(
+        `场景 ${scene.id} 缺少新增元素的入场动画：${missingEntrances.join(
+          "、",
+        )}`,
+      );
+    }
+    if (missingExits.length > 0) {
+      throw new Error(
+        `场景 ${scene.id} 缺少离场元素的退场动画：${missingExits.join("、")}`,
+      );
+    }
+    if (invalidPersistentExits.length > 0) {
+      throw new Error(
+        `场景 ${
+          scene.id
+        } 错误退场了下一幕仍需复用的元素：${invalidPersistentExits.join("、")}`,
+      );
+    }
+  }
+  return lifecycles;
+};
+
 /**
  * Keeps AI-authored cues intact, but closes the planner contract hole where an
  * agent could finalize a transition-only story by submitting empty cue lists.
  * The generated cues remain ordinary editable Object tracks in the artifact.
  */
-export const ensureObjectCueCoverage = (inputPlan, canvasDraft) => {
+export const ensureObjectCueCoverage = (
+  inputPlan: StoryAnimationPlan,
+  canvasDraft: CanvasDraft,
+): StoryAnimationPlan => {
   const plan = structuredClone(inputPlan);
   const validTargetIds = getTargetIds(canvasDraft);
   const connectorIds = new Set(
@@ -197,7 +366,11 @@ export const ensureObjectCueCoverage = (inputPlan, canvasDraft) => {
       Math.max(100, Math.floor(scene.durationMs * 0.28)),
       Math.max(100, scene.durationMs - entranceAtMs),
     );
-    const addEntranceGroup = (targets, type, effect) => {
+    const addEntranceGroup = (
+      targets: string[],
+      type: "enter" | "draw",
+      effect: "fade" | "slide",
+    ): void => {
       if (targets.length === 0 || scene.durationMs - entranceAtMs < 100) {
         return;
       }
@@ -331,7 +504,7 @@ export const ensureObjectCueCoverage = (inputPlan, canvasDraft) => {
   return plan;
 };
 
-const cueSpanMs = (cue, pace) =>
+const cueSpanMs = (cue: StoryAnimationCue, pace: StoryMotionPace): number =>
   (cue.durationMs ?? DEFAULT_DURATION_BY_PACE[pace] ?? 500) +
   Math.max(0, cue.targets.length - 1) * (cue.staggerMs || 0);
 
@@ -340,10 +513,13 @@ const cueSpanMs = (cue, pace) =>
  * together on the same time window. These are recoverable authoring details,
  * so they must not force the model to submit the whole plan a second time.
  */
-export const prepareStoryAnimationPlan = (inputPlan, canvasDraft) => {
+export const prepareStoryAnimationPlan = (
+  inputPlan: StoryAnimationPlan,
+  canvasDraft: CanvasDraft,
+): { plan: StoryAnimationPlan; repairs: string[] } => {
   const validated = validateStoryAnimationPlan(inputPlan, canvasDraft);
   const plan = ensureObjectCueCoverage(validated, canvasDraft);
-  const repairs = [];
+  const repairs: string[] = [];
   const drawableTargetIds = new Set([
     ...canvasDraft.elements.map((element) => element.id),
     ...(canvasDraft.libraryAssets || []).map((asset) => asset.id),
@@ -398,8 +574,9 @@ export const prepareStoryAnimationPlan = (inputPlan, canvasDraft) => {
       repairs.push(`场景 ${scene.id} 的章节转场时长已收缩`);
     }
     if (
-      scene.camera?.transition !== "cut" &&
-      (scene.camera?.transitionDurationMs || 0) > availableBoundaryMs
+      scene.camera &&
+      scene.camera.transition !== "cut" &&
+      (scene.camera.transitionDurationMs || 0) > availableBoundaryMs
     ) {
       scene.camera.transitionDurationMs = availableBoundaryMs;
       repairs.push(`场景 ${scene.id} 的镜头转场时长已收缩`);
@@ -456,14 +633,17 @@ export const prepareStoryAnimationPlan = (inputPlan, canvasDraft) => {
   };
 };
 
-const elementsById = (canvasDraft) =>
+const elementsById = (canvasDraft: CanvasDraft): Map<string, DrawableTarget> =>
   new Map(
     [...canvasDraft.elements, ...(canvasDraft.libraryAssets || [])].map(
       (element) => [element.id, element],
     ),
   );
 
-const cameraValueForScene = (scene, canvasElementsById) => {
+const cameraValueForScene = (
+  scene: StoryAnimationPlanScene,
+  canvasElementsById: Map<string, DrawableTarget>,
+): { centerX: number; centerY: number; zoom: number } => {
   const targets = scene.focusTargets.map((targetId) => {
     const element = canvasElementsById.get(targetId);
     if (!element) {
@@ -497,7 +677,10 @@ const cameraValueForScene = (scene, canvasElementsById) => {
   };
 };
 
-const appendKeyframe = (keyframes, keyframe) => {
+const appendKeyframe = (
+  keyframes: DraftKeyframe[],
+  keyframe: DraftKeyframe,
+): void => {
   const last = keyframes.at(-1);
   if (last?.atMs === keyframe.atMs) {
     keyframes[keyframes.length - 1] = { ...last, ...keyframe };
@@ -506,7 +689,11 @@ const appendKeyframe = (keyframes, keyframe) => {
   }
 };
 
-const compileCameraTrack = (plan, canvasDraft, objectWindows) => {
+const compileCameraTrack = (
+  plan: StoryAnimationPlan,
+  canvasDraft: CanvasDraft,
+  objectWindows: ObjectWindow[],
+): StoryCameraAnimationTrack | null => {
   if (!plan.scenes.some((scene) => scene.camera)) {
     return null;
   }
@@ -514,13 +701,13 @@ const compileCameraTrack = (plan, canvasDraft, objectWindows) => {
   const beatById = new Map(
     (canvasDraft.beats || []).map((beat) => [beat.id, beat]),
   );
-  const values = [];
+  const values: CameraValue[] = [];
   for (const [sceneIndex, scene] of plan.scenes.entries()) {
     if (scene.camera) {
       values.push({
         scene,
-        camera: scene.camera,
-        kind: "focus",
+        camera: scene.camera as CompiledCameraPlan,
+        kind: "focus" as const,
         ...cameraValueForScene(scene, byId),
       });
       continue;
@@ -540,11 +727,11 @@ const compileCameraTrack = (plan, canvasDraft, objectWindows) => {
         transition: isInitialScene ? "hold" : "return-to-page",
         transitionDurationMs: scene.transition?.durationMs ?? 900,
       },
-      kind: "page",
+      kind: "page" as const,
       ...PAGE_CAMERA,
     });
   }
-  const channels = {
+  const channels: Record<CameraField, DraftKeyframe[]> = {
     centerX: [{ atMs: 0, value: values[0].centerX, label: values[0].scene.id }],
     centerY: [{ atMs: 0, value: values[0].centerY, label: values[0].scene.id }],
     zoom: [{ atMs: 0, value: values[0].zoom, label: values[0].scene.id }],
@@ -556,7 +743,7 @@ const compileCameraTrack = (plan, canvasDraft, objectWindows) => {
     const transition = target.camera.transition || "reframe";
     const arrivalMs = target.scene.startMs;
     if (transition === "cut") {
-      for (const field of ["centerX", "centerY", "zoom"]) {
+      for (const field of ["centerX", "centerY", "zoom"] as const) {
         channels[field][channels[field].length - 1].hold = true;
         appendKeyframe(channels[field], {
           atMs: arrivalMs,
@@ -589,7 +776,7 @@ const compileCameraTrack = (plan, canvasDraft, objectWindows) => {
     );
 
     if (transition === "return-to-page") {
-      for (const field of ["centerX", "centerY"]) {
+      for (const field of ["centerX", "centerY"] as const) {
         appendKeyframe(channels[field], {
           atMs: startMs,
           value: previous[field],
@@ -620,7 +807,7 @@ const compileCameraTrack = (plan, canvasDraft, objectWindows) => {
         0.1,
         4,
       );
-      for (const field of ["centerX", "centerY"]) {
+      for (const field of ["centerX", "centerY"] as const) {
         appendKeyframe(channels[field], {
           atMs: startMs,
           value: previous[field],
@@ -663,7 +850,7 @@ const compileCameraTrack = (plan, canvasDraft, objectWindows) => {
         label: target.scene.id,
       });
     } else if (transition === "pan" || transition === "whip-pan") {
-      for (const field of ["centerX", "centerY"]) {
+      for (const field of ["centerX", "centerY"] as const) {
         appendKeyframe(channels[field], {
           atMs: startMs,
           value: previous[field],
@@ -691,7 +878,7 @@ const compileCameraTrack = (plan, canvasDraft, objectWindows) => {
           `场景 ${target.scene.id} 的 ${transition} 与景别不一致`,
         );
       }
-      for (const field of ["centerX", "centerY"]) {
+      for (const field of ["centerX", "centerY"] as const) {
         target[field] = previous[field];
         appendKeyframe(channels[field], {
           atMs: arrivalMs,
@@ -719,20 +906,35 @@ const compileCameraTrack = (plan, canvasDraft, objectWindows) => {
     startMs: 0,
     durationMs: plan.durationMs,
     properties: [
-      { property: "camera.centerX", fill: "both", keyframes: channels.centerX },
-      { property: "camera.centerY", fill: "both", keyframes: channels.centerY },
-      { property: "camera.zoom", fill: "both", keyframes: channels.zoom },
+      {
+        property: "camera.centerX",
+        fill: "both",
+        keyframes: channels.centerX,
+      } as AnimationProperty,
+      {
+        property: "camera.centerY",
+        fill: "both",
+        keyframes: channels.centerY,
+      } as AnimationProperty,
+      {
+        property: "camera.zoom",
+        fill: "both",
+        keyframes: channels.zoom,
+      } as AnimationProperty,
     ],
   };
 };
 
-const transitionProperty = (property, keyframes) => ({
-  property,
-  keyframes,
-});
+const transitionProperty = (
+  property: AnimationPropertyName,
+  keyframes: DraftKeyframe[],
+): AnimationProperty => ({ property, keyframes } as AnimationProperty);
 
-const compileChapterTransitionTracks = (plan, objectWindows) => {
-  const tracks = [];
+const compileChapterTransitionTracks = (
+  plan: StoryAnimationPlan,
+  objectWindows: ObjectWindow[],
+): StoryTransitionAnimationTrack[] => {
+  const tracks: StoryTransitionAnimationTrack[] = [];
   for (let index = 1; index < plan.scenes.length; index += 1) {
     const scene = plan.scenes[index];
     const previousScene = plan.scenes[index - 1];
@@ -767,14 +969,19 @@ const compileChapterTransitionTracks = (plan, objectWindows) => {
     const transitionId = `chapter-${sanitizeId(previousScene.id)}-${sanitizeId(
       scene.id,
     )}`;
-    const smooth = { type: "preset", name: "smooth" };
-    const linear = { type: "preset", name: "linear" };
+    const smooth: AnimationEasing = { type: "preset", name: "smooth" };
     const primary = transition.color || "#EF4444FF";
     const background = transition.backgroundColor || "#FFFFFFFF";
-    const base = (layerId, name, role, effect, properties) => ({
+    const base = (
+      layerId: string,
+      name: string,
+      role: NonNullable<StoryTransitionAnimationTrack["role"]>,
+      effect: StoryChapterTransitionPlan["effect"],
+      properties: AnimationProperty[],
+    ): StoryTransitionAnimationTrack => ({
       id: `transition-${transitionId}-${layerId}`,
       name,
-      targetType: "transition",
+      targetType: "transition" as const,
       targetId: `${transitionId}:${layerId}`,
       transitionId,
       layerId,
@@ -782,6 +989,7 @@ const compileChapterTransitionTracks = (plan, objectWindows) => {
       toSceneId: scene.id,
       effect,
       direction: transition.direction || "left",
+      ...(transition.origin ? { origin: transition.origin } : {}),
       role,
       startMs,
       durationMs,
@@ -790,11 +998,16 @@ const compileChapterTransitionTracks = (plan, objectWindows) => {
     const progress = (from = 0, to = 1) =>
       transitionProperty("transition.progress", [
         { atMs: 0, value: from, easing: smooth },
+        {
+          atMs: Math.round(durationMs * 0.58),
+          value: from + (to - from) * 0.44,
+          easing: smooth,
+        },
         { atMs: durationMs, value: to },
       ]);
-    const opacity = (keyframes) =>
+    const opacity = (keyframes: DraftKeyframe[]) =>
       transitionProperty("transition.opacity", keyframes);
-    const color = (value) =>
+    const color = (value: string) =>
       transitionProperty("transition.color", [{ atMs: 0, value, hold: true }]);
 
     if (transition.effect === "color-wipe") {
@@ -807,7 +1020,7 @@ const compileChapterTransitionTracks = (plan, objectWindows) => {
             { atMs: firstEnd, value: 1 },
           ]),
           opacity([
-            { atMs: 0, value: 1, easing: linear },
+            { atMs: 0, value: 1, hold: true },
             { atMs: firstEnd + overlap, value: 1, easing: smooth },
             { atMs: durationMs, value: 0 },
           ]),
@@ -820,7 +1033,7 @@ const compileChapterTransitionTracks = (plan, objectWindows) => {
           ]),
           opacity([
             { atMs: 0, value: 0, hold: true },
-            { atMs: firstEnd - overlap, value: 1, easing: linear },
+            { atMs: firstEnd - overlap, value: 1, easing: smooth },
             { atMs: durationMs, value: 1 },
           ]),
           color(background),
@@ -858,11 +1071,39 @@ const compileChapterTransitionTracks = (plan, objectWindows) => {
           { atMs: durationMs, value: transition.effect === "camera" ? 0 : 1 },
         ]),
         color(primary),
+        ...(transition.effect === "iris"
+          ? [
+              transitionProperty("transition.scale", [
+                { atMs: 0, value: 0.96, easing: smooth },
+                {
+                  atMs: Math.round(durationMs * 0.72),
+                  value: 1.06,
+                  easing: {
+                    type: "spring",
+                    mass: 1,
+                    stiffness: 170,
+                    damping: 18,
+                  },
+                },
+                { atMs: durationMs, value: 1, easing: smooth },
+              ]),
+            ]
+          : []),
         ...(transition.effect === "push"
           ? [
               transitionProperty("transition.scale", [
                 { atMs: 0, value: 1, easing: smooth },
-                { atMs: durationMs, value: 1.04 },
+                {
+                  atMs: Math.round(durationMs * 0.68),
+                  value: 1.04,
+                  easing: {
+                    type: "spring",
+                    mass: 1,
+                    stiffness: 150,
+                    damping: 20,
+                  },
+                },
+                { atMs: durationMs, value: 1, easing: smooth },
               ]),
             ]
           : []),
@@ -872,7 +1113,7 @@ const compileChapterTransitionTracks = (plan, objectWindows) => {
   return tracks;
 };
 
-const effectName = (cue) => {
+const effectName = (cue: StoryAnimationCue): string => {
   if (cue.type === "enter") {
     return cue.effect === "fade" ? "fade-in" : `${cue.effect}-in`;
   }
@@ -882,7 +1123,10 @@ const effectName = (cue) => {
   return cue.effect;
 };
 
-const visibilityPropertyForCue = (cue, durationMs) => {
+const visibilityPropertyForCue = (
+  cue: StoryAnimationCue,
+  durationMs: number,
+): AnimationProperty | null => {
   if (cue.type === "enter") {
     return {
       property: "element.visibility",
@@ -914,7 +1158,15 @@ const compileCue = ({
   plan,
   connectors,
   canvasTarget,
-}) => {
+}: {
+  cue: StoryAnimationCue;
+  scene: StoryAnimationPlanScene;
+  targetId: string;
+  targetIndex: number;
+  plan: StoryAnimationPlan;
+  connectors: Set<string>;
+  canvasTarget: CanvasTarget | undefined;
+}): StoryElementAnimationTrack => {
   // A track carrying sceneId uses scene-local time. Runtime scheduling adds the
   // scene start exactly once.
   const startMs = cue.atMs + targetIndex * (cue.staggerMs || 0);
@@ -925,13 +1177,18 @@ const compileCue = ({
   )}`;
   if (cue.type === "style") {
     const property = cue.styleProperty;
+    if (!property || cue.styleValue === undefined) {
+      throw new Error(`Style Cue ${cue.id} 缺少属性或目标值`);
+    }
     const styleKey = CANVAS_STYLE_KEY_BY_ANIMATION_PROPERTY[property];
-    const canvasValue = canvasTarget?.style?.[styleKey];
+    const canvasStyle =
+      canvasTarget && "style" in canvasTarget ? canvasTarget.style : undefined;
+    const canvasValue = canvasStyle?.[styleKey];
     let fromValue =
       cue.fromStyleValue ?? canvasValue ?? DEFAULT_STYLE_VALUES[property];
     let toValue = cue.styleValue;
     if (property === "visual.roundness") {
-      const normalizeRoundness = (value) =>
+      const normalizeRoundness = (value: unknown): number =>
         value === "round" || value === 1 ? 1 : 0;
       fromValue = normalizeRoundness(fromValue);
       toValue = normalizeRoundness(toValue);
@@ -957,7 +1214,7 @@ const compileCue = ({
                 },
                 { atMs: durationMs, value: toValue },
               ],
-        },
+        } as AnimationProperty,
       ],
     };
   }
@@ -1019,12 +1276,15 @@ const compileCue = ({
         ...(cue.effect === "highlight"
           ? { color: cue.color || DEFAULT_HIGHLIGHT_COLOR }
           : {}),
-      },
+      } as AnimationPreset,
     ],
   };
 };
 
-export const validateStoryAnimationPlan = (plan, canvasDraft) => {
+export const validateStoryAnimationPlan = (
+  plan: StoryAnimationPlan,
+  canvasDraft: CanvasDraft,
+): StoryAnimationPlan => {
   if (!plan?.style || !plan.durationMs || plan.durationMs < 1000) {
     throw new Error("动画计划必须先定义 style 和 durationMs");
   }
@@ -1138,8 +1398,14 @@ export const validateStoryAnimationPlan = (plan, canvasDraft) => {
   return plan;
 };
 
-export const compileStoryAnimationPlan = (inputPlan, canvasDraft) => {
-  const { plan } = prepareStoryAnimationPlan(inputPlan, canvasDraft);
+export const compileStoryAnimationPlan = (
+  inputPlan: StoryAnimationPlan,
+  canvasDraft: CanvasDraft,
+  { repair = true }: { repair?: boolean } = {},
+): StoryAnimationDraft => {
+  const plan = repair
+    ? prepareStoryAnimationPlan(inputPlan, canvasDraft).plan
+    : structuredClone(validateStoryAnimationPlan(inputPlan, canvasDraft));
   const connectors = new Set(
     canvasDraft.connectors.map((connector) => connector.id),
   );
@@ -1150,8 +1416,8 @@ export const compileStoryAnimationPlan = (inputPlan, canvasDraft) => {
       ...(canvasDraft.libraryAssets || []),
     ].map((target) => [target.id, target]),
   );
-  const tracks = [];
-  const objectWindows = [];
+  const tracks: StoryAnimationTrack[] = [];
+  const objectWindows: ObjectWindow[] = [];
   for (const scene of plan.scenes) {
     for (const cue of scene.cues || []) {
       cue.targets.forEach((targetId, targetIndex) => {
@@ -1213,7 +1479,7 @@ export const compileStoryAnimationPlan = (inputPlan, canvasDraft) => {
   };
 };
 
-export const createEmptyAnimationPlan = () => ({
+export const createEmptyAnimationPlan = (): EmptyAnimationPlan => ({
   schemaVersion: "1.0",
   durationMs: null,
   rationale: "",

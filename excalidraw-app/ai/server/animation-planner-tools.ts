@@ -3,27 +3,89 @@ import { Type } from "@earendil-works/pi-ai";
 import {
   compileStoryAnimationPlan,
   prepareStoryAnimationPlan,
+  validateSceneLifecycleCueCoverage,
   validateStoryAnimationPlan,
-} from "./animation-plan.mjs";
+} from "./animation-plan.ts";
 
-const resultText = (text, details) => ({
+import type { Static, TSchema } from "@earendil-works/pi-ai";
+
+import type {
+  CanvasDraft,
+  StoryAnimationCameraPlan,
+  StoryAnimationCue,
+  StoryAnimationDraft,
+  StoryAnimationPlan,
+  StoryAnimationPlanScene,
+  StoryChapterTransitionPlan,
+  StoryMotionPace,
+  StoryMotionTone,
+} from "../../../src/ai/story/types";
+
+type ToolResult = {
+  content: Array<{ type: "text"; text: string }>;
+  details?: unknown;
+};
+
+export type AnimationPlannerState = {
+  schemaVersion: "1.0";
+  durationMs: number | null;
+  rationale: string;
+  summary: string;
+  style: StoryAnimationPlan["style"] | null;
+  scenes: StoryAnimationPlanScene[];
+  finalized: boolean;
+  compiledDraft: StoryAnimationDraft | null;
+};
+
+type StyleProperty = NonNullable<StoryAnimationCue["styleProperty"]>;
+type StyleTarget = { id: string; type?: string; parentId?: string };
+
+const resultText = (text: string, details?: unknown): ToolResult => ({
   content: [{ type: "text", text }],
   ...(details ? { details } : {}),
 });
 
-const ANIMATION_TONE_LABELS = {
+const ANIMATION_TONE_LABELS: Record<StoryMotionTone, string> = {
   restrained: "克制",
   natural: "自然",
   energetic: "活力",
   playful: "活泼",
 };
-const ANIMATION_PACE_LABELS = {
+const ANIMATION_PACE_LABELS: Record<StoryMotionPace, string> = {
   slow: "舒缓",
   normal: "适中",
   fast: "明快",
 };
 
+const defineTool = <TSchemaType extends TSchema>(tool: {
+  name: string;
+  label: string;
+  description: string;
+  parameters: TSchemaType;
+  executionMode: "sequential";
+  execute: (id: string, params: Static<TSchemaType>) => Promise<ToolResult>;
+}) => tool;
+
+const requirePlanState = (
+  state: AnimationPlannerState,
+  summary = state.summary,
+): StoryAnimationPlan => {
+  if (!state.style || state.durationMs === null) {
+    throw new Error("动画计划尚未定义 style 或 durationMs");
+  }
+  return {
+    schemaVersion: "1.0",
+    durationMs: state.durationMs,
+    rationale: state.rationale,
+    summary,
+    style: state.style,
+    scenes: state.scenes,
+  };
+};
+
 const MIN_SCENE_READING_DURATION_MS = 3000;
+const MIN_PAGE_TRANSITION_DURATION_MS = 2000;
+const MIN_CAMERA_TRANSITION_DURATION_MS = 1600;
 const MAX_ANIMATION_DURATION_MS = 120_000;
 
 const motionCharacterSchema = Type.Union([
@@ -78,6 +140,15 @@ const chapterTransitionSchema = Type.Object({
       Type.Literal("right"),
       Type.Literal("up"),
       Type.Literal("down"),
+    ]),
+  ),
+  origin: Type.Optional(
+    Type.Union([
+      Type.Literal("center"),
+      Type.Literal("top-left"),
+      Type.Literal("top-right"),
+      Type.Literal("bottom-left"),
+      Type.Literal("bottom-right"),
     ]),
   ),
   color: Type.Optional(Type.String({ minLength: 1, maxLength: 32 })),
@@ -145,7 +216,10 @@ const cueSchema = Type.Object({
   fromStyleValue: Type.Optional(styleValueSchema),
 });
 
-const repairCueSemantics = (cue, repairs) => {
+const repairCueSemantics = (
+  cue: StoryAnimationCue,
+  repairs: string[],
+): void => {
   const effects = {
     enter: new Set(["fade", "slide", "scale", "pop"]),
     exit: new Set(["fade", "slide", "scale", "pop"]),
@@ -234,17 +308,26 @@ export const STYLE_PROPERTIES_BY_TARGET_TYPE = {
   asset: new Set(["visual.opacity"]),
 };
 
-const getStyleTargetType = (target, connectorIds, assetIds) => {
+const getStyleTargetType = (
+  target: StyleTarget,
+  connectorIds: Set<string>,
+  assetIds: Set<string>,
+): keyof typeof STYLE_PROPERTIES_BY_TARGET_TYPE | undefined => {
   if (connectorIds.has(target.id)) {
     return "connector";
   }
   if (assetIds.has(target.id)) {
     return "asset";
   }
-  return target.type;
+  return target.type as keyof typeof STYLE_PROPERTIES_BY_TARGET_TYPE;
 };
 
-const supportsStyleProperty = (target, property, connectorIds, assetIds) => {
+const supportsStyleProperty = (
+  target: StyleTarget,
+  property: StyleProperty,
+  connectorIds: Set<string>,
+  assetIds: Set<string>,
+): boolean => {
   const targetType = getStyleTargetType(target, connectorIds, assetIds);
   if (
     targetType === "text" &&
@@ -255,10 +338,15 @@ const supportsStyleProperty = (target, property, connectorIds, assetIds) => {
     // expose vertical alignment for arrow-bound text.
     return !connectorIds.has(target.parentId);
   }
-  return STYLE_PROPERTIES_BY_TARGET_TYPE[targetType]?.has(property) ?? false;
+  return targetType
+    ? STYLE_PROPERTIES_BY_TARGET_TYPE[targetType]?.has(property) ?? false
+    : false;
 };
 
-const isValidStyleValue = (property, value) => {
+const isValidStyleValue = (
+  property: StyleProperty,
+  value: unknown,
+): boolean => {
   if (
     property === "visual.strokeColor" ||
     property === "visual.backgroundColor"
@@ -266,19 +354,23 @@ const isValidStyleValue = (property, value) => {
     return typeof value === "string" && value.length > 0;
   }
   if (property === "visual.fillStyle") {
-    return ["hachure", "cross-hatch", "solid", "zigzag"].includes(value);
+    return ["hachure", "cross-hatch", "solid", "zigzag"].some(
+      (candidate) => candidate === value,
+    );
   }
   if (property === "visual.strokeStyle") {
-    return ["solid", "dashed", "dotted"].includes(value);
+    return ["solid", "dashed", "dotted"].some(
+      (candidate) => candidate === value,
+    );
   }
   if (property === "visual.roundness") {
-    return ["sharp", "round", 0, 1].includes(value);
+    return ["sharp", "round", 0, 1].some((candidate) => candidate === value);
   }
   if (property === "text.textAlign") {
-    return ["left", "center", "right"].includes(value);
+    return ["left", "center", "right"].some((candidate) => candidate === value);
   }
   if (property === "text.verticalAlign") {
-    return ["top", "middle", "bottom"].includes(value);
+    return ["top", "middle", "bottom"].some((candidate) => candidate === value);
   }
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return false;
@@ -298,7 +390,11 @@ const isValidStyleValue = (property, value) => {
   return value > 0;
 };
 
-const normalizeSceneCues = (scene, cues, canvasDraft) => {
+const normalizeSceneCues = (
+  scene: StoryAnimationPlanScene,
+  cues: StoryAnimationCue[],
+  canvasDraft: CanvasDraft,
+): { cues: StoryAnimationCue[]; repairs: string[] } => {
   const targetIds = new Set([
     ...canvasDraft.elements.map((element) => element.id),
     ...(canvasDraft.libraryAssets || []).map((asset) => asset.id),
@@ -317,9 +413,9 @@ const normalizeSceneCues = (scene, cues, canvasDraft) => {
       ...(canvasDraft.libraryAssets || []),
     ].map((target) => [target.id, target]),
   );
-  const repairs = [];
-  const normalized = [];
-  const cueIds = new Set();
+  const repairs: string[] = [];
+  const normalized: StoryAnimationCue[] = [];
+  const cueIds = new Set<string>();
   for (const rawCue of cues) {
     const cue = structuredClone(rawCue);
     repairCueSemantics(cue, repairs);
@@ -362,7 +458,8 @@ const normalizeSceneCues = (scene, cues, canvasDraft) => {
       continue;
     }
     if (cue.type === "style") {
-      if (!isValidStyleValue(cue.styleProperty, cue.styleValue)) {
+      const styleProperty = cue.styleProperty;
+      if (!styleProperty || !isValidStyleValue(styleProperty, cue.styleValue)) {
         repairs.push(
           `Style Cue ${cue.id} 的 ${cue.styleProperty} 值无效，已跳过`,
         );
@@ -370,7 +467,7 @@ const normalizeSceneCues = (scene, cues, canvasDraft) => {
       }
       if (
         cue.fromStyleValue !== undefined &&
-        !isValidStyleValue(cue.styleProperty, cue.fromStyleValue)
+        !isValidStyleValue(styleProperty, cue.fromStyleValue)
       ) {
         delete cue.fromStyleValue;
         repairs.push(
@@ -383,9 +480,20 @@ const normalizeSceneCues = (scene, cues, canvasDraft) => {
         if (!target) {
           return false;
         }
+        if (
+          styleProperty === "visual.backgroundColor" &&
+          "label" in target &&
+          typeof target.label === "string" &&
+          target.label.trim()
+        ) {
+          repairs.push(
+            `Style Cue ${cue.id} 已移除带文字的背景色动画目标 ${targetId}，避免动画过程中出现低对比度文字`,
+          );
+          return false;
+        }
         const supported = supportsStyleProperty(
           target,
-          cue.styleProperty,
+          styleProperty,
           connectorIds,
           assetIds,
         );
@@ -429,7 +537,10 @@ const normalizeSceneCues = (scene, cues, canvasDraft) => {
   return { cues: normalized, repairs };
 };
 
-const normalizeScenesForStorySpaces = (scenes, canvasDraft) => {
+const normalizeScenesForStorySpaces = (
+  scenes: StoryAnimationPlanScene[],
+  canvasDraft: CanvasDraft,
+): { scenes: StoryAnimationPlanScene[]; repairs: string[] } => {
   const beatById = new Map(
     (canvasDraft.beats || []).map((beat) => [beat.id, beat]),
   );
@@ -442,8 +553,8 @@ const normalizeScenesForStorySpaces = (scenes, canvasDraft) => {
   if (!hasSpaceContract) {
     return { scenes, repairs: [] };
   }
-  const repairs = [];
-  const normalized = scenes.map((scene, index) => {
+  const repairs: string[] = [];
+  const normalized = scenes.map<StoryAnimationPlanScene>((scene, index) => {
     if (index === 0) {
       return { ...scene, transition: undefined };
     }
@@ -452,21 +563,32 @@ const normalizeScenesForStorySpaces = (scenes, canvasDraft) => {
       return scene;
     }
     if (beat.relationFromPrevious === "same-space") {
-      const camera = scene.camera
+      const transitionDurationMs = Math.max(
+        MIN_CAMERA_TRANSITION_DURATION_MS,
+        scene.transition?.durationMs ||
+          scene.camera?.transitionDurationMs ||
+          MIN_CAMERA_TRANSITION_DURATION_MS,
+      );
+      const camera: StoryAnimationCameraPlan = scene.camera
         ? {
             ...scene.camera,
             transition:
               scene.camera.transition === "hold"
                 ? "reframe"
                 : scene.camera.transition,
+            transitionDurationMs,
           }
         : {
             framing: "fit",
             transition: "reframe",
-            transitionDurationMs: 1200,
+            transitionDurationMs,
             motion: "gentle",
           };
-      if (!scene.camera || scene.transition?.effect !== "camera") {
+      if (
+        !scene.camera ||
+        scene.transition?.effect !== "camera" ||
+        scene.transition.durationMs < MIN_CAMERA_TRANSITION_DURATION_MS
+      ) {
         repairs.push(`场景 ${scene.id} 根据 same-space 关系改为可编辑镜头漫游`);
       }
       return {
@@ -474,9 +596,8 @@ const normalizeScenesForStorySpaces = (scenes, canvasDraft) => {
         camera,
         transition: {
           effect: "camera",
-          durationMs:
-            scene.transition?.durationMs || camera.transitionDurationMs || 1200,
-        },
+          durationMs: transitionDurationMs,
+        } as StoryChapterTransitionPlan,
       };
     }
     const requestedTransition = scene.transition;
@@ -490,22 +611,38 @@ const normalizeScenesForStorySpaces = (scenes, canvasDraft) => {
     return {
       ...scene,
       camera: undefined,
-      transition:
-        requestedTransition && requestedTransition.effect !== "camera"
-          ? requestedTransition
-          : {
-              effect: "directional-wipe",
-              durationMs: requestedTransition?.durationMs || 900,
-              direction: index % 2 === 0 ? "right" : "left",
-            },
+      transition: (requestedTransition &&
+      requestedTransition.effect !== "camera"
+        ? {
+            ...requestedTransition,
+            durationMs: Math.max(
+              MIN_PAGE_TRANSITION_DURATION_MS,
+              requestedTransition.durationMs,
+            ),
+          }
+        : {
+            effect: "directional-wipe",
+            durationMs: Math.max(
+              MIN_PAGE_TRANSITION_DURATION_MS,
+              requestedTransition?.durationMs || 2200,
+            ),
+            direction: index % 2 === 0 ? "right" : "left",
+          }) as StoryChapterTransitionPlan,
     };
   });
   return { scenes: normalized, repairs };
 };
 
-const ensureReadableSceneDurations = (scenes, currentDurationMs) => {
-  const repairs = [];
-  let previousScene = null;
+const ensureReadableSceneDurations = (
+  scenes: StoryAnimationPlanScene[],
+  currentDurationMs: number,
+): {
+  scenes: StoryAnimationPlanScene[];
+  durationMs: number;
+  repairs: string[];
+} => {
+  const repairs: string[] = [];
+  let previousScene: StoryAnimationPlanScene | null = null;
   const normalized = scenes.map((scene) => {
     const durationMs = Math.max(
       MIN_SCENE_READING_DURATION_MS,
@@ -557,8 +694,12 @@ const ensureReadableSceneDurations = (scenes, currentDurationMs) => {
   return { scenes: normalized, durationMs: requiredDurationMs, repairs };
 };
 
-export const createAnimationPlannerTools = (canvasDraft, state) => [
-  {
+const createAllAnimationPlannerTools = (
+  canvasDraft: CanvasDraft,
+  state: AnimationPlannerState,
+  lockStoryPlan: boolean,
+) => [
+  defineTool({
     name: "define_animation_style",
     label: "定义动画风格与总节奏",
     description:
@@ -597,8 +738,8 @@ export const createAnimationPlannerTools = (canvasDraft, state) => [
         }，总时长 ${params.durationMs} 毫秒。`,
       );
     },
-  },
-  {
+  }),
+  defineTool({
     name: "define_animation_scenes",
     label: "规划动画场景与镜头",
     description:
@@ -636,7 +777,7 @@ export const createAnimationPlannerTools = (canvasDraft, state) => [
       state.scenes = readingTimeResult.scenes;
       state.durationMs = readingTimeResult.durationMs;
       validateStoryAnimationPlan(
-        { ...state, scenes: state.scenes, summary: "planning" },
+        requirePlanState(state, "planning"),
         canvasDraft,
       );
       const repairs = [
@@ -655,8 +796,8 @@ export const createAnimationPlannerTools = (canvasDraft, state) => [
           : undefined,
       );
     },
-  },
-  {
+  }),
+  defineTool({
     name: "define_scene_cues",
     label: "规划场景元素动作",
     description:
@@ -680,7 +821,7 @@ export const createAnimationPlannerTools = (canvasDraft, state) => [
           : candidate,
       );
       validateStoryAnimationPlan(
-        { ...state, scenes: candidateScenes, summary: "planning" },
+        { ...requirePlanState(state, "planning"), scenes: candidateScenes },
         canvasDraft,
       );
       state.scenes = candidateScenes;
@@ -698,8 +839,8 @@ export const createAnimationPlannerTools = (canvasDraft, state) => [
           : undefined,
       );
     },
-  },
-  {
+  }),
+  defineTool({
     name: "finalize_animation_plan",
     label: "编译并冻结动画计划",
     description:
@@ -709,10 +850,20 @@ export const createAnimationPlannerTools = (canvasDraft, state) => [
     }),
     executionMode: "sequential",
     async execute(_id, params) {
-      state.summary = params.summary;
-      const prepared = prepareStoryAnimationPlan(state, canvasDraft);
+      if (!lockStoryPlan) {
+        state.summary = params.summary;
+      }
+      if (lockStoryPlan) {
+        validateSceneLifecycleCueCoverage(requirePlanState(state), canvasDraft);
+      }
+      const prepared = prepareStoryAnimationPlan(
+        requirePlanState(state),
+        canvasDraft,
+      );
       state.scenes = prepared.plan.scenes;
-      const draft = compileStoryAnimationPlan(prepared.plan, canvasDraft);
+      const draft = compileStoryAnimationPlan(prepared.plan, canvasDraft, {
+        repair: false,
+      });
       const objectTrackCount = draft.tracks.filter(
         (track) =>
           track.targetType !== "transition" && track.targetType !== "camera",
@@ -740,5 +891,24 @@ export const createAnimationPlannerTools = (canvasDraft, state) => [
         },
       );
     },
-  },
+  }),
 ];
+
+export const createAnimationPlannerTools = (
+  canvasDraft: CanvasDraft,
+  state: AnimationPlannerState,
+  { lockStoryPlan = false }: { lockStoryPlan?: boolean } = {},
+) => {
+  const tools = createAllAnimationPlannerTools(
+    canvasDraft,
+    state,
+    lockStoryPlan,
+  );
+  return lockStoryPlan
+    ? tools.filter(
+        (candidate) =>
+          candidate.name === "define_scene_cues" ||
+          candidate.name === "finalize_animation_plan",
+      )
+    : tools;
+};

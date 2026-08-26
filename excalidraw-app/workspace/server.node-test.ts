@@ -1,3 +1,4 @@
+// @ts-nocheck
 import assert from "node:assert/strict";
 import {
   mkdir,
@@ -87,7 +88,7 @@ await Promise.all([
   ),
 ]);
 process.env.EXCALIDRAW_LIBRARY_CATALOG_DIR = catalogRoot;
-const { handleWorkspaceRequest } = await import("./server.mjs");
+const { handleWorkspaceRequest } = await import("./server.ts");
 
 const server = createServer(async (req, res) => {
   if (!(await handleWorkspaceRequest(req, res))) {

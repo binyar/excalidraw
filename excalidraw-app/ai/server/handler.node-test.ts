@@ -1,7 +1,8 @@
+// @ts-nocheck
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { stripEmoji, transcriptToUiMessages } from "./handler.mjs";
+import { stripEmoji, transcriptToUiMessages } from "./handler.ts";
 
 test("assistant output strips simple and composed Emoji sequences", () => {
   assert.equal(
@@ -63,7 +64,7 @@ test("history merges one user run into one assistant card with tools", () => {
     {
       role: "toolResult",
       toolCallId: "call-artifact",
-      toolName: "delegate_animation",
+      toolName: "compile_story_artifact",
       content: [{ type: "text", text: "成品已生成" }],
       details: artifact,
       isError: false,

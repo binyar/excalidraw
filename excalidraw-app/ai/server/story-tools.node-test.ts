@@ -1,13 +1,22 @@
+// @ts-nocheck
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createCanvasDraftState, createCanvasTools } from "./canvas-tools.mjs";
-import { materializeCanvasLayout } from "./canvas-layout.mjs";
-import { listLibraryCatalogPacks } from "./library-catalog.mjs";
+import {
+  createCanvasDraftState,
+  createCanvasTools,
+  resolveReadableTextColor,
+  selectRandomPageTransition,
+} from "./canvas-tools.ts";
+import {
+  assertManagedCanvasLayoutIntegrity,
+  materializeCanvasLayout,
+} from "./canvas-layout.ts";
+import { listLibraryCatalogPacks } from "./library-catalog.ts";
 import {
   buildStoryAgentSystemPrompt,
   STORY_AGENT_SYSTEM_PROMPT,
-} from "./prompt.mjs";
+} from "./prompt.ts";
 
 const installedAssetSources = (await listLibraryCatalogPacks()).map(
   (pack) => pack.source,
@@ -17,6 +26,55 @@ const tool = (tools, name) => {
   const found = tools.find((candidate) => candidate.name === name);
   assert.ok(found, `missing tool ${name}`);
   return found;
+};
+
+test("page transitions randomize effects and effect-specific variants once", () => {
+  const values = [0.99, 0.2, 0.4, 0.99];
+  const random = () => values.shift() ?? 0;
+  const first = selectRandomPageTransition(random);
+  const second = selectRandomPageTransition(random, first.effect);
+
+  assert.deepEqual(first, { effect: "iris", origin: "top-left" });
+  assert.deepEqual(second, {
+    effect: "directional-wipe",
+    direction: "down",
+  });
+  assert.notEqual(first.effect, second.effect);
+});
+
+const animateFromFrozenDirector = async (_canvasDraft, directorPlan) => ({
+  durationMs: directorPlan.durationMs,
+  plan: {
+    schemaVersion: "1.0",
+    durationMs: directorPlan.durationMs,
+    rationale: directorPlan.rationale,
+    summary: directorPlan.directionSummary,
+    style: structuredClone(directorPlan.style),
+    scenes: structuredClone(directorPlan.scenes),
+  },
+});
+
+test("canvas execution resolves readable text independently from the border", () => {
+  assert.equal(resolveReadableTextColor("#1F2937", "#212529"), "#F8FAFC");
+  assert.equal(resolveReadableTextColor("#F8FAFC", "#212529"), "#212529");
+});
+
+const writeDirectorPlan = async (tools, plan) => {
+  await tool(tools, "define_story_direction").execute("direction", {
+    durationMs: plan.durationMs,
+    rationale: plan.rationale,
+    summary: plan.summary,
+    style: plan.style,
+  });
+  for (let index = 0; index < plan.content.length; index += 40) {
+    await tool(tools, "define_story_content").execute(`content-${index}`, {
+      content: plan.content.slice(index, index + 40),
+    });
+  }
+  for (const scene of plan.scenes) {
+    await tool(tools, "define_story_scene").execute(scene.id, scene);
+  }
+  return tool(tools, "finalize_story_plan").execute("finalize", {});
 };
 
 test("main Agent requires Chinese output and exposes Chinese tool descriptions", () => {
@@ -57,7 +115,7 @@ test("asset enhancement can be removed from both prompt and tools", () => {
     false,
   );
   assert.equal(
-    tools.some((candidate) => candidate.name === "delegate_animation"),
+    tools.some((candidate) => candidate.name === "compile_story_artifact"),
     true,
   );
 });
@@ -86,38 +144,283 @@ test("canvas draft accepts up to 250 elements and rejects item 251", async () =>
   assert.equal(state.elements.length, 250);
 });
 
-test("main agent tools freeze a general canvas before animation delegation", async () => {
-  const state = createCanvasDraftState();
-  let delegatedDraft;
-  const tools = createCanvasTools({
-    state,
-    animate: async (draft) => {
-      delegatedDraft = draft;
-      return {
-        schemaVersion: "1.0",
-        id: `animation-${draft.id}`,
-        durationMs: 8400,
-        frameRate: 60,
-        rationale: "three beats need reading time",
-        summary: "timed story",
-        tracks: [
+test("production canvas writes reject an unfrozen Director DSL", async () => {
+  const state = createCanvasDraftState(null, { requireDirectorPlan: true });
+  const tools = createCanvasTools({ state });
+  await assert.rejects(
+    () =>
+      tool(tools, "add_canvas_elements").execute("premature", {
+        elements: [
           {
-            id: "title-entrance",
-            targetId: "story-title",
-            startMs: 0,
-            durationMs: 600,
-            presets: [
-              {
-                category: "entrance",
-                name: "fade-in",
-                atMs: 0,
-                durationMs: 600,
-              },
-            ],
+            id: "premature",
+            type: "text",
+            x: 0,
+            y: 0,
+            width: 200,
+            height: 40,
           },
         ],
-      };
-    },
+      }),
+    /finalize_story_plan/,
+  );
+});
+
+test("Director finalization reports missing prerequisites without crashing", async () => {
+  const state = createCanvasDraftState(null, { requireDirectorPlan: true });
+  const finalizeStoryPlan = tool(
+    createCanvasTools({ state }),
+    "finalize_story_plan",
+  );
+  await assert.rejects(
+    () => finalizeStoryPlan.execute("premature-director", {}),
+    /必须先完成故事与章节空间规划/,
+  );
+});
+
+test("Director DSL normalizes common model mistakes before freezing", async () => {
+  const state = createCanvasDraftState(null, { requireDirectorPlan: true });
+  const tools = createCanvasTools({
+    state,
+    animate: animateFromFrozenDirector,
+  });
+  const defineStoryContent = tool(tools, "define_story_content");
+  const defineStoryScene = tool(tools, "define_story_scene");
+  const finalizeStoryPlan = tool(tools, "finalize_story_plan");
+  assert.equal(
+    defineStoryContent.parameters.properties.content.items.properties.label
+      .minLength,
+    undefined,
+  );
+  assert.equal(defineStoryContent.parameters.properties.content.maxItems, 40);
+  assert.deepEqual(Object.keys(finalizeStoryPlan.parameters.properties), []);
+  assert.ok(
+    defineStoryScene.parameters.properties.cues.items.properties.atMs.anyOf,
+  );
+  await tool(tools, "define_story").execute("story", {
+    id: "normalization-story",
+    title: "冲突处理",
+    summary: "验证导演 DSL 的安全归一化",
+    beats: [
+      { id: "overview", title: "背景", elementIds: ["background"] },
+      { id: "conflict", title: "冲突", elementIds: ["conflict-card"] },
+    ],
+  });
+  await tool(tools, "define_story_spaces").execute("spaces", {
+    chapters: [
+      {
+        beatId: "overview",
+        spaceId: "conflict-space",
+        relationFromPrevious: "new-page",
+        reason: "故事首章建立初始空间",
+      },
+      {
+        beatId: "conflict",
+        spaceId: "conflict-space",
+        relationFromPrevious: "same-space",
+        reason: "在同一冲突空间中推进到核心问题",
+      },
+    ],
+  });
+  await tool(tools, "define_canvas_sections").execute("sections", {
+    spaces: [
+      {
+        spaceId: "conflict-space",
+        layout: { mode: "column" },
+        sections: [{ id: "conflict-main", layout: { mode: "column" } }],
+      },
+    ],
+  });
+
+  const finalized = await writeDirectorPlan(tools, {
+    durationMs: 6000,
+    rationale: "先交代背景，再推进到冲突核心",
+    summary: "镜头在同一空间内推进",
+    style: { tone: "natural", pace: "normal" },
+    content: [
+      {
+        id: "background",
+        kind: "visual",
+        role: "background",
+        label: "",
+        sectionId: "conflict-main",
+      },
+      {
+        id: "conflict-card",
+        kind: "shape",
+        role: "conflict",
+        label: "核心冲突",
+        sectionId: "conflict-main",
+      },
+    ],
+    scenes: [
+      {
+        id: "scene-overview",
+        beatId: "overview",
+        startMs: 0,
+        durationMs: 3000,
+        focusTargets: ["background"],
+        transition: { effect: "fade-through-color", durationMs: 600 },
+        cues: [
+          {
+            id: "c1-bg",
+            type: "enter",
+            targets: ["background"],
+            atMs: 2500,
+            durationMs: 500,
+            effect: "fade",
+          },
+        ],
+      },
+      {
+        id: "scene-conflict",
+        beatId: "conflict",
+        startMs: "3s",
+        durationMs: "3000ms",
+        focusTargets: ["conflict-card"],
+        transition: { effect: "fade-through-color", durationMs: 700 },
+        cues: [
+          {
+            id: "c2-bg",
+            type: "emphasize",
+            targets: ["conflict-card"],
+            atMs: "2.9s",
+            durationMs: "500ms",
+            effect: "pulse",
+          },
+        ],
+      },
+    ],
+  });
+
+  assert.ok(finalized.details.repairs.length >= 4);
+  assert.equal(state.directorPlan.content[0].label, undefined);
+  assert.equal(state.directorPlan.scenes[0].transition, undefined);
+  assert.equal(state.directorPlan.scenes[1].transition.effect, "camera");
+  assert.equal(state.directorPlan.scenes[1].transition.durationMs, 1600);
+  assert.equal(state.directorPlan.scenes[1].camera.transition, "reframe");
+  assert.equal(state.directorPlan.scenes[1].camera.transitionDurationMs, 1600);
+  assert.equal(
+    state.directorPlan.scenes[0].cues[0].atMs +
+      state.directorPlan.scenes[0].cues[0].durationMs,
+    1400,
+  );
+  assert.equal(state.directorPlan.scenes[1].cues[0].atMs, 2500);
+  assert.equal(state.directorPlan.scenes[1].cues[0].durationMs, 500);
+
+  await tool(tools, "add_canvas_elements").execute("elements", {
+    elements: [
+      {
+        id: "background",
+        type: "rectangle",
+        role: "background",
+        sectionId: "conflict-main",
+        width: 800,
+        height: 500,
+      },
+      {
+        id: "conflict-card",
+        type: "rectangle",
+        role: "conflict",
+        label: "核心冲突",
+        sectionId: "conflict-main",
+        width: 360,
+        height: 160,
+      },
+    ],
+  });
+  await tool(tools, "finalize_canvas_draft").execute("canvas", {});
+  const result = await tool(tools, "compile_story_artifact").execute(
+    "compile",
+    {},
+  );
+  assert.deepEqual(
+    result.details.animation.plan.scenes,
+    result.details.directorPlan.scenes,
+  );
+});
+
+test("long Director plans are staged without a large final tool payload", async () => {
+  const state = createCanvasDraftState(null, { requireDirectorPlan: true });
+  const tools = createCanvasTools({ state });
+  const content = Array.from({ length: 41 }, (_, index) => ({
+    id: `item-${index}`,
+    kind: "shape",
+    role: "story-item",
+    label: `内容 ${index + 1}`,
+    sectionId: "main",
+  }));
+  await tool(tools, "define_story").execute("story", {
+    id: "long-story",
+    title: "长故事",
+    summary: "验证分段 Director DSL",
+    beats: [
+      {
+        id: "long-scene",
+        title: "完整内容",
+        elementIds: content.map((item) => item.id),
+      },
+    ],
+  });
+  await tool(tools, "define_story_spaces").execute("spaces", {
+    chapters: [
+      {
+        beatId: "long-scene",
+        spaceId: "long-page",
+        relationFromPrevious: "new-page",
+        reason: "故事首章建立初始页面",
+      },
+    ],
+  });
+  await tool(tools, "define_canvas_sections").execute("sections", {
+    spaces: [
+      {
+        spaceId: "long-page",
+        layout: { mode: "grid" },
+        sections: [{ id: "main", layout: { mode: "grid" } }],
+      },
+    ],
+  });
+  await writeDirectorPlan(tools, {
+    durationMs: "8s",
+    rationale: "长内容需要分批声明",
+    summary: "分段写入后统一冻结",
+    style: { tone: "restrained", pace: "normal" },
+    content,
+    scenes: [
+      {
+        id: "long-scene",
+        beatId: "long-scene",
+        startMs: 0,
+        durationMs: "8s",
+        focusTargets: ["item-0"],
+        cues: [
+          {
+            id: "items-in",
+            type: "enter",
+            targets: content.map((item) => item.id),
+            atMs: "",
+            durationMs: "500ms",
+            staggerMs: "100ms",
+            effect: "fade",
+          },
+        ],
+      },
+    ],
+  });
+  assert.equal(state.directorDraft.content.length, 41);
+  assert.equal(state.directorPlan.durationMs, 8000);
+  assert.equal(state.directorPlan.scenes[0].cues[0].atMs, 0);
+  assert.deepEqual(
+    Object.keys(tool(tools, "finalize_story_plan").parameters.properties),
+    [],
+  );
+});
+
+test("main agent freezes the dynamic story DSL before deterministic execution", async () => {
+  const state = createCanvasDraftState(null, { requireDirectorPlan: true });
+  const tools = createCanvasTools({
+    state,
+    animate: animateFromFrozenDirector,
   });
 
   await tool(tools, "define_story").execute("story", {
@@ -126,32 +429,92 @@ test("main agent tools freeze a general canvas before animation delegation", asy
     summary: "从问题到成果",
     beats: [{ id: "opening", title: "问题", elementIds: ["story-title"] }],
   });
+  await tool(tools, "define_story_spaces").execute("spaces", {
+    chapters: [
+      {
+        beatId: "opening",
+        spaceId: "page-opening",
+        relationFromPrevious: "new-page",
+        reason: "故事首章建立初始页面",
+      },
+    ],
+  });
+  await tool(tools, "define_canvas_sections").execute("sections", {
+    spaces: [
+      {
+        spaceId: "page-opening",
+        layout: { mode: "column" },
+        sections: [{ id: "opening-main", layout: { mode: "column" } }],
+      },
+    ],
+  });
+  await writeDirectorPlan(tools, {
+    durationMs: 4000,
+    rationale: "主 Agent 已确定完整开场节奏和镜头",
+    summary: "标题淡入并保持可读",
+    style: { tone: "restrained", pace: "normal" },
+    content: [
+      {
+        id: "story-title",
+        kind: "shape",
+        role: "title",
+        label: "产品发布",
+        sectionId: "opening-main",
+      },
+    ],
+    scenes: [
+      {
+        id: "opening-scene",
+        beatId: "opening",
+        startMs: 0,
+        durationMs: 4000,
+        focusTargets: ["story-title"],
+        camera: { framing: "fit", transition: "hold" },
+        cues: [
+          {
+            id: "title-entrance",
+            type: "enter",
+            targets: ["story-title"],
+            atMs: 0,
+            durationMs: 600,
+            effect: "fade",
+          },
+        ],
+      },
+    ],
+  });
   await tool(tools, "add_canvas_elements").execute("elements", {
     elements: [
       {
         id: "story-title",
-        type: "text",
+        type: "rectangle",
         role: "title",
         label: "产品发布",
-        x: 100,
-        y: 80,
+        sectionId: "opening-main",
         width: 500,
         height: 80,
+        style: {
+          backgroundColor: "#1F2937",
+          strokeColor: "#212529",
+        },
       },
     ],
   });
-  await tool(tools, "finalize_canvas_draft").execute("freeze", {
-    animationBrief: { intent: "清晰讲述三个故事节拍" },
-  });
-  const result = await tool(tools, "delegate_animation").execute(
-    "delegate",
+  await tool(tools, "finalize_canvas_draft").execute("freeze", {});
+  assert.equal(state.elements[0].style.strokeColor, "#212529");
+  assert.equal(state.elements[0].style.textColor, "#F8FAFC");
+  const result = await tool(tools, "compile_story_artifact").execute(
+    "compile",
     {},
-    new AbortController().signal,
   );
 
   assert.equal(result.details.kind, "story-artifact");
-  assert.equal(result.details.animation.durationMs, 8400);
-  assert.equal(delegatedDraft.id, "launch-story");
+  assert.equal(result.details.animation.durationMs, 4000);
+  assert.equal(result.details.directorPlan.scenes.length, 1);
+  assert.deepEqual(
+    result.details.animation.plan.scenes,
+    result.details.directorPlan.scenes,
+  );
   await assert.rejects(
     () =>
       tool(tools, "add_canvas_elements").execute("late", {
@@ -234,9 +597,10 @@ test("story spaces preserve spatial continuity and center independent pages", as
       },
     ],
   });
-  const frozen = await tool(tools, "finalize_canvas_draft").execute("freeze", {
-    animationBrief: { intent: "按空间关系讲述" },
-  });
+  const frozen = await tool(tools, "finalize_canvas_draft").execute(
+    "freeze",
+    {},
+  );
 
   const overview = state.elements.find(
     (element) => element.id === "overview-card",
@@ -347,9 +711,7 @@ test("story spaces keep shared masters fixed and attach nearby decoration to its
       },
     ],
   });
-  await tool(tools, "finalize_canvas_draft").execute("freeze", {
-    animationBrief: { intent: "验证页面归属" },
-  });
+  await tool(tools, "finalize_canvas_draft").execute("freeze", {});
 
   const shared = state.elements.find(
     (element) => element.id === "shared-title",
@@ -503,9 +865,10 @@ test("managed canvas sections materialize separate page regions and non-overlapp
     ],
   });
 
-  const result = await tool(tools, "finalize_canvas_draft").execute("freeze", {
-    animationBrief: { intent: "依次讲述三个页面区域" },
-  });
+  const result = await tool(tools, "finalize_canvas_draft").execute(
+    "freeze",
+    {},
+  );
   const byId = new Map(state.elements.map((element) => [element.id, element]));
   const titleBackground = byId.get("title-bg");
   const cardsBackground = byId.get("cards-bg");
@@ -587,9 +950,7 @@ test("managed overlay is the explicit overlap escape hatch", async () => {
       },
     ],
   });
-  await tool(tools, "finalize_canvas_draft").execute("freeze", {
-    animationBrief: { intent: "展示明确叠加的主视觉" },
-  });
+  await tool(tools, "finalize_canvas_draft").execute("freeze", {});
   const halo = state.elements.find((element) => element.id === "halo");
   const portrait = state.elements.find((element) => element.id === "portrait");
 
@@ -658,9 +1019,7 @@ test("managed free sections preserve local relative coordinates", async () => {
       },
     ],
   });
-  await tool(tools, "finalize_canvas_draft").execute("freeze", {
-    animationBrief: { intent: "沿地图节点讲述" },
-  });
+  await tool(tools, "finalize_canvas_draft").execute("freeze", {});
   const first = state.elements.find((element) => element.id === "point-a");
   const second = state.elements.find((element) => element.id === "point-b");
 
@@ -723,6 +1082,177 @@ test("managed layout materialization is stable across repeated edits", () => {
   assert.equal(state.elements[0].layoutFrame.fontSize, 100);
 });
 
+test("managed column layout sizes labeled cards by their complete visual content", () => {
+  const state = {
+    elements: Array.from({ length: 4 }, (_, index) => ({
+      id: `action-${index + 1}`,
+      type: "rectangle",
+      label: `行动 ${
+        index + 1
+      }\n这是需要保持完整可读且不能侵入相邻卡片的行动说明`,
+      sectionId: "actions",
+      x: 0,
+      y: 0,
+      width: 200,
+      height: 120,
+      style: { fontSize: 20 },
+      layoutFrame: { x: 0, y: 0, width: 200, height: 120, fontSize: 20 },
+    })),
+    libraryAssets: [],
+    sections: [
+      {
+        id: "actions",
+        spaceId: "space-actions",
+        layout: { mode: "column", padding: 20, gap: 18 },
+      },
+    ],
+    spaceLayouts: [
+      {
+        spaceId: "space-actions",
+        layout: { mode: "grid", padding: 60 },
+      },
+    ],
+    layoutNeedsMaterialization: true,
+  };
+
+  materializeCanvasLayout(state);
+  assertManagedCanvasLayoutIntegrity(state);
+
+  state.elements.forEach((element, index) => {
+    assert.ok(element.width > 1000);
+    assert.ok(element.style.fontSize >= 10);
+    if (index > 0) {
+      const previous = state.elements[index - 1];
+      assert.ok(previous.y + previous.height < element.y);
+    }
+  });
+});
+
+test("managed layout deterministically reflows an unreadable linear plan", () => {
+  const state = {
+    elements: Array.from({ length: 8 }, (_, index) => ({
+      id: `dense-${index + 1}`,
+      type: "rectangle",
+      label: "长".repeat(400),
+      sectionId: "dense-content",
+      x: 0,
+      y: 0,
+      width: 200,
+      height: 120,
+      style: { fontSize: 20 },
+      layoutFrame: { x: 0, y: 0, width: 200, height: 120, fontSize: 20 },
+    })),
+    libraryAssets: [],
+    sections: [
+      {
+        id: "dense-content",
+        spaceId: "space-dense",
+        layout: { mode: "row", padding: 20, gap: 18 },
+      },
+    ],
+    spaceLayouts: [
+      {
+        spaceId: "space-dense",
+        layout: { mode: "grid", padding: 60 },
+      },
+    ],
+    layoutNeedsMaterialization: true,
+  };
+
+  const result = materializeCanvasLayout(state);
+  const placement = result.spaces[0].sections[0];
+
+  assert.equal(placement.reflowed, true);
+  assert.equal(placement.requestedMode, "row");
+  assert.equal(placement.effectiveMode, "grid");
+  assertManagedCanvasLayoutIntegrity(state);
+});
+
+test("managed layout rejects content that no readable reflow can contain", () => {
+  const state = {
+    elements: [
+      {
+        id: "impossible-copy",
+        type: "rectangle",
+        label: "超".repeat(10000),
+        sectionId: "content",
+        x: 0,
+        y: 0,
+        width: 200,
+        height: 120,
+        style: { fontSize: 20 },
+      },
+    ],
+    libraryAssets: [],
+    sections: [
+      {
+        id: "content",
+        spaceId: "space-page",
+        layout: { mode: "column", padding: 20 },
+      },
+    ],
+    spaceLayouts: [
+      {
+        spaceId: "space-page",
+        layout: { mode: "grid", padding: 60 },
+      },
+    ],
+    layoutNeedsMaterialization: true,
+  };
+
+  assert.throws(
+    () => materializeCanvasLayout(state),
+    /在可读字号下无法排入舞台.*impossible-copy/,
+  );
+});
+
+test("managed integrity checks complete child visual bounds for collisions", () => {
+  const state = {
+    elements: [
+      {
+        id: "card-a",
+        type: "rectangle",
+        sectionId: "content",
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 100,
+      },
+      {
+        id: "card-b",
+        type: "rectangle",
+        sectionId: "content",
+        x: 120,
+        y: 0,
+        width: 100,
+        height: 100,
+      },
+    ],
+    libraryAssets: [
+      {
+        id: "card-a-badge",
+        parentId: "card-a",
+        x: 90,
+        y: 20,
+        width: 40,
+        height: 40,
+      },
+    ],
+    sections: [
+      {
+        id: "content",
+        spaceId: "space-page",
+        layout: { mode: "row" },
+      },
+    ],
+  };
+
+  assert.throws(
+    () => assertManagedCanvasLayoutIntegrity(state),
+    /元素重叠 card-a\/card-b/,
+  );
+});
+
 test("production story creation cannot bypass managed Section layout", async () => {
   const state = createCanvasDraftState(null, { requireManagedLayout: true });
   const tools = createCanvasTools({ state, animate: async () => ({}) });
@@ -746,9 +1276,7 @@ test("production story creation cannot bypass managed Section layout", async () 
   });
   await assert.rejects(
     () =>
-      tool(tools, "finalize_canvas_draft").execute("freeze-without-layout", {
-        animationBrief: { intent: "展示页面" },
-      }),
+      tool(tools, "finalize_canvas_draft").execute("freeze-without-layout", {}),
     /必须先调用 define_canvas_sections/,
   );
 
@@ -781,10 +1309,7 @@ test("production story creation cannot bypass managed Section layout", async () 
     ],
   });
   await assert.rejects(
-    () =>
-      tool(tools, "finalize_canvas_draft").execute("freeze-unmanaged", {
-        animationBrief: { intent: "展示页面" },
-      }),
+    () => tool(tools, "finalize_canvas_draft").execute("freeze-unmanaged", {}),
     /页面内容必须托管到 Section：legacy/,
   );
 });
@@ -822,9 +1347,7 @@ test("canvas connectors keep a short arrow and return a layout warning", async (
   assert.equal(state.connectors.length, 1);
   assert.equal(result.details.kind, "connector-spacing-warnings");
   assert.match(result.details.warnings[0], /建议至少 96px/);
-  await tool(tools, "finalize_canvas_draft").execute("freeze", {
-    animationBrief: { intent: "draw the retained connector" },
-  });
+  await tool(tools, "finalize_canvas_draft").execute("freeze", {});
   assert.equal(state.frozen, true);
 });
 
@@ -853,78 +1376,6 @@ test("canvas connector tool rejects presentation-order arrows", async () => {
     /没有表达有效业务关系/,
   );
   assert.deepEqual(state.connectors, []);
-});
-
-test("canvas draft accepts a detailed animation brief", async () => {
-  const state = createCanvasDraftState();
-  const tools = createCanvasTools({ state, animate: async () => ({}) });
-  await tool(tools, "define_story").execute("story", {
-    id: "complex-flow",
-    title: "Complex flow",
-    summary: "Detailed branching flow",
-    beats: [{ id: "one", title: "One", elementIds: ["a"] }],
-  });
-  await tool(tools, "add_canvas_elements").execute("elements", {
-    elements: [
-      { id: "a", type: "rectangle", x: 0, y: 0, width: 200, height: 80 },
-    ],
-  });
-  await tool(tools, "finalize_canvas_draft").execute("freeze", {
-    animationBrief: { intent: "复杂分支动画要求。".repeat(80) },
-  });
-  assert.equal(state.frozen, true);
-});
-
-test("canvas draft accepts a JSON encoded animation brief from the model", async () => {
-  const state = createCanvasDraftState();
-  const tools = createCanvasTools({ state, animate: async () => ({}) });
-  await tool(tools, "define_story").execute("story", {
-    id: "report",
-    title: "Report",
-    summary: "Annual value",
-    beats: [{ id: "opening", title: "Opening", elementIds: ["title"] }],
-  });
-  await tool(tools, "add_canvas_elements").execute("elements", {
-    elements: [
-      { id: "title", type: "text", x: 0, y: 0, width: 300, height: 60 },
-    ],
-  });
-  await tool(tools, "finalize_canvas_draft").execute("freeze", {
-    animationBrief: JSON.stringify({
-      intent: "Reveal annual value",
-      tone: "confident",
-      preferredDurationMs: 18_000,
-    }),
-  });
-  assert.deepEqual(state.animationBrief, {
-    intent: "Reveal annual value",
-    tone: "confident",
-    preferredDurationMs: 18_000,
-  });
-  assert.equal(state.frozen, true);
-});
-
-test("canvas draft treats a plain string animation brief as intent", async () => {
-  const state = createCanvasDraftState();
-  const tools = createCanvasTools({ state, animate: async () => ({}) });
-  await tool(tools, "define_story").execute("story", {
-    id: "plain-brief",
-    title: "Plain brief",
-    summary: "String shorthand",
-    beats: [{ id: "opening", title: "Opening", elementIds: ["title"] }],
-  });
-  await tool(tools, "add_canvas_elements").execute("elements", {
-    elements: [
-      { id: "title", type: "text", x: 0, y: 0, width: 300, height: 60 },
-    ],
-  });
-  await tool(tools, "finalize_canvas_draft").execute("freeze", {
-    animationBrief: "Reveal the launch story with a confident rhythm",
-  });
-  assert.deepEqual(state.animationBrief, {
-    intent: "Reveal the launch story with a confident rhythm",
-  });
-  assert.equal(state.frozen, true);
 });
 
 test("edit draft updates existing semantic elements without duplicating them", async () => {
@@ -969,7 +1420,7 @@ test("edit draft updates existing semantic elements without duplicating them", a
   );
 });
 
-test("canvas draft removes unresolved future beat references before freezing", async () => {
+test("canvas draft rejects unresolved Director DSL content", async () => {
   const state = createCanvasDraftState();
   const tools = createCanvasTools({ state, animate: async () => ({}) });
   await tool(tools, "define_story").execute("story", {
@@ -996,13 +1447,14 @@ test("canvas draft removes unresolved future beat references before freezing", a
       },
     ],
   });
-  const result = await tool(tools, "finalize_canvas_draft").execute("freeze", {
-    animationBrief: { intent: "Present the valid growth content" },
-  });
-  assert.deepEqual(state.story.beats[0].elementIds, ["growth-card"]);
-  assert.deepEqual(result.details.repairs.removedBeatReferences, [
-    { beatId: "growth", elementId: "trophy-asset" },
-    { beatId: "growth", elementId: "growth-arrow" },
+  await assert.rejects(
+    () => tool(tools, "finalize_canvas_draft").execute("freeze", {}),
+    /growth\/trophy-asset.*growth\/growth-arrow/,
+  );
+  assert.deepEqual(state.story.beats[0].elementIds, [
+    "growth-card",
+    "trophy-asset",
+    "growth-arrow",
   ]);
 });
 
@@ -1174,9 +1626,7 @@ test("canvas cards use native labels and reject separate child text", async () =
       }),
     /必须直接写入父图形 card 的 label/,
   );
-  await tool(tools, "finalize_canvas_draft").execute("freeze", {
-    animationBrief: { intent: "Reveal the card" },
-  });
+  await tool(tools, "finalize_canvas_draft").execute("freeze", {});
 
   const card = state.elements.find((element) => element.id === "card");
   assert.equal(state.elements.length, 1);
@@ -1235,9 +1685,10 @@ test("legacy card child text is migrated into the native parent label", async ()
   });
   const tools = createCanvasTools({ state, animate: async () => ({}) });
 
-  const result = await tool(tools, "finalize_canvas_draft").execute("freeze", {
-    animationBrief: { intent: "Reveal the migrated card" },
-  });
+  const result = await tool(tools, "finalize_canvas_draft").execute(
+    "freeze",
+    {},
+  );
 
   assert.equal(state.elements.length, 1);
   assert.equal(state.elements[0].label, "组织成长\n团队规模 120 人");
@@ -1268,9 +1719,7 @@ test("canvas tools search and freeze selected library assets", async () => {
       { id: "cloud-icon", ref, x: 100, y: 120, width: 220, height: 180 },
     ],
   });
-  await tool(tools, "finalize_canvas_draft").execute("freeze", {
-    animationBrief: { intent: "Reveal the cloud icon" },
-  });
+  await tool(tools, "finalize_canvas_draft").execute("freeze", {});
 
   assert.equal(state.libraryAssets.length, 1);
   assert.equal(state.libraryAssets[0].id, "cloud-icon");

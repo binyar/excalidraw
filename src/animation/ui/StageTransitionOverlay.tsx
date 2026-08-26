@@ -7,6 +7,7 @@ import type {
   AnimationProject,
   AnimationTransitionDirection,
   AnimationTransitionEffect,
+  AnimationTransitionOrigin,
 } from "../types";
 
 type StageTransitionOverlayProps = {
@@ -18,6 +19,7 @@ export type StageTransitionLayer = {
   id: string;
   effect: Exclude<AnimationTransitionEffect, "camera">;
   direction: AnimationTransitionDirection;
+  origin: AnimationTransitionOrigin;
   progress: number;
   opacity: number;
   color: string;
@@ -50,6 +52,7 @@ export const getStageTransitionLayers = (
         id: track.id,
         effect: target.effect,
         direction: target.direction ?? "left",
+        origin: target.origin ?? "center",
         progress: value.transition.progress,
         opacity: value.transition.opacity,
         color: value.transition.color,
@@ -63,14 +66,26 @@ export const getStageTransitionLayers = (
 
 const percent = (value: number) => `${Math.max(0, Math.min(1, value)) * 100}%`;
 
-const revealClipPath = (
+export const getTransitionRevealClipPath = (
   effect: string,
   direction: AnimationTransitionDirection,
   progress: number,
+  origin: AnimationTransitionOrigin,
+  scale: number,
 ) => {
   const hidden = percent(1 - progress);
   if (effect === "iris") {
-    return `circle(${progress * 72}% at 50% 50%)`;
+    const positions: Record<AnimationTransitionOrigin, string> = {
+      center: "50% 50%",
+      "top-left": "0% 0%",
+      "top-right": "100% 0%",
+      "bottom-left": "0% 100%",
+      "bottom-right": "100% 100%",
+    };
+    const maximumRadius = origin === "center" ? 72 : 145;
+    return `circle(${progress * maximumRadius * scale}% at ${
+      positions[origin]
+    })`;
   }
   switch (direction) {
     case "right":
@@ -117,8 +132,16 @@ export const StageTransitionOverlay = ({
 
   const layers = getStageTransitionLayers(project, values)
     .map((layer, index) => {
-      const { effect, direction, progress, opacity, color, blur, scale } =
-        layer;
+      const {
+        effect,
+        direction,
+        origin,
+        progress,
+        opacity,
+        color,
+        blur,
+        scale,
+      } = layer;
       return [
         <div
           key={layer.id}
@@ -134,10 +157,18 @@ export const StageTransitionOverlay = ({
             clipPath:
               effect === "fade-through-color" || effect === "push"
                 ? undefined
-                : revealClipPath(effect, direction, progress),
+                : getTransitionRevealClipPath(
+                    effect,
+                    direction,
+                    progress,
+                    origin,
+                    scale,
+                  ),
             transform:
               effect === "push"
                 ? pushTransform(direction, progress, scale)
+                : effect === "iris"
+                ? undefined
                 : `scale(${scale})`,
             backdropFilter: blur > 0 ? `blur(${blur}px)` : undefined,
           }}

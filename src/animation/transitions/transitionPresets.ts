@@ -4,6 +4,7 @@ import type {
   AnimationTrack,
   AnimationTransitionDirection,
   AnimationTransitionEffect,
+  AnimationTransitionOrigin,
 } from "../types";
 
 export type ChapterTransitionPreset = AnimationTransitionEffect;
@@ -16,12 +17,12 @@ export type ChapterTransitionInput = {
   durationMs: number;
   preset: ChapterTransitionPreset;
   direction?: AnimationTransitionDirection;
+  origin?: AnimationTransitionOrigin;
   color?: AnimationColor;
   backgroundColor?: AnimationColor;
 };
 
 const SMOOTH: AnimationEasing = { type: "preset", name: "smooth" };
-const LINEAR: AnimationEasing = { type: "preset", name: "linear" };
 
 const layerTrack = (
   input: ChapterTransitionInput,
@@ -42,6 +43,7 @@ const layerTrack = (
     toSceneId: input.toSceneId,
     effect,
     direction: input.direction ?? "left",
+    ...(input.origin ? { origin: input.origin } : {}),
     role,
   },
   startMs: input.startMs,
@@ -54,6 +56,11 @@ const progress = (durationMs: number, from = 0, to = 1) => ({
   property: "transition.progress" as const,
   keyframes: [
     { atMs: 0, value: from, easing: SMOOTH },
+    {
+      atMs: Math.round(durationMs * 0.58),
+      value: from + (to - from) * 0.44,
+      easing: SMOOTH,
+    },
     { atMs: durationMs, value: to },
   ],
 });
@@ -89,7 +96,7 @@ export const materializeChapterTransition = (
       layerTrack(input, "camera", "镜头漫游转场", "bridge", [
         progress(duration),
         opacity([
-          { atMs: 0, value: 0, easing: LINEAR },
+          { atMs: 0, value: 0, hold: true },
           { atMs: duration, value: 0 },
         ]),
       ]),
@@ -103,7 +110,7 @@ export const materializeChapterTransition = (
       layerTrack(input, "color", "颜色扫过 · 主色", "exit", [
         progress(firstDuration),
         opacity([
-          { atMs: 0, value: 1, easing: LINEAR },
+          { atMs: 0, value: 1, hold: true },
           { atMs: firstDuration + overlap, value: 1, easing: SMOOTH },
           { atMs: duration, value: 0 },
         ]),
@@ -119,7 +126,7 @@ export const materializeChapterTransition = (
         },
         opacity([
           { atMs: 0, value: 0, hold: true },
-          { atMs: firstDuration - overlap, value: 1, easing: LINEAR },
+          { atMs: firstDuration - overlap, value: 1, easing: SMOOTH },
           { atMs: duration, value: 1 },
         ]),
         color(background),
@@ -158,17 +165,48 @@ export const materializeChapterTransition = (
     layerTrack(input, "main", labelByPreset[input.preset], "bridge", [
       progress(duration),
       opacity([
-        { atMs: 0, value: 1, easing: LINEAR },
+        { atMs: 0, value: 1, hold: true },
         { atMs: duration, value: 1 },
       ]),
       color(primary),
+      ...(input.preset === "iris"
+        ? [
+            {
+              property: "transition.scale" as const,
+              keyframes: [
+                { atMs: 0, value: 0.96, easing: SMOOTH },
+                {
+                  atMs: Math.round(duration * 0.72),
+                  value: 1.06,
+                  easing: {
+                    type: "spring" as const,
+                    mass: 1,
+                    stiffness: 170,
+                    damping: 18,
+                  },
+                },
+                { atMs: duration, value: 1, easing: SMOOTH },
+              ],
+            },
+          ]
+        : []),
       ...(input.preset === "push"
         ? [
             {
               property: "transition.scale" as const,
               keyframes: [
                 { atMs: 0, value: 1, easing: SMOOTH },
-                { atMs: duration, value: 1.04 },
+                {
+                  atMs: Math.round(duration * 0.68),
+                  value: 1.04,
+                  easing: {
+                    type: "spring" as const,
+                    mass: 1,
+                    stiffness: 150,
+                    damping: 20,
+                  },
+                },
+                { atMs: duration, value: 1, easing: SMOOTH },
               ],
             },
           ]

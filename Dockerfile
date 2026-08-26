@@ -33,7 +33,8 @@ ENV NODE_ENV=production \
 WORKDIR /opt/excalidraw
 
 COPY --from=build --chown=node:node /opt/excalidraw/excalidraw-app/build ./excalidraw-app/build
-COPY --from=build --chown=node:node /opt/excalidraw/excalidraw-app/workspace/server.mjs ./excalidraw-app/workspace/server.mjs
+COPY --from=build --chown=node:node /opt/excalidraw/excalidraw-app/package.json ./excalidraw-app/package.json
+COPY --from=build --chown=node:node /opt/excalidraw/excalidraw-app/workspace/server.ts ./excalidraw-app/workspace/server.ts
 COPY --from=build --chown=node:node /opt/excalidraw/excalidraw-app/ai ./excalidraw-app/ai
 
 RUN mkdir -p /opt/excalidraw/workspace && chown node:node /opt/excalidraw/workspace
@@ -46,4 +47,4 @@ USER node
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:8088/api/auth/session').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
 
-CMD ["node", "./excalidraw-app/workspace/server.mjs"]
+CMD ["node", "./excalidraw-app/workspace/server.ts"]

@@ -24,7 +24,7 @@ export const SKILL_CATALOG = Object.freeze([
   }),
 ]);
 
-export const getSkillDefinition = (skillId) =>
+export const getSkillDefinition = (skillId: string) =>
   SKILL_CATALOG.find((skill) => skill.id === skillId) || null;
 
 export const resolveSkillCatalog = (settings = new Map()) =>

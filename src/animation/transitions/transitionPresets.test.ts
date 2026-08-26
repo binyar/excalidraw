@@ -19,6 +19,7 @@ describe("chapter transition presets", () => {
       durationMs: 800,
       preset,
       direction: "left",
+      origin: preset === "iris" ? "top-left" : undefined,
     });
     const project = animationProjectSchema.parse({
       schemaVersion: "1.0",
@@ -43,5 +44,46 @@ describe("chapter transition presets", () => {
         ),
       ),
     ).toBe(true);
+    expect(
+      project.tracks
+        .flatMap((track) => track.properties ?? [])
+        .flatMap((property) => property.keyframes)
+        .every(
+          (keyframe) =>
+            keyframe.easing?.type !== "preset" ||
+            keyframe.easing.name !== "linear",
+        ),
+    ).toBe(true);
+    if (preset === "iris") {
+      expect(project.tracks[0].target).toMatchObject({
+        type: "transition",
+        origin: "top-left",
+      });
+      expect(project.tracks[0].properties).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ property: "transition.scale" }),
+        ]),
+      );
+    }
   });
+
+  it.each(["left", "right", "up", "down"] as const)(
+    "preserves the %s direction variant",
+    (direction) => {
+      const [track] = materializeChapterTransition({
+        id: `wipe-${direction}`,
+        fromSceneId: "a",
+        toSceneId: "b",
+        startMs: 0,
+        durationMs: 800,
+        preset: "directional-wipe",
+        direction,
+      });
+
+      expect(track.target).toMatchObject({
+        type: "transition",
+        direction,
+      });
+    },
+  );
 });

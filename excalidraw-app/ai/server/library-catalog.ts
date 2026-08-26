@@ -3,6 +3,76 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+type CatalogTranslations = Record<string, string>;
+
+type CatalogIndexEntry = {
+  ref: string;
+  libraryId?: string;
+  libraryName: string;
+  description: string;
+  itemName: string;
+  itemIndex: number;
+  width: number;
+  height: number;
+  elementCount: number;
+};
+
+type SearchableCatalogIndexEntry = CatalogIndexEntry & {
+  searchText: string;
+};
+
+type CatalogAuthor = { name?: string };
+
+type CatalogLibrary = {
+  id?: string;
+  source: string;
+  name?: string;
+  description?: string;
+  authors?: CatalogAuthor[];
+  updated?: string;
+  created?: string;
+  itemNames?: string[];
+};
+
+type CatalogPackPreview = Pick<
+  CatalogIndexEntry,
+  "itemName" | "itemIndex" | "width" | "height" | "elementCount"
+> & { ref: string };
+
+export type LibraryCatalogPack = {
+  id: string;
+  name: string;
+  description: string;
+  author: string;
+  source: string;
+  updated: string;
+  itemCount: number;
+  category: "characters" | "ui" | "flow" | "architecture" | "icons" | "general";
+  previewItems: CatalogPackPreview[];
+};
+
+type PublicCatalogEntry = Omit<
+  SearchableCatalogIndexEntry,
+  "libraryId" | "searchText"
+>;
+
+type CatalogLibraryData = {
+  libraryItems?: unknown[];
+  library?: unknown[];
+};
+
+const parseJson = <T>(text: string): T => JSON.parse(text) as T;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const getLibraryItemElements = (value: unknown): unknown[] | undefined =>
+  Array.isArray(value)
+    ? value
+    : isRecord(value) && Array.isArray(value.elements)
+    ? value.elements
+    : undefined;
+
 const CATALOG_ROOT = path.resolve(
   process.env.EXCALIDRAW_LIBRARY_CATALOG_DIR ||
     path.resolve(
@@ -16,27 +86,42 @@ const MAX_QUERY_LENGTH = 160;
 const MAX_RESULTS = 12;
 const DISPLAY_TEXT_KEYS = new Set(["text", "originalText", "name", "label"]);
 const PUBLIC_REF_PATTERN = /^素材-\d+-\d+$/;
-const hasLatin = (value) => /[A-Za-z]/.test(String(value || ""));
+const hasLatin = (value: unknown): boolean =>
+  /[A-Za-z]/.test(String(value || ""));
 
-const normalizeSearchText = (value) =>
+const normalizeSearchText = (value: unknown): string =>
   String(value || "")
     .normalize("NFKD")
     .toLowerCase()
     .replace(/[^\p{L}\p{N}]+/gu, " ")
     .trim();
 
-const tokenize = (value) =>
+const tokenize = (value: unknown): string[] =>
   normalizeSearchText(value).split(/\s+/).filter(Boolean);
 
-let indexPromise;
-let packsPromise;
-let translationsPromise;
-const loadTranslations = () => {
-  translationsPromise ??= readFile(TRANSLATIONS_PATH, "utf8").then(JSON.parse);
+let indexPromise: Promise<SearchableCatalogIndexEntry[]> | undefined;
+let packsPromise: Promise<LibraryCatalogPack[]> | undefined;
+let translationsPromise: Promise<CatalogTranslations> | undefined;
+const loadTranslations = (): Promise<CatalogTranslations> => {
+  translationsPromise ??= readFile(TRANSLATIONS_PATH, "utf8").then((text) =>
+    parseJson<CatalogTranslations>(text),
+  );
   return translationsPromise;
 };
 
-const localizeText = (value, translations) => {
+function localizeText(value: string, translations: CatalogTranslations): string;
+function localizeText(
+  value: undefined,
+  translations: CatalogTranslations,
+): undefined;
+function localizeText(
+  value: string | undefined,
+  translations: CatalogTranslations,
+): string | undefined;
+function localizeText(
+  value: string | undefined,
+  translations: CatalogTranslations,
+): string | undefined {
   if (typeof value !== "string" || !hasLatin(value)) {
     return value;
   }
@@ -49,9 +134,13 @@ const localizeText = (value, translations) => {
     throw new Error("素材中文翻译缺失");
   }
   return translated;
-};
+}
 
-const localizeDisplayText = (value, translations, key = "") => {
+const localizeDisplayText = (
+  value: unknown,
+  translations: CatalogTranslations,
+  key = "",
+): unknown => {
   if (typeof value === "string") {
     return DISPLAY_TEXT_KEYS.has(key)
       ? localizeText(value, translations)
@@ -71,9 +160,11 @@ const localizeDisplayText = (value, translations, key = "") => {
   return value;
 };
 
-const loadIndex = () => {
+const loadIndex = (): Promise<SearchableCatalogIndexEntry[]> => {
   indexPromise ??= Promise.all([
-    readFile(path.join(CATALOG_ROOT, "index.json"), "utf8").then(JSON.parse),
+    readFile(path.join(CATALOG_ROOT, "index.json"), "utf8").then((text) =>
+      parseJson<CatalogIndexEntry[]>(text),
+    ),
     loadTranslations(),
   ]).then(([entries, translations]) =>
     entries.map((entry) => {
@@ -98,10 +189,10 @@ const loadIndex = () => {
   return indexPromise;
 };
 
-const sourceKey = (source) =>
+const sourceKey = (source: string): string =>
   String(source || "").replace(/\.excalidrawlib$/i, "");
 
-const catalogFilePath = (source) => {
+const catalogFilePath = (source: string): string => {
   const filePath = path.resolve(LIBRARIES_ROOT, `${sourceKey(source)}.json`);
   if (!filePath.startsWith(`${LIBRARIES_ROOT}${path.sep}`)) {
     throw Object.assign(new Error("素材文件路径无效"), { status: 400 });
@@ -109,34 +200,39 @@ const catalogFilePath = (source) => {
   return filePath;
 };
 
-const writeJsonAtomically = async (filePath, value) => {
+const writeJsonAtomically = async (
+  filePath: string,
+  value: unknown,
+): Promise<void> => {
   const temporaryPath = `${filePath}.${randomUUID()}.tmp`;
   await writeFile(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
   await rename(temporaryPath, filePath);
 };
 
-export const resetLibraryCatalogCache = () => {
+export const resetLibraryCatalogCache = (): void => {
   indexPromise = undefined;
   packsPromise = undefined;
   translationsPromise = undefined;
 };
 
-const numericSourceId = (source) => {
+const numericSourceId = (source: string): string => {
   let hash = 1469598103934665603n;
   for (const character of source) {
-    hash ^= BigInt(character.codePointAt(0));
+    hash ^= BigInt(character.codePointAt(0)!);
     hash = BigInt.asUintN(64, hash * 1099511628211n);
   }
   return hash.toString();
 };
 
-const publicRefFor = (source, itemIndex) =>
+const publicRefFor = (source: string, itemIndex: number): string =>
   `素材-${numericSourceId(source)}-${itemIndex}`;
 
-const sourceFromInternalRef = (ref) =>
+const sourceFromInternalRef = (ref: string): string =>
   String(ref || "").slice(0, String(ref || "").lastIndexOf("#"));
 
-const publicEntry = (entry) => {
+const publicEntry = (
+  entry: SearchableCatalogIndexEntry,
+): PublicCatalogEntry => {
   const source = sourceFromInternalRef(entry.ref);
   const {
     ref: _internalRef,
@@ -150,13 +246,15 @@ const publicEntry = (entry) => {
   };
 };
 
-const packIdFor = (library, index) =>
+const packIdFor = (library: CatalogLibrary, index: number): string =>
   library.id ||
   `${sourceKey(library.source)
     .replace(/[^a-z0-9]+/gi, "-")
     .replace(/^-|-$/g, "")}-${index + 1}`;
 
-const categoryFor = (library) => {
+const categoryFor = (
+  library: CatalogLibrary,
+): LibraryCatalogPack["category"] => {
   const text = normalizeSearchText(
     `${library.name || ""} ${library.description || ""}`,
   );
@@ -180,15 +278,15 @@ const categoryFor = (library) => {
   return "general";
 };
 
-const loadPacks = () => {
+const loadPacks = (): Promise<LibraryCatalogPack[]> => {
   packsPromise ??= Promise.all([
-    readFile(path.join(CATALOG_ROOT, "libraries.json"), "utf8").then(
-      JSON.parse,
+    readFile(path.join(CATALOG_ROOT, "libraries.json"), "utf8").then((text) =>
+      parseJson<CatalogLibrary[]>(text),
     ),
     loadIndex(),
     loadTranslations(),
   ]).then(([libraries, entries, translations]) => {
-    const entriesBySource = new Map();
+    const entriesBySource = new Map<string, SearchableCatalogIndexEntry[]>();
     entries.forEach((entry) => {
       const source = entry.ref.slice(0, entry.ref.lastIndexOf("#"));
       const list = entriesBySource.get(source) || [];
@@ -227,7 +325,7 @@ const loadPacks = () => {
   return packsPromise;
 };
 
-export const isLibraryCatalogRef = (ref) => {
+export const isLibraryCatalogRef = (ref: unknown): boolean => {
   const value = String(ref || "");
   if (PUBLIC_REF_PATTERN.test(value)) {
     return true;
@@ -245,7 +343,9 @@ export const isLibraryCatalogRef = (ref) => {
   );
 };
 
-const parseInternalRef = (ref) => {
+const parseInternalRef = (
+  ref: unknown,
+): { source: string; itemIndex: number } => {
   if (!isLibraryCatalogRef(ref)) {
     throw new Error("素材引用无效");
   }
@@ -256,7 +356,9 @@ const parseInternalRef = (ref) => {
   return { source, itemIndex };
 };
 
-const resolveCatalogEntry = async (ref) => {
+const resolveCatalogEntry = async (
+  ref: unknown,
+): Promise<SearchableCatalogIndexEntry> => {
   const entries = await loadIndex();
   if (PUBLIC_REF_PATTERN.test(String(ref || ""))) {
     const entry = entries.find(
@@ -284,9 +386,9 @@ const resolveCatalogEntry = async (ref) => {
 };
 
 export const searchLibraryCatalog = async (
-  query,
+  query: string,
   requestedLimit = 8,
-  { sources = [] } = {},
+  { sources = [] }: { sources?: string[] } = {},
 ) => {
   const normalizedQuery = normalizeSearchText(query).slice(0, MAX_QUERY_LENGTH);
   if (!normalizedQuery) {
@@ -334,20 +436,23 @@ export const searchLibraryCatalog = async (
     .map(({ score: _score, ...entry }) => publicEntry(entry));
 };
 
-export const getLibraryCatalogItem = async (ref, { sources = [] } = {}) => {
+export const getLibraryCatalogItem = async (
+  ref: unknown,
+  { sources = [] }: { sources?: string[] } = {},
+) => {
   const entry = await resolveCatalogEntry(ref);
   const source = sourceFromInternalRef(entry.ref);
   const itemIndex = entry.itemIndex;
   if (!new Set(sources.map(sourceKey)).has(source)) {
     throw new Error("素材所属资源包尚未安装");
   }
-  const libraryData = JSON.parse(
+  const libraryData = parseJson<CatalogLibraryData>(
     await readFile(catalogFilePath(source), "utf8"),
   );
   const rawItem = (libraryData.libraryItems || libraryData.library || [])[
     itemIndex
   ];
-  const elements = Array.isArray(rawItem) ? rawItem : rawItem?.elements;
+  const elements = getLibraryItemElements(rawItem);
   if (!Array.isArray(elements) || elements.length === 0) {
     throw new Error("素材项内容无效");
   }
@@ -360,8 +465,8 @@ export const getLibraryCatalogItem = async (ref, { sources = [] } = {}) => {
 
 export const getLibraryCatalogSummary = async () => {
   const [libraries, entries] = await Promise.all([
-    readFile(path.join(CATALOG_ROOT, "libraries.json"), "utf8").then(
-      JSON.parse,
+    readFile(path.join(CATALOG_ROOT, "libraries.json"), "utf8").then((text) =>
+      parseJson<CatalogLibrary[]>(text),
     ),
     loadIndex(),
   ]);
@@ -382,7 +487,7 @@ export const listLibraryCatalogPacksForAdmin = async () => {
   );
 };
 
-export const getLibraryCatalogPack = async (packId) => {
+export const getLibraryCatalogPack = async (packId: unknown) => {
   const packs = await loadPacks();
   const pack = packs.find((candidate) => candidate.id === String(packId || ""));
   if (!pack) {
@@ -394,7 +499,7 @@ export const getLibraryCatalogPack = async (packId) => {
   return structuredClone({ ...pack, items: entries });
 };
 
-export const getLibraryCatalogPackForAdmin = async (packId) => {
+export const getLibraryCatalogPackForAdmin = async (packId: unknown) => {
   const pack = await getLibraryCatalogPack(packId);
   return {
     ...pack,
@@ -402,20 +507,23 @@ export const getLibraryCatalogPackForAdmin = async (packId) => {
   };
 };
 
-export const getLibraryCatalogPackItem = async (packId, itemIndex) => {
+export const getLibraryCatalogPackItem = async (
+  packId: unknown,
+  itemIndex: unknown,
+) => {
   const pack = await getLibraryCatalogPack(packId);
   const index = Number(itemIndex);
   if (!Number.isInteger(index) || index < 0 || index >= pack.items.length) {
     throw Object.assign(new Error("素材条目不存在"), { status: 404 });
   }
   const item = pack.items[index];
-  const libraryData = JSON.parse(
+  const libraryData = parseJson<CatalogLibraryData>(
     await readFile(catalogFilePath(pack.source), "utf8"),
   );
   const rawItem = (libraryData.libraryItems || libraryData.library || [])[
     index
   ];
-  const elements = Array.isArray(rawItem) ? rawItem : rawItem?.elements;
+  const elements = getLibraryItemElements(rawItem);
   if (!Array.isArray(elements) || elements.length === 0) {
     throw Object.assign(new Error("素材条目内容无效"), { status: 422 });
   }
@@ -426,7 +534,7 @@ export const getLibraryCatalogPackItem = async (packId, itemIndex) => {
   });
 };
 
-export const deleteLibraryCatalogPack = async (packId) => {
+export const deleteLibraryCatalogPack = async (packId: unknown) => {
   const pack = await getLibraryCatalogPack(packId);
   const librariesPath = path.join(CATALOG_ROOT, "libraries.json");
   const indexPath = path.join(CATALOG_ROOT, "index.json");
@@ -434,8 +542,8 @@ export const deleteLibraryCatalogPack = async (packId) => {
     readFile(librariesPath, "utf8"),
     readFile(indexPath, "utf8"),
   ]);
-  const libraries = JSON.parse(librariesText);
-  const entries = JSON.parse(indexText);
+  const libraries = parseJson<CatalogLibrary[]>(librariesText);
+  const entries = parseJson<CatalogIndexEntry[]>(indexText);
   const nextLibraries = libraries.filter(
     (library, index) => packIdFor(library, index) !== pack.id,
   );
@@ -468,7 +576,10 @@ export const deleteLibraryCatalogPack = async (packId) => {
   return { id: pack.id, source: pack.source };
 };
 
-export const deleteLibraryCatalogPackItem = async (packId, itemIndex) => {
+export const deleteLibraryCatalogPackItem = async (
+  packId: unknown,
+  itemIndex: unknown,
+) => {
   const pack = await getLibraryCatalogPack(packId);
   const index = Number(itemIndex);
   const item = pack.items.find((candidate) => candidate.itemIndex === index);
@@ -493,18 +604,19 @@ export const deleteLibraryCatalogPackItem = async (packId, itemIndex) => {
     readFile(librariesPath, "utf8"),
     readFile(indexPath, "utf8"),
   ]);
-  const libraryData = JSON.parse(libraryText);
+  const libraryData = parseJson<CatalogLibraryData>(libraryText);
   const collectionKey = Array.isArray(libraryData.libraryItems)
     ? "libraryItems"
     : Array.isArray(libraryData.library)
     ? "library"
     : null;
-  if (!collectionKey || !libraryData[collectionKey][index]) {
+  const collection = collectionKey ? libraryData[collectionKey] : undefined;
+  if (!collection?.[index]) {
     throw Object.assign(new Error("素材条目内容无效"), { status: 422 });
   }
-  libraryData[collectionKey].splice(index, 1);
+  collection.splice(index, 1);
 
-  const libraries = JSON.parse(librariesText);
+  const libraries = parseJson<CatalogLibrary[]>(librariesText);
   const libraryMetadata = libraries.find(
     (candidate) =>
       candidate.id === pack.id || sourceKey(candidate.source) === pack.source,
@@ -513,7 +625,7 @@ export const deleteLibraryCatalogPackItem = async (packId, itemIndex) => {
     libraryMetadata.itemNames.splice(index, 1);
   }
 
-  const entries = JSON.parse(indexText);
+  const entries = parseJson<CatalogIndexEntry[]>(indexText);
   const nextEntries = entries.flatMap((entry) => {
     const separatorIndex = String(entry.ref || "").lastIndexOf("#");
     const entrySource = entry.ref?.slice(0, separatorIndex);

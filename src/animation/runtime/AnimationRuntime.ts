@@ -96,8 +96,14 @@ export class AnimationRuntime {
     const direction = playback?.direction ?? "normal";
     const startsReversed =
       direction === "reverse" || direction === "alternate-reverse";
-    const from =
-      startsReversed && this.timeMs === 0 ? this.durationMs : this.timeMs;
+    const reachedPlaybackEnd = startsReversed
+      ? this.timeMs === 0
+      : this.timeMs === this.durationMs;
+    const from = reachedPlaybackEnd
+      ? startsReversed
+        ? this.durationMs
+        : 0
+      : this.timeMs;
     const to = startsReversed ? 0 : this.durationMs;
     const remainingDuration = Math.abs(to - from);
     const iterations = playback?.iterations ?? 1;

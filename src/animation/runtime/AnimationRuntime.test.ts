@@ -540,6 +540,32 @@ describe("AnimationRuntime", () => {
     runtime.dispose();
   });
 
+  it("restarts forward playback from zero after reaching the end", async () => {
+    const clock = createFakeMotionClock();
+    const runtime = await AnimationRuntime.create(project(), {
+      animate: clock.animate,
+    });
+
+    const firstPlayback = runtime.play();
+    clock.finish();
+    await firstPlayback;
+    expect(runtime.getSnapshot()).toMatchObject({
+      timeMs: 1000,
+      status: "paused",
+    });
+
+    const replay = runtime.play();
+    expect(clock.lastCall).toMatchObject({ from: 0, to: 1000 });
+    expect(runtime.getSnapshot()).toMatchObject({
+      timeMs: 0,
+      status: "playing",
+    });
+
+    clock.finish();
+    await replay;
+    runtime.dispose();
+  });
+
   it("clamps seek time to the project duration", async () => {
     const runtime = await AnimationRuntime.create(project());
 

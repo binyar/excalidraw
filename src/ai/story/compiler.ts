@@ -206,21 +206,33 @@ const textSkeleton = ({
   text: string;
   element: CanvasDraftElement;
   customData: Record<string, unknown>;
-}): ExcalidrawElementSkeleton => ({
-  id,
-  type: "text",
-  text,
-  x: element.x,
-  y: element.y,
-  width: element.width,
-  height: element.height,
-  fontSize: element.style?.fontSize ?? 20,
-  textAlign: element.style?.textAlign ?? "center",
-  verticalAlign: "middle",
-  strokeColor: element.style?.strokeColor ?? "#212529",
-  opacity: element.style?.opacity ?? 100,
-  customData,
-});
+}): ExcalidrawElementSkeleton => {
+  const textAlign = element.style?.textAlign ?? "center";
+  const anchorX =
+    textAlign === "center"
+      ? element.x + element.width / 2
+      : textAlign === "right"
+      ? element.x + element.width
+      : element.x;
+  return {
+    id,
+    type: "text",
+    text,
+    // Standalone Excalidraw text treats x/y as alignment anchors, while the
+    // Canvas Draft stores the top-left corner of the allocated layout box.
+    x: anchorX,
+    y: element.y + element.height / 2,
+    width: element.width,
+    height: element.height,
+    fontSize: element.style?.fontSize ?? 20,
+    textAlign,
+    verticalAlign: "middle",
+    strokeColor:
+      element.style?.textColor ?? element.style?.strokeColor ?? "#212529",
+    opacity: element.style?.opacity ?? 100,
+    customData,
+  };
+};
 
 const storyLayer = (element: ExcalidrawElementSkeleton) => {
   const aiStory = element.customData?.aiStory as
@@ -417,7 +429,10 @@ export const compileStoryArtifact = (
               fontSize: element.style?.fontSize ?? 20,
               textAlign: element.style?.textAlign ?? "center",
               verticalAlign: element.style?.verticalAlign ?? "middle",
-              strokeColor: element.style?.strokeColor ?? "#212529",
+              strokeColor:
+                element.style?.textColor ??
+                element.style?.strokeColor ??
+                "#212529",
               opacity: element.style?.opacity ?? 100,
               customData: {
                 aiStory: {
@@ -541,7 +556,8 @@ export const compileStoryArtifact = (
                 fromSceneId: track.fromSceneId,
                 toSceneId: track.toSceneId,
                 effect: track.effect,
-                direction: track.direction,
+                ...(track.direction ? { direction: track.direction } : {}),
+                ...(track.origin ? { origin: track.origin } : {}),
                 role: track.role,
               },
               startMs: track.startMs,

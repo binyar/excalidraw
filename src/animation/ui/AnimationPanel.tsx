@@ -86,6 +86,7 @@ import type {
   AnimationTrack,
   AnimationTransitionDirection,
   AnimationTransitionEffect,
+  AnimationTransitionOrigin,
   ElementVisibility,
   NumericAnimationPropertyName,
 } from "../types";
@@ -343,6 +344,7 @@ const rematerializePageTransition = (
   changes: Partial<{
     effect: AnimationTransitionEffect;
     direction: AnimationTransitionDirection;
+    origin: AnimationTransitionOrigin;
   }>,
 ): { project: AnimationProject; firstTrackId: string } | null => {
   if (sourceTrack.target.type !== "transition") {
@@ -383,6 +385,7 @@ const rematerializePageTransition = (
     durationMs: Math.max(1, endMs - startMs),
     preset: changes.effect ?? sourceTrack.target.effect,
     direction: changes.direction ?? sourceTrack.target.direction,
+    origin: changes.origin ?? sourceTrack.target.origin,
     ...(colors[0] ? { color: colors[0] } : {}),
     ...(colors[1] ? { backgroundColor: colors[1] } : {}),
   });
@@ -2588,6 +2591,17 @@ const TRANSITION_DIRECTION_OPTIONS: ReadonlyArray<{
   { value: "down", label: "向下" },
 ];
 
+const TRANSITION_ORIGIN_OPTIONS: ReadonlyArray<{
+  value: AnimationTransitionOrigin;
+  label: string;
+}> = [
+  { value: "center", label: "中心展开" },
+  { value: "top-left", label: "左上角展开" },
+  { value: "top-right", label: "右上角展开" },
+  { value: "bottom-left", label: "左下角展开" },
+  { value: "bottom-right", label: "右下角展开" },
+];
+
 const TransitionTargetEditor = ({
   track,
   onChange,
@@ -2598,7 +2612,7 @@ const TransitionTargetEditor = ({
     changes: Partial<
       Pick<
         Extract<AnimationTrack["target"], { type: "transition" }>,
-        "effect" | "direction"
+        "effect" | "direction" | "origin"
       >
     >,
   ) => void;
@@ -2653,6 +2667,24 @@ const TransitionTargetEditor = ({
             ))}
           </select>
         )}
+      {track.target.effect === "iris" && (
+        <select
+          aria-label={`${getLayerName(track)}转场起点`}
+          value={track.target.origin ?? "center"}
+          onClick={(event) => event.stopPropagation()}
+          onChange={(event) =>
+            onChange({
+              origin: event.target.value as AnimationTransitionOrigin,
+            })
+          }
+        >
+          {TRANSITION_ORIGIN_OPTIONS.map((option) => (
+            <option value={option.value} key={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      )}
       <button
         type="button"
         aria-label={`删除${getLayerName(track)}`}

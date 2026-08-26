@@ -10,11 +10,14 @@ import type {
   AnimationProperty,
   AnimationTransitionDirection,
   AnimationTransitionEffect,
+  AnimationTransitionOrigin,
 } from "../../animation/types";
 
 export type CanvasElementStyle = {
   strokeColor?: string;
   backgroundColor?: string;
+  /** Foreground color for standalone text or a shape's native label. */
+  textColor?: string;
   fillStyle?: "hachure" | "cross-hatch" | "solid" | "zigzag";
   strokeWidth?: number;
   roughness?: number;
@@ -80,6 +83,7 @@ export type StoryChapterTransitionPlan = {
   effect: AnimationTransitionEffect;
   durationMs: number;
   direction?: AnimationTransitionDirection;
+  origin?: AnimationTransitionOrigin;
   color?: string;
   backgroundColor?: string;
 };
@@ -147,6 +151,48 @@ export type StoryAnimationPlan = {
     reducedMotionFallback?: boolean;
   };
   scenes: StoryAnimationPlanScene[];
+};
+
+export type StoryDirectorContent = {
+  id: string;
+  kind: "text" | "shape" | "visual" | "connector";
+  role: string;
+  /** Exact user-visible copy for text and labeled shapes. */
+  label?: string;
+  sectionId?: string;
+  /** Required business endpoints for connector content. */
+  from?: string;
+  to?: string;
+};
+
+export type StorySceneLifecycle = {
+  sceneId: string;
+  enterTargetIds: string[];
+  persistentTargetIds: string[];
+  exitTargetIds: string[];
+};
+
+/**
+ * The authoritative, director-authored story DSL. Canvas and animation drafts
+ * are execution artifacts derived from this plan. The animation Agent may
+ * choose concrete Object motion inside the frozen scene/lifecycle windows, but
+ * must not introduce new narrative, timing, camera, or ownership decisions.
+ */
+export type StoryDirectorPlan = {
+  schemaVersion: "2.0";
+  id: string;
+  title: string;
+  summary: string;
+  durationMs: number;
+  rationale: string;
+  directionSummary: string;
+  style: StoryAnimationPlan["style"];
+  beats: StoryBeat[];
+  spaceLayouts: CanvasSpaceLayout[];
+  sections: CanvasLayoutSection[];
+  content: StoryDirectorContent[];
+  scenes: StoryAnimationPlanScene[];
+  lifecycles: StorySceneLifecycle[];
 };
 
 export type CanvasDraftElement = {
@@ -293,6 +339,7 @@ export type StoryTransitionAnimationTrack = {
   toSceneId: string;
   effect: AnimationTransitionEffect;
   direction?: AnimationTransitionDirection;
+  origin?: AnimationTransitionOrigin;
   role?: "exit" | "bridge" | "enter";
   startMs: number;
   durationMs: number;
@@ -328,7 +375,11 @@ export type StoryArtifact = {
   kind: "story-artifact";
   artifactId: string;
   summary: string;
+  /** The only editable source of story and direction decisions. */
+  directorPlan: StoryDirectorPlan;
+  /** Deterministically derived spatial execution result. */
   canvas: CanvasDraft;
+  /** Deterministically derived motion execution result. */
   animation: StoryAnimationDraft;
 };
 

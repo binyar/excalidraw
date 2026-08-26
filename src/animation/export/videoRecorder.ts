@@ -72,16 +72,31 @@ const drawTransitionLayer = (
   context.save();
   context.globalAlpha = Math.max(0, Math.min(1, layer.opacity));
   context.fillStyle = layer.color;
-  context.translate(width / 2, height / 2);
-  context.scale(layer.scale, layer.scale);
-  context.translate(-width / 2, -height / 2);
+  if (layer.effect !== "iris") {
+    context.translate(width / 2, height / 2);
+    context.scale(layer.scale, layer.scale);
+    context.translate(-width / 2, -height / 2);
+  }
 
   if (layer.effect === "iris") {
+    const origin = {
+      center: [width / 2, height / 2],
+      "top-left": [0, 0],
+      "top-right": [width, 0],
+      "bottom-left": [0, height],
+      "bottom-right": [width, height],
+    }[layer.origin];
+    const maximumRadius = Math.max(
+      Math.hypot(origin[0], origin[1]),
+      Math.hypot(width - origin[0], origin[1]),
+      Math.hypot(origin[0], height - origin[1]),
+      Math.hypot(width - origin[0], height - origin[1]),
+    );
     context.beginPath();
     context.arc(
-      width / 2,
-      height / 2,
-      Math.max(width, height) * 0.72 * progress,
+      origin[0],
+      origin[1],
+      maximumRadius * progress * layer.scale,
       0,
       Math.PI * 2,
     );

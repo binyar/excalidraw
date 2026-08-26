@@ -6,7 +6,7 @@ import {
   CORE_ANIMATION_SKILL_ID,
   resolveEnabledSkillIds,
   resolveSkillCatalog,
-} from "./skill-catalog.mjs";
+} from "./skill-catalog.ts";
 
 test("animation stays enabled while optional skills follow user settings", () => {
   const defaults = resolveSkillCatalog();

@@ -2,6 +2,7 @@
   "name": "excalidraw-app",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "homepage": ".",
   "browserslist": {
     "production": [
@@ -49,7 +50,7 @@
     "build": "vite build",
     "dev": "vite",
     "start": "vite",
-    "start:production": "pnpm build && node ./workspace/server.mjs",
+    "start:production": "pnpm build && node ./workspace/server.ts",
     "serve": "pnpm exec http-server build -a localhost -p 5001"
   },
   "devDependencies": {

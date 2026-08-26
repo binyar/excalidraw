@@ -24,6 +24,12 @@ export type AnimationTransitionEffect =
   | "push"
   | "iris";
 export type AnimationTransitionDirection = "left" | "right" | "up" | "down";
+export type AnimationTransitionOrigin =
+  | "center"
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right";
 
 export type AnimationFillMode = "none" | "forwards" | "backwards" | "both";
 
@@ -378,6 +384,7 @@ export type AnimationTarget =
       toSceneId: string;
       effect: AnimationTransitionEffect;
       direction?: AnimationTransitionDirection;
+      origin?: AnimationTransitionOrigin;
       role?: "exit" | "bridge" | "enter";
     };
 

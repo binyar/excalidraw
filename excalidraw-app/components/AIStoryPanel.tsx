@@ -120,9 +120,7 @@ const asRecord = (value: unknown): Record<string, any> =>
 
 const readableProgressError = (rawError: string) => {
   if (rawError.startsWith("Validation failed for tool")) {
-    return rawError.includes("animationBrief")
-      ? "动画简报参数格式不正确，PiAgent 将调整后重试"
-      : "工具参数格式不正确，PiAgent 将调整后重试";
+    return "工具参数格式不正确，PiAgent 将调整后重试";
   }
   const receivedArgumentsIndex = rawError.indexOf("Received arguments:");
   const conciseError =
@@ -275,17 +273,28 @@ const describeCanvasTool = (
     return `${prefix}：建立 ${input.connectors?.length || 0} 条元素连接关系`;
   }
   if (toolName === "finalize_canvas_draft") {
-    const duration = input.animationBrief?.preferredDurationMs;
     return completed
-      ? "画布 Draft 已校验并冻结"
-      : `正在校验画布 Draft，并生成动画简报${
-          duration ? `（建议 ${duration / 1000}s）` : ""
-        }`;
+      ? "派生画布已校验并冻结"
+      : "正在校验画布是否完整执行导演 DSL";
   }
-  if (toolName === "delegate_animation") {
+  if (toolName === "finalize_story_plan") {
     return completed
-      ? "动画子 Agent 已返回完整时间轴"
-      : "正在把冻结的画布 Draft 委派给动画子 Agent";
+      ? "完整动态故事 DSL 已冻结"
+      : "正在规划完整场景、镜头和动作时间轴";
+  }
+  if (toolName === "define_story_direction") {
+    return completed ? "故事时长与导演风格已确定" : "正在确定故事整体节奏";
+  }
+  if (toolName === "define_story_content") {
+    return `${prefix}：声明 ${input.content?.length || 0} 项故事内容`;
+  }
+  if (toolName === "define_story_scene") {
+    return `${prefix}：编写场景 ${input.id || "时间轴"}`;
+  }
+  if (toolName === "compile_story_artifact") {
+    return completed
+      ? "导演 DSL 已编译为可播放成品"
+      : "正在确定性编译画布、镜头和动画轨道";
   }
   return `${prefix}：${toolName}`;
 };

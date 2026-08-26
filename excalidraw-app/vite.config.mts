@@ -7,7 +7,7 @@ import svgrPlugin from "vite-plugin-svgr";
 
 import { woff2BrowserPlugin } from "../scripts/woff2/woff2-vite-plugins";
 
-import { workspaceApiPlugin } from "./workspace/server.mjs";
+import { workspaceApiPlugin } from "./workspace/server.ts";
 
 export default defineConfig(({ mode }) => {
   const envVars = loadEnv(mode, "../", "");

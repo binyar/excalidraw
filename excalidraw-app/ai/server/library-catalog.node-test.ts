@@ -1,3 +1,4 @@
+// @ts-nocheck
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -8,7 +9,7 @@ import {
   getLibraryCatalogSummary,
   listLibraryCatalogPacks,
   searchLibraryCatalog,
-} from "./library-catalog.mjs";
+} from "./library-catalog.ts";
 
 test("bundled library catalog exposes every vendored library item", async () => {
   const packs = await listLibraryCatalogPacks();

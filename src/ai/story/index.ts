@@ -12,6 +12,9 @@ export type {
   StoryAnimationPlan,
   StoryAnimationPlanScene,
   StoryAnimationCue,
+  StoryDirectorPlan,
+  StoryDirectorContent,
+  StorySceneLifecycle,
   StoryMotionCharacter,
   StoryBeat,
 } from "./types";
